@@ -212,6 +212,7 @@ const en: Dict = {
     'This is a hackathon prototype showcasing the HackTheBug vision for Azerbaijan. Walk through the demo to see how the platform would work for both researchers and organizations.',
   'home.cta.browse': 'Browse Programs',
   'home.cta.tryDashboard': 'Try Researcher Dashboard',
+  'home.cta.goToDashboard': 'Go to my dashboard',
 
   // ─── Programs directory
   'programs.badge': 'Programs Directory',
@@ -250,6 +251,22 @@ const en: Dict = {
   'program.tabs.updates': 'Updates',
   'program.tabs.hallOfFame': 'Hall of Fame',
   'program.actions.submit': 'Submit Report',
+  'program.actions.submit.orgLabel': 'Submitting is for researchers',
+  'program.actions.submit.orgDisabled':
+    'Organization accounts can review reports but not submit them.',
+  'program.actions.bookmark.label': 'Save program',
+  'program.actions.bookmark.added': 'Saved to your bookmarks',
+  'program.actions.bookmark.removed': 'Removed from your bookmarks',
+  'program.actions.bookmark.signinTitle': 'Sign in to save programs',
+  'program.actions.bookmark.signinBody':
+    'Bookmarks live with your researcher profile — sign in to keep them.',
+  'program.actions.bookmark.researcherOnlyTitle': 'Researchers only',
+  'program.actions.bookmark.researcherOnlyBody':
+    'Saving programs is part of the researcher workflow.',
+  'program.actions.share.label': 'Share program',
+  'program.actions.share.copied': 'Link copied to your clipboard',
+  'program.actions.share.failed':
+    'Could not copy the link. Try selecting the URL manually.',
   'program.summary': 'Program Summary',
   'program.responseTimes': 'Response Times',
   'program.responseTimes.first': 'First Response',
@@ -440,6 +457,11 @@ const en: Dict = {
   'dashboard.researcher.recent.col.severity': 'Severity',
   'dashboard.researcher.recent.col.status': 'Status',
   'dashboard.researcher.recent.col.reward': 'Reward',
+  'dashboard.researcher.recent.empty':
+    'No reports yet. Submit your first finding from a program page.',
+  'dashboard.researcher.recent.toast.title': 'Full report list — coming soon',
+  'dashboard.researcher.recent.toast.body':
+    'A dedicated reports table is on the roadmap. For now, recent rows are shown above.',
   'dashboard.researcher.achievements.title': 'Achievements',
   'dashboard.researcher.achievements.earned': 'Earned',
   'dashboard.researcher.achievements.first': 'First Blood',
@@ -449,8 +471,18 @@ const en: Dict = {
   'dashboard.researcher.verification.body':
     'SİMA verification for Azerbaijani citizens — planned. The current build is a demo and does not perform real verification.',
   'dashboard.researcher.saved.title': 'Saved Programs',
+  'dashboard.researcher.saved.empty':
+    'No saved programs yet. Bookmark a program from its detail page.',
+  'dashboard.researcher.saved.browse': 'Browse programs',
   'dashboard.researcher.recommended.title': 'Recommended for You',
+  'dashboard.researcher.recommended.empty':
+    'Nothing new to recommend. Visit the programs directory to explore.',
   'dashboard.researcher.maxLabel': '{amount} AZN max',
+
+  // ─── Dashboard charts (shared empty/error labels)
+  'dashboard.charts.empty':
+    'No data yet — the chart will populate as reports come in.',
+  'dashboard.charts.error.title': 'Could not load chart data',
 
   // ─── Organization dashboard
   'dashboard.org.viewBadge': 'Organization Dashboard',
@@ -464,8 +496,11 @@ const en: Dict = {
   'dashboard.org.stats.critical': 'Critical Findings',
   'dashboard.org.stats.rewardsPaid': 'Rewards Paid',
   'dashboard.org.stats.resolved': 'Resolved This Month',
+  'dashboard.org.stats.error.title': 'Could not load your dashboard stats',
   'dashboard.org.trend.title': 'Reports & Resolution Trend',
   'dashboard.org.trend.subtitle': 'Incoming reports vs resolved over time.',
+  'dashboard.org.trend.legend.reports': 'Reports',
+  'dashboard.org.trend.legend.resolved': 'Resolved',
   'dashboard.org.severity.title': 'Severity Distribution',
   'dashboard.org.severity.subtitle': 'Breakdown by vulnerability severity.',
   'dashboard.org.pipeline.title': 'Reports Pipeline',
@@ -481,19 +516,33 @@ const en: Dict = {
   'dashboard.org.recent.col.severity': 'Severity',
   'dashboard.org.recent.col.status': 'Status',
   'dashboard.org.recent.col.submitted': 'Submitted',
+  'dashboard.org.recent.empty':
+    'No reports yet. They will appear here as researchers submit them.',
   'dashboard.org.assets.title': 'Top Targeted Assets',
   'dashboard.org.assets.subtitle': 'Most reported assets in your scope.',
   'dashboard.org.assets.reports': 'reports',
+  'dashboard.org.assets.empty':
+    'No reports yet — top targeted assets will populate as they come in.',
   'dashboard.org.activity.title': 'Recent Activity',
   'dashboard.org.activity.subtitle': 'Latest actions on your program.',
+  'dashboard.org.activity.empty':
+    'No activity yet — events show up here once researchers act on your reports.',
+  'dashboard.org.activity.event.submitted': 'New report submitted',
+  'dashboard.org.activity.event.triaged': 'Report triaged',
+  'dashboard.org.activity.event.status_changed': 'Status changed',
+  'dashboard.org.activity.event.commented': 'New comment',
+  'dashboard.org.activity.event.resolved': 'Report resolved',
+  'dashboard.org.activity.event.rewarded': 'Reward issued',
+  'dashboard.org.activity.event.closed': 'Report closed',
+  'dashboard.org.activity.event.duplicate': 'Marked as duplicate',
+  'dashboard.org.activity.event.invalid': 'Marked as invalid',
+  'dashboard.org.viewAll.toast.title': 'Full reports queue — coming soon',
+  'dashboard.org.viewAll.toast.body':
+    'A dedicated org-side reports/triage page is on the roadmap. Recent rows are shown in this widget for now.',
   'dashboard.org.topResearchers.title': 'Top Researchers This Month',
   'dashboard.org.topResearchers.subtitle':
     'Most active researchers on your program.',
   'dashboard.org.topResearchers.reports': '{count} reports',
-  'dashboard.org.empty.title': 'No Critical Alerts',
-  'dashboard.org.empty.body':
-    'You have no critical vulnerabilities requiring immediate attention. This section would show urgent alerts in production.',
-  'dashboard.org.empty.badge': 'Demo - Empty State Example',
 
   // ─── Report submission modal
   'report.title': 'Submit Vulnerability Report',
@@ -930,6 +979,7 @@ const az: Dict = {
     'Bu, Azərbaycan üçün HackTheBug vizyonunu nümayiş etdirən hakaton prototipidir. Həm tədqiqatçılar, həm də təşkilatlar üçün platformanın necə işləyəcəyini görmək üçün demonu nəzərdən keçir.',
   'home.cta.browse': 'Proqramlara bax',
   'home.cta.tryDashboard': 'Tədqiqatçı panelini yoxla',
+  'home.cta.goToDashboard': 'Mənim panelimə keç',
 
   'programs.badge': 'Proqramlar kataloqu',
   'programs.title': 'Bug Bounty proqramları',
@@ -967,6 +1017,25 @@ const az: Dict = {
   'program.tabs.updates': 'Yenilənmələr',
   'program.tabs.hallOfFame': 'Şərəf lövhəsi',
   'program.actions.submit': 'Hesabat göndər',
+  'program.actions.submit.orgLabel':
+    'Hesabat göndərmək tədqiqatçılar üçündür',
+  'program.actions.submit.orgDisabled':
+    'Təşkilat hesabları hesabatları nəzərdən keçirə bilər, amma göndərə bilməz.',
+  'program.actions.bookmark.label': 'Proqramı saxla',
+  'program.actions.bookmark.added': 'Əlfəcinlərinə əlavə edildi',
+  'program.actions.bookmark.removed': 'Əlfəcinlərindən çıxarıldı',
+  'program.actions.bookmark.signinTitle':
+    'Proqramları saxlamaq üçün daxil ol',
+  'program.actions.bookmark.signinBody':
+    'Əlfəcinlər tədqiqatçı profilinlə bağlıdır — saxlamaq üçün daxil ol.',
+  'program.actions.bookmark.researcherOnlyTitle': 'Yalnız tədqiqatçılar',
+  'program.actions.bookmark.researcherOnlyBody':
+    'Proqramların saxlanılması tədqiqatçı iş axınının bir hissəsidir.',
+  'program.actions.share.label': 'Proqramı paylaş',
+  'program.actions.share.copied':
+    'Keçid mübadilə yaddaşına köçürüldü',
+  'program.actions.share.failed':
+    'Keçid köçürülə bilmədi. URL-i əl ilə seçməyə cəhd et.',
   'program.summary': 'Proqram xülasəsi',
   'program.responseTimes': 'Cavab vaxtları',
   'program.responseTimes.first': 'İlk cavab',
@@ -1161,6 +1230,12 @@ const az: Dict = {
   'dashboard.researcher.recent.col.severity': 'Ciddiyyət',
   'dashboard.researcher.recent.col.status': 'Status',
   'dashboard.researcher.recent.col.reward': 'Mükafat',
+  'dashboard.researcher.recent.empty':
+    'Hələ hesabat yoxdur. İlk tapıntını proqram səhifəsindən göndər.',
+  'dashboard.researcher.recent.toast.title':
+    'Tam hesabat siyahısı — tezliklə',
+  'dashboard.researcher.recent.toast.body':
+    'Ayrıca hesabat cədvəli yol xəritəsindədir. Hələlik son hesabatlar yuxarıda göstərilir.',
   'dashboard.researcher.achievements.title': 'Nailiyyətlər',
   'dashboard.researcher.achievements.earned': 'Qazanıldı',
   'dashboard.researcher.achievements.first': 'İlk qan',
@@ -1170,8 +1245,18 @@ const az: Dict = {
   'dashboard.researcher.verification.body':
     'Azərbaycan vətəndaşları üçün SİMA doğrulaması — planlaşdırılır. Bu versiya demodur, real doğrulama aparmır.',
   'dashboard.researcher.saved.title': 'Saxlanılmış proqramlar',
+  'dashboard.researcher.saved.empty':
+    'Hələ saxlanmış proqram yoxdur. Proqram səhifəsindən birini əlfəcinləyə bilərsən.',
+  'dashboard.researcher.saved.browse': 'Proqramlara bax',
   'dashboard.researcher.recommended.title': 'Sənin üçün tövsiyə',
+  'dashboard.researcher.recommended.empty':
+    'Tövsiyə üçün yeni heç nə yoxdur. Proqramlar kataloquna nəzər sal.',
   'dashboard.researcher.maxLabel': 'maks {amount} AZN',
+
+  // ─── Dashboard charts (paylaşılan boş/xəta etiketləri)
+  'dashboard.charts.empty':
+    'Hələ məlumat yoxdur — hesabatlar daxil olduqca qrafik dolacaq.',
+  'dashboard.charts.error.title': 'Qrafik məlumatları yüklənə bilmədi',
 
   'dashboard.org.viewBadge': 'Təşkilat paneli',
   'dashboard.org.title': 'Təhlükəsizlik paneli',
@@ -1184,10 +1269,14 @@ const az: Dict = {
   'dashboard.org.stats.critical': 'Kritik tapıntılar',
   'dashboard.org.stats.rewardsPaid': 'Ödənilmiş mükafat',
   'dashboard.org.stats.resolved': 'Bu ay həll olundu',
+  'dashboard.org.stats.error.title':
+    'Panel statistikası yüklənə bilmədi',
   'dashboard.org.trend.title':
     'Hesabat və həll trendi',
   'dashboard.org.trend.subtitle':
     'Vaxt üzrə gələn və həll olunmuş hesabatlar.',
+  'dashboard.org.trend.legend.reports': 'Hesabatlar',
+  'dashboard.org.trend.legend.resolved': 'Həll edildi',
   'dashboard.org.severity.title': 'Ciddiyyət paylanması',
   'dashboard.org.severity.subtitle':
     'Zəiflik ciddiyyətinə görə bölgü.',
@@ -1206,22 +1295,37 @@ const az: Dict = {
   'dashboard.org.recent.col.severity': 'Ciddiyyət',
   'dashboard.org.recent.col.status': 'Status',
   'dashboard.org.recent.col.submitted': 'Göndərilib',
+  'dashboard.org.recent.empty':
+    'Hələ hesabat yoxdur. Tədqiqatçılar göndərdikcə burada görünəcək.',
   'dashboard.org.assets.title': 'Ən çox hədəflənən aktivlər',
   'dashboard.org.assets.subtitle':
     'Sahəndəki ən çox hesabat alan aktivlər.',
   'dashboard.org.assets.reports': 'hesabat',
+  'dashboard.org.assets.empty':
+    'Hələ hesabat yoxdur — gəldikcə ən çox hədəflənən aktivlər burada görünəcək.',
   'dashboard.org.activity.title': 'Son fəaliyyət',
   'dashboard.org.activity.subtitle':
     'Proqramında son əməliyyatlar.',
+  'dashboard.org.activity.empty':
+    'Hələ fəaliyyət yoxdur — hesabatlar üzərində əməliyyat aparıldıqca burada görünəcək.',
+  'dashboard.org.activity.event.submitted': 'Yeni hesabat göndərildi',
+  'dashboard.org.activity.event.triaged': 'Hesabat yoxlanıldı',
+  'dashboard.org.activity.event.status_changed': 'Status dəyişdi',
+  'dashboard.org.activity.event.commented': 'Yeni şərh',
+  'dashboard.org.activity.event.resolved': 'Hesabat həll edildi',
+  'dashboard.org.activity.event.rewarded': 'Mükafat verildi',
+  'dashboard.org.activity.event.closed': 'Hesabat bağlandı',
+  'dashboard.org.activity.event.duplicate': 'Təkrar olaraq qeyd edildi',
+  'dashboard.org.activity.event.invalid': 'Yararsız olaraq qeyd edildi',
+  'dashboard.org.viewAll.toast.title':
+    'Tam hesabat növbəsi — tezliklə',
+  'dashboard.org.viewAll.toast.body':
+    'Təşkilat tərəfi üçün ayrıca hesabat / yoxlama səhifəsi yol xəritəsindədir. Hələlik son hesabatlar bu vidcetdə göstərilir.',
   'dashboard.org.topResearchers.title':
     'Bu ayın aparıcı tədqiqatçıları',
   'dashboard.org.topResearchers.subtitle':
     'Proqramında ən aktiv tədqiqatçılar.',
   'dashboard.org.topResearchers.reports': '{count} hesabat',
-  'dashboard.org.empty.title': 'Kritik xəbərdarlıq yoxdur',
-  'dashboard.org.empty.body':
-    'Təcili müdaxilə tələb edən kritik zəifliyin yoxdur. Bu bölmə real istifadədə təcili xəbərdarlıqları göstərəcək.',
-  'dashboard.org.empty.badge': 'Demo - Boş vəziyyət nümunəsi',
 
   'report.title': 'Zəiflik hesabatı göndər',
   'report.description':

@@ -122,9 +122,11 @@ None at the moment. The eight pre‑existing defects identified during the
 - **Charts:** `recharts` (used in both dashboards).
 - **Forms:** `react-hook-form` + `@hookform/resolvers` + `zod` (installed; not
   yet used — the report submission modal hand‑rolls its own state).
-- **Notifications:** none wired up. `sonner` package retained in
-  `package.json` for future use; the previous duplicate toast surface has
-  been removed.
+- **Notifications:** `sonner` is mounted via
+  `components/ui/sonner.tsx` inside `app/layout.tsx`. Use
+  `import { toast } from 'sonner'` from any client component
+  (`toast.success`, `toast.error`, `toast.message`). Theme is
+  locked to dark, position bottom-right.
 - **Internationalization:** local, dependency‑free system in `lib/i18n/`
   (`dictionary.ts` with flat‑key EN/AZ + `locale-provider.tsx` with
   `LocaleProvider`/`useLocale`/`useT`). Default locale `'az'`, persisted via
@@ -193,8 +195,8 @@ hackthebug-tool/
 │   ├── stat-card.tsx             # Animated KPI card with optional trend
 │   ├── report-submission-modal.tsx # 3‑step report submission dialog (mock submit, fully translated)
 │   ├── theme-provider.tsx        # next-themes wrapper (currently unused)
-│   └── ui/                       # shadcn/ui primitives (full kit, minus the deleted
-│                                 #   toast/sonner/use-mobile dupes)
+│   └── ui/                       # shadcn/ui primitives + sonner.tsx (project-wide
+│                                 #   <Toaster /> mounted from app/layout.tsx)
 ├── lib/
 │   ├── types.ts                  # Domain types: Program, Researcher, Report, User, Session, etc.
 │   ├── mock-data.ts              # Static UI constants only (platformStats, industries,
@@ -217,12 +219,18 @@ hackthebug-tool/
 │   │       ├── organizations.ts  # listOrganizations, getOrganizationById
 │   │       ├── profiles.ts       # getProfileById/Email, listResearchers
 │   │       ├── reports.ts        # listReportsForResearcher / Organization, getReportById, createReport
-│   │       └── dashboard.ts      # getResearcherDashboardStats (KPI tiles aggregator)
+│   │       └── dashboard.ts      # getResearcherDashboardStats / getResearcherChartData /
+│   │                             #   getOrganizationDashboardStats / getOrganizationChartData /
+│   │                             #   getOrganizationActivity (KPI + chart aggregators)
 │   └── data/
-│       └── hooks.ts              # usePrograms / useProgram / useFeaturedPrograms /
-│                                 #   useResearchers / useResearcherReports /
-│                                 #   useOrganizationReports / useOrganization /
-│                                 #   useResearcherDashboardStats
+│       ├── hooks.ts              # usePrograms / useProgram / useFeaturedPrograms /
+│       │                         #   useResearchers / useResearcherReports /
+│       │                         #   useOrganizationReports / useOrganization /
+│       │                         #   useResearcherDashboardStats / useResearcherChartData /
+│       │                         #   useOrganizationDashboardStats / useOrganizationChartData /
+│       │                         #   useOrganizationActivity
+│       └── saved-programs.ts     # localStorage-backed bookmark helper for researchers
+│                                 #   (useSavedProgramIds + toggleSavedProgram)
 ├── hooks/
 │   └── use-mobile.ts             # md breakpoint hook (the canonical location)
 ├── components.json               # shadcn config (style: new-york, base: neutral)
@@ -271,23 +279,16 @@ hackthebug-tool/
 
 ## Mock Data
 
-All mock data lives in `lib/mock-data.ts`, typed against `lib/types.ts`.
+`lib/mock-data.ts` is now down to three small static-UI exports —
+every domain entity (programs, organizations, profiles, reports,
+scopes, rewards) and every dashboard chart / KPI flows through
+Supabase via `lib/supabase/queries/*` + `lib/data/hooks.ts`.
 
 | Export                          | Type                  | Purpose                                                                |
 | ------------------------------- | --------------------- | ---------------------------------------------------------------------- |
-| `platformStats`                 | `PlatformStats`       | 13 active programs, 312 verified researchers, 1,847 reports, <24h triage, $127.5K paid, 13 orgs (matches the AZCON list). |
-| `programs`                      | `Program[]`           | **Exactly 13 demo program cards**, one per AZCON Holding organization (see list above). Each program has a `rewardRange` and a per‑severity `rewards` table in AZN, picked from one of four shared tiers (LOW / STANDARD / HIGH / TOP) defined inline in `lib/mock-data.ts`. Scope items use category names like "Official Website", "Customer Portal", "Public API" with description "Pending official authorization". No fake demo domains. **All reward values are demo / planned only** — see the "Real organization programs" rule in CLAUDE.md. |
-| `organizations`                 | `Organization[]`      | **Exactly 13** AZCON Holding organization records (`id`, `slug`, `name`, `industry`). Canonical source — `lib/auth/mock-users.ts` references `org-azal` from this list for the demo organization user. |
-| `researchers`                   | `Researcher[]`        | 10 fictional researchers (handles, country/code, points, reputation, badges, total rewards). **All 10 are AZ‑based** since AZ‑citizens‑only positioning shipped. |
-| `reports`                       | `Report[]`            | 7 sample vulnerability reports referencing the AZCON programs. Asset names use scope category labels ("Customer Portal", "Public API", etc.) — no fake demo domains. |
-| `orgDashboardStats`             | `OrgDashboardStats`   | KPIs for the org view (assumes "you" are CaspianBank). Researcher KPIs are now derived live from Supabase via `getResearcherDashboardStats`. |
-| `severityDistribution`          | `ChartDataPoint[]`    | Counts by severity for pie chart.                                      |
-| `reportsTimeline`               | `TimelineDataPoint[]` | 6‑month reports vs resolved (org dashboard).                           |
-| `researcherReportsTimeline`     | `TimelineDataPoint[]` | 6‑month researcher submission counts.                                  |
-| `topAttackedAssets`             | array                 | Top 5 most‑reported AZCON program assets (e.g., "AZAL Public API") with severity.  |
-| `recentActivity`                | array                 | Recent activity feed for the org dashboard, AZCON-themed.              |
+| `platformStats`                 | `PlatformStats`       | Illustrative numbers for the landing hero / `/about` stats grid (clearly labelled "Demo Data" / "Demo banner" wherever rendered). |
 | `weaknessCategories`            | `string[]`            | OWASP/CWE‑style options for the report submission modal.               |
-| `industries`                    | `string[]`            | 13 AZCON-aligned categories (Airline / Aviation, Railway / Transport, Maritime / Shipping, Metro / Public Transport, Bus Transport, Shipbuilding, Space / Satellite, Telecommunications, Cloud / Digital Infrastructure, Postal / Logistics, Taxi / Mobility, Broadcasting / TV / Radio, Artificial Intelligence / National AI). |
+| `industries`                    | `string[]`            | 13 AZCON-aligned categories for the programs filter (Airline / Aviation, Railway / Transport, Maritime / Shipping, Metro / Public Transport, Bus Transport, Shipbuilding, Space / Satellite, Telecommunications, Cloud / Digital Infrastructure, Postal / Logistics, Taxi / Mobility, Broadcasting / TV / Radio, Artificial Intelligence / National AI). |
 
 ## Design Direction
 
@@ -424,6 +425,123 @@ To be implemented after the hackathon, in roughly this order:
   and the `LOCALES` array.
 
 ## Last Actions
+
+### 2026‑04‑26 — Live charts everywhere, role‑aware buttons, toasts
+
+- **What:** Both dashboards now read every chart and KPI from
+  Supabase. Researcher charts (timeline + severity) come from
+  `getResearcherChartData(client, researcherId)` in
+  `lib/supabase/queries/dashboard.ts`. Organization charts (trend
+  + severity + pipeline + top assets) come from
+  `getOrganizationChartData(client, orgId)`; KPI tiles come from
+  `getOrganizationDashboardStats(client, orgId)` (incl. an
+  avg-triage-hours computed from `report_timeline_events` paired
+  by `submitted` → `triaged`). The org "Recent activity" feed is
+  driven by `getOrganizationActivity(client, orgId)` which lists
+  the most recent `report_timeline_events` joined back to report
+  titles. New hooks: `useResearcherChartData`,
+  `useOrganizationChartData`, `useOrganizationDashboardStats`,
+  `useOrganizationActivity`. Both pages handle loading
+  (skeleton block), empty (calm copy in the chart card), and
+  error (inline destructive banner with `error.message`).
+- **Toast surface:** `sonner` is mounted via a thin
+  `components/ui/sonner.tsx` wrapper inside `app/layout.tsx`.
+  Toasts are dark-themed to match the rest of the app and
+  positioned bottom-right. Used everywhere a button's effect
+  isn't immediately visible (bookmark add/remove, share-link
+  copied, share failure, "Coming soon" placeholders for
+  unimplemented `View All` queues).
+- **Saved programs (researcher only, localStorage):**
+  `lib/data/saved-programs.ts` adds `useSavedProgramIds`,
+  `toggleSavedProgram`, `listSavedProgramIds`, `isProgramSaved`.
+  Persists per-profile to `localStorage` under
+  `htb-saved-programs:<profileId>`. The researcher dashboard
+  "Saved" widget reads from this hook (with proper empty +
+  browse-CTA), and the program detail "Bookmark" icon button
+  toggles + toasts. **No `saved_programs` table exists** —
+  swap call sites when one lands.
+- **Share:** the program detail "Share" icon button calls
+  `navigator.share` when available, falls back to clipboard +
+  success toast (or error toast if the Permissions API blocks
+  the write). `AbortError` (user cancellation) is silently
+  ignored.
+- **Role-aware buttons:**
+  - Program detail header — Submit Report becomes a disabled
+    "Submitting is for researchers" button for org users; the
+    Bookmark icon hides entirely for org users; Share is shown
+    to everyone.
+  - Home page CTA — "Try Researcher Dashboard" is
+    role-aware: for signed-in users it becomes "Go to my
+    dashboard" pointing to the right path
+    (`dashboardPathForRole(session.role)`); anonymous users
+    see the original copy and land on `/login` (where the
+    redirect-to-dashboard flow takes over).
+- **Dashboard "View all" buttons:** the org and researcher
+  dashboards' `View all` buttons now fire a
+  `Coming soon` toast — there's no full-list / triage page
+  yet, so the click is honest about it instead of silently
+  doing nothing. Saved + Recommended widgets' `View all` /
+  `Browse all` buttons link to `/programs` (real navigation).
+- **Removed:** every chart-related export in `lib/mock-data.ts`
+  (`severityDistribution`, `reportsTimeline`,
+  `researcherReportsTimeline`, `topAttackedAssets`,
+  `recentActivity`, `orgDashboardStats`) and the dead types
+  `OrgDashboardStats`, `ChartDataPoint`, `TimelineDataPoint`
+  in `lib/types.ts`. The org dashboard's "No Critical Alerts"
+  empty-state demo card was deleted (it was a placeholder, not
+  a real surface). Pipeline now uses real `status.*` i18n keys
+  instead of fake "New / Triaging / Validating / Fixing /
+  Resolved" labels.
+- **Why:** The user asked for the platform to be "fully
+  connected and role-aware" — every chart driven by Supabase,
+  every button doing something useful, role-only actions
+  conditionally rendered. The dashboards were the biggest
+  remaining mock surface and the program detail page had three
+  unwired buttons.
+- **Files touched:** added `lib/data/saved-programs.ts`,
+  `components/ui/sonner.tsx`. Modified
+  `lib/supabase/queries/dashboard.ts`, `lib/data/hooks.ts`,
+  `lib/types.ts`, `lib/mock-data.ts`, `lib/i18n/dictionary.ts`,
+  `app/layout.tsx`, `app/page.tsx`,
+  `app/programs/[slug]/page.tsx`,
+  `app/dashboard/researcher/page.tsx`,
+  `app/dashboard/organization/page.tsx`, `MEMORY.md`,
+  `CLAUDE.md`. No files removed.
+- **Verification:** `npm run build` succeeds, all 11 routes
+  prerender. Recommended browser pass:
+  1. Sign in as `researcher@hackthebug.az` → visit
+     `/dashboard/researcher`. Both charts should render with
+     real data (or the empty/error states, never the old mock
+     numbers).
+  2. From `/programs/azal` (or any program), click the
+     bookmark icon — toast confirms; reload
+     `/dashboard/researcher` and the program appears in
+     "Saved Programs". Toggle off and the widget falls back
+     to its empty state.
+  3. Click Share — `navigator.share` opens on mobile
+     browsers; on desktop the URL is copied + a toast
+     confirms.
+  4. Sign out, sign in as `organization@hackthebug.az` →
+     `/dashboard/organization`. KPI tiles, area chart,
+     severity pie, pipeline bar, top assets list, and
+     activity feed should all reflect real `reports` rows
+     belonging to the org's programs.
+  5. Visit `/programs/azal` while signed in as the
+     organization — Submit Report is a disabled
+     "Submitting is for researchers" button; the Bookmark
+     icon is gone; Share still works.
+- **Limitations / next steps:**
+  - No real reports detail / triage page yet — the org `View
+    all` and researcher `View all` toast "coming soon"
+    instead of navigating. Next iteration: build
+    `/programs/[slug]/reports/[id]`.
+  - Saved programs are localStorage-only (no
+    `saved_programs` table). Acceptable for the demo.
+  - `platformStats` on `/` and `/about` is still illustrative
+    (clearly labelled "Demo Data"). Fine for landing copy
+    but a future pass could replace it with `count(*)`s.
+  - Achievements widget on the researcher dashboard remains
+    static — needs a `badges` table and earn-rules to be real.
 
 ### 2026‑04‑26 — Researcher dashboard stats from Supabase
 

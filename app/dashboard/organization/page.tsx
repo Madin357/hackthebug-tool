@@ -51,45 +51,31 @@ import { SeverityBadge } from '@/components/severity-badge'
 import { StatusBadge } from '@/components/status-badge'
 import { FormattedDate } from '@/components/formatted-date'
 import Link from 'next/link'
+import { AlertCircle } from 'lucide-react'
 import { useT } from '@/lib/i18n/locale-provider'
 import { useAuth } from '@/lib/auth/auth-provider'
 import {
   useOrganization,
+  useOrganizationActivity,
+  useOrganizationChartData,
+  useOrganizationDashboardStats,
   useOrganizationPrograms,
   useOrganizationReports,
   useResearchers,
 } from '@/lib/data/hooks'
-import { formatAZNRange } from '@/lib/utils'
-import {
-  orgDashboardStats,
-  reportsTimeline,
-  severityDistribution,
-  topAttackedAssets,
-  recentActivity,
-} from '@/lib/mock-data'
-
-const pipelineKeys = [
-  { key: 'dashboard.org.pipeline.new', count: 8, fill: 'var(--chart-1)' },
-  { key: 'dashboard.org.pipeline.triaging', count: 6, fill: 'var(--chart-2)' },
-  {
-    key: 'dashboard.org.pipeline.validating',
-    count: 4,
-    fill: 'var(--chart-3)',
-  },
-  { key: 'dashboard.org.pipeline.fixing', count: 12, fill: 'var(--chart-4)' },
-  {
-    key: 'dashboard.org.pipeline.resolved',
-    count: 24,
-    fill: 'var(--chart-5)',
-  },
-]
+import { formatAZN, formatAZNRange } from '@/lib/utils'
+import { toast } from 'sonner'
 
 const activityIcons = {
-  triage: Clock,
-  reward: DollarSign,
-  new: FileText,
+  submitted: FileText,
+  triaged: Clock,
+  status_changed: Shield,
   resolved: CheckCircle,
-  update: Shield,
+  rewarded: DollarSign,
+  closed: Shield,
+  duplicate: AlertTriangle,
+  invalid: AlertTriangle,
+  commented: Activity,
 } as const
 
 export default function OrganizationDashboardPage() {
@@ -109,11 +95,29 @@ export default function OrganizationDashboardPage() {
   const { data: researchersData } = useResearchers()
   const researchers = researchersData ?? []
 
-  const pipelineData = pipelineKeys.map((p) => ({
-    stage: t(p.key),
+  const { data: stats, error: statsError } =
+    useOrganizationDashboardStats(organizationId)
+  const statPlaceholder = '—'
+
+  const { data: charts, error: chartsError } =
+    useOrganizationChartData(organizationId)
+  const timelineData = charts?.timeline ?? []
+  const severityData = charts?.severity ?? []
+  const pipelineData = (charts?.pipeline ?? []).map((p) => ({
+    stage: t(`status.${p.status}`),
     count: p.count,
     fill: p.fill,
   }))
+  const topAssets = charts?.topAssets ?? []
+  const severityHasData = severityData.some((s) => s.value > 0)
+
+  const { data: activity } = useOrganizationActivity(organizationId)
+  const activityItems = activity ?? []
+
+  const handleViewAll = () =>
+    toast.message(t('dashboard.org.viewAll.toast.title'), {
+      description: t('dashboard.org.viewAll.toast.body'),
+    })
 
   return (
     <div className="py-8 sm:py-12">
@@ -163,45 +167,63 @@ export default function OrganizationDashboardPage() {
           </div>
         </motion.div>
 
+        {/* Stats error banner */}
+        {statsError && (
+          <div className="mb-4 flex items-start gap-2 rounded-lg border border-destructive/30 bg-destructive/10 p-3">
+            <AlertCircle className="h-4 w-4 text-destructive shrink-0 mt-0.5" />
+            <div className="space-y-1">
+              <p className="text-sm font-medium text-foreground">
+                {t('dashboard.org.stats.error.title')}
+              </p>
+              <p className="text-xs text-muted-foreground break-words">
+                {statsError.message}
+              </p>
+            </div>
+          </div>
+        )}
+
         {/* Stats */}
         <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4 mb-8">
           <StatCard
             title={t('dashboard.org.stats.totalReports')}
-            value={orgDashboardStats.totalReports}
+            value={stats ? stats.totalReports : statPlaceholder}
             icon={FileText}
-            trend={{ value: 12, isPositive: true }}
             delay={0}
           />
           <StatCard
             title={t('dashboard.org.stats.openReports')}
-            value={orgDashboardStats.openReports}
+            value={stats ? stats.openReports : statPlaceholder}
             icon={Clock}
             delay={0.1}
           />
           <StatCard
             title={t('dashboard.org.stats.avgTriage')}
-            value={orgDashboardStats.avgTriageTime}
+            value={
+              stats
+                ? stats.avgTriageHours !== null
+                  ? `${stats.avgTriageHours}h`
+                  : statPlaceholder
+                : statPlaceholder
+            }
             icon={TrendingUp}
-            trend={{ value: 15, isPositive: true }}
             delay={0.2}
           />
           <StatCard
             title={t('dashboard.org.stats.critical')}
-            value={orgDashboardStats.criticalFindings}
+            value={stats ? stats.criticalFindings : statPlaceholder}
             icon={AlertTriangle}
             delay={0.3}
           />
           <StatCard
             title={t('dashboard.org.stats.rewardsPaid')}
-            value={`${(orgDashboardStats.rewardsPaid / 1000).toFixed(1)}K AZN`}
+            value={stats ? formatAZN(stats.rewardsPaid) : statPlaceholder}
             icon={DollarSign}
             delay={0.4}
           />
           <StatCard
             title={t('dashboard.org.stats.resolved')}
-            value={orgDashboardStats.resolvedThisMonth}
+            value={stats ? stats.resolvedThisMonth : statPlaceholder}
             icon={CheckCircle}
-            trend={{ value: 8, isPositive: true }}
             delay={0.5}
           />
         </div>
@@ -219,43 +241,49 @@ export default function OrganizationDashboardPage() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <ResponsiveContainer width="100%" height={250}>
-                <AreaChart data={reportsTimeline}>
-                  <CartesianGrid
-                    strokeDasharray="3 3"
-                    className="stroke-border"
-                  />
-                  <XAxis
-                    dataKey="month"
-                    className="text-xs fill-muted-foreground"
-                  />
-                  <YAxis className="text-xs fill-muted-foreground" />
-                  <Tooltip
-                    contentStyle={{
-                      backgroundColor: 'var(--card)',
-                      border: '1px solid var(--border)',
-                      borderRadius: '8px',
-                    }}
-                    labelStyle={{ color: 'var(--foreground)' }}
-                  />
-                  <Area
-                    type="monotone"
-                    dataKey="reports"
-                    stackId="1"
-                    stroke="var(--primary)"
-                    fill="color-mix(in oklch, var(--primary) 20%, transparent)"
-                    name="Reports"
-                  />
-                  <Area
-                    type="monotone"
-                    dataKey="resolved"
-                    stackId="2"
-                    stroke="var(--chart-3)"
-                    fill="color-mix(in oklch, var(--chart-3) 20%, transparent)"
-                    name="Resolved"
-                  />
-                </AreaChart>
-              </ResponsiveContainer>
+              {chartsError ? (
+                <ChartError message={chartsError.message} t={t} />
+              ) : !charts ? (
+                <ChartSkeleton height={250} />
+              ) : (
+                <ResponsiveContainer width="100%" height={250}>
+                  <AreaChart data={timelineData}>
+                    <CartesianGrid
+                      strokeDasharray="3 3"
+                      className="stroke-border"
+                    />
+                    <XAxis
+                      dataKey="month"
+                      className="text-xs fill-muted-foreground"
+                    />
+                    <YAxis className="text-xs fill-muted-foreground" />
+                    <Tooltip
+                      contentStyle={{
+                        backgroundColor: 'var(--card)',
+                        border: '1px solid var(--border)',
+                        borderRadius: '8px',
+                      }}
+                      labelStyle={{ color: 'var(--foreground)' }}
+                    />
+                    <Area
+                      type="monotone"
+                      dataKey="reports"
+                      stackId="1"
+                      stroke="var(--primary)"
+                      fill="color-mix(in oklch, var(--primary) 20%, transparent)"
+                      name={t('dashboard.org.trend.legend.reports')}
+                    />
+                    <Area
+                      type="monotone"
+                      dataKey="resolved"
+                      stackId="2"
+                      stroke="var(--chart-3)"
+                      fill="color-mix(in oklch, var(--chart-3) 20%, transparent)"
+                      name={t('dashboard.org.trend.legend.resolved')}
+                    />
+                  </AreaChart>
+                </ResponsiveContainer>
+              )}
             </CardContent>
           </Card>
 
@@ -270,44 +298,60 @@ export default function OrganizationDashboardPage() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <ResponsiveContainer width="100%" height={200}>
-                <PieChart>
-                  <Pie
-                    data={severityDistribution}
-                    cx="50%"
-                    cy="50%"
-                    innerRadius={50}
-                    outerRadius={80}
-                    paddingAngle={2}
-                    dataKey="value"
-                  >
-                    {severityDistribution.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.fill} />
-                    ))}
-                  </Pie>
-                  <Tooltip
-                    contentStyle={{
-                      backgroundColor: 'var(--card)',
-                      border: '1px solid var(--border)',
-                      borderRadius: '8px',
-                    }}
-                  />
-                </PieChart>
-              </ResponsiveContainer>
-              <div className="flex flex-wrap justify-center gap-3 mt-4">
-                {severityDistribution.map((item) => (
-                  <div
-                    key={item.name}
-                    className="flex items-center gap-1.5 text-xs"
-                  >
-                    <div
-                      className="h-2 w-2 rounded-full"
-                      style={{ backgroundColor: item.fill }}
-                    />
-                    <span className="text-muted-foreground">{item.name}</span>
+              {chartsError ? (
+                <ChartError message={chartsError.message} t={t} />
+              ) : !charts ? (
+                <ChartSkeleton height={200} />
+              ) : !severityHasData ? (
+                <ChartEmpty t={t} />
+              ) : (
+                <>
+                  <ResponsiveContainer width="100%" height={200}>
+                    <PieChart>
+                      <Pie
+                        data={severityData.filter((s) => s.value > 0)}
+                        cx="50%"
+                        cy="50%"
+                        innerRadius={50}
+                        outerRadius={80}
+                        paddingAngle={2}
+                        dataKey="value"
+                      >
+                        {severityData
+                          .filter((s) => s.value > 0)
+                          .map((entry) => (
+                            <Cell key={entry.severity} fill={entry.fill} />
+                          ))}
+                      </Pie>
+                      <Tooltip
+                        contentStyle={{
+                          backgroundColor: 'var(--card)',
+                          border: '1px solid var(--border)',
+                          borderRadius: '8px',
+                        }}
+                      />
+                    </PieChart>
+                  </ResponsiveContainer>
+                  <div className="flex flex-wrap justify-center gap-3 mt-4">
+                    {severityData
+                      .filter((s) => s.value > 0)
+                      .map((item) => (
+                        <div
+                          key={item.severity}
+                          className="flex items-center gap-1.5 text-xs"
+                        >
+                          <div
+                            className="h-2 w-2 rounded-full"
+                            style={{ backgroundColor: item.fill }}
+                          />
+                          <span className="text-muted-foreground">
+                            {t(`severity.${item.severity}`)}
+                          </span>
+                        </div>
+                      ))}
                   </div>
-                ))}
-              </div>
+                </>
+              )}
             </CardContent>
           </Card>
         </div>
@@ -325,36 +369,44 @@ export default function OrganizationDashboardPage() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <ResponsiveContainer width="100%" height={200}>
-                <BarChart data={pipelineData} layout="vertical">
-                  <CartesianGrid
-                    strokeDasharray="3 3"
-                    className="stroke-border"
-                  />
-                  <XAxis
-                    type="number"
-                    className="text-xs fill-muted-foreground"
-                  />
-                  <YAxis
-                    type="category"
-                    dataKey="stage"
-                    width={90}
-                    className="text-xs fill-muted-foreground"
-                  />
-                  <Tooltip
-                    contentStyle={{
-                      backgroundColor: 'var(--card)',
-                      border: '1px solid var(--border)',
-                      borderRadius: '8px',
-                    }}
-                  />
-                  <Bar dataKey="count" radius={[0, 4, 4, 0]}>
-                    {pipelineData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.fill} />
-                    ))}
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
+              {chartsError ? (
+                <ChartError message={chartsError.message} t={t} />
+              ) : !charts ? (
+                <ChartSkeleton height={200} />
+              ) : pipelineData.length === 0 ? (
+                <ChartEmpty t={t} />
+              ) : (
+                <ResponsiveContainer width="100%" height={200}>
+                  <BarChart data={pipelineData} layout="vertical">
+                    <CartesianGrid
+                      strokeDasharray="3 3"
+                      className="stroke-border"
+                    />
+                    <XAxis
+                      type="number"
+                      className="text-xs fill-muted-foreground"
+                    />
+                    <YAxis
+                      type="category"
+                      dataKey="stage"
+                      width={90}
+                      className="text-xs fill-muted-foreground"
+                    />
+                    <Tooltip
+                      contentStyle={{
+                        backgroundColor: 'var(--card)',
+                        border: '1px solid var(--border)',
+                        borderRadius: '8px',
+                      }}
+                    />
+                    <Bar dataKey="count" radius={[0, 4, 4, 0]}>
+                      {pipelineData.map((entry) => (
+                        <Cell key={entry.stage} fill={entry.fill} />
+                      ))}
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
+              )}
             </CardContent>
           </Card>
 
@@ -370,59 +422,68 @@ export default function OrganizationDashboardPage() {
                     {t('dashboard.org.recent.subtitle')}
                   </CardDescription>
                 </div>
-                <Button variant="outline" size="sm">
+                <Button variant="outline" size="sm" onClick={handleViewAll}>
                   {t('common.viewAll')}
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
               </div>
             </CardHeader>
             <CardContent>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>
-                      {t('dashboard.org.recent.col.report')}
-                    </TableHead>
-                    <TableHead>
-                      {t('dashboard.org.recent.col.severity')}
-                    </TableHead>
-                    <TableHead>
-                      {t('dashboard.org.recent.col.status')}
-                    </TableHead>
-                    <TableHead>
-                      {t('dashboard.org.recent.col.submitted')}
-                    </TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {reports.slice(0, 5).map((report) => (
-                    <TableRow key={report.id}>
-                      <TableCell>
-                        <div>
-                          <p className="font-medium text-foreground line-clamp-1">
-                            {report.title}
-                          </p>
-                          <p className="text-xs text-muted-foreground">
-                            {report.asset}
-                          </p>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <SeverityBadge severity={report.severity} />
-                      </TableCell>
-                      <TableCell>
-                        <StatusBadge status={report.status} />
-                      </TableCell>
-                      <TableCell className="text-muted-foreground text-sm">
-                        <FormattedDate
-                          date={report.submittedDate}
-                          options={{ month: 'short', day: 'numeric' }}
-                        />
-                      </TableCell>
+              {reports.length === 0 ? (
+                <div className="text-center py-8">
+                  <FileText className="h-10 w-10 text-muted-foreground mx-auto mb-2" />
+                  <p className="text-sm text-muted-foreground">
+                    {t('dashboard.org.recent.empty')}
+                  </p>
+                </div>
+              ) : (
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>
+                        {t('dashboard.org.recent.col.report')}
+                      </TableHead>
+                      <TableHead>
+                        {t('dashboard.org.recent.col.severity')}
+                      </TableHead>
+                      <TableHead>
+                        {t('dashboard.org.recent.col.status')}
+                      </TableHead>
+                      <TableHead>
+                        {t('dashboard.org.recent.col.submitted')}
+                      </TableHead>
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+                  </TableHeader>
+                  <TableBody>
+                    {reports.slice(0, 5).map((report) => (
+                      <TableRow key={report.id}>
+                        <TableCell>
+                          <div>
+                            <p className="font-medium text-foreground line-clamp-1">
+                              {report.title}
+                            </p>
+                            <p className="text-xs text-muted-foreground">
+                              {report.asset}
+                            </p>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <SeverityBadge severity={report.severity} />
+                        </TableCell>
+                        <TableCell>
+                          <StatusBadge status={report.status} />
+                        </TableCell>
+                        <TableCell className="text-muted-foreground text-sm">
+                          <FormattedDate
+                            date={report.submittedDate}
+                            options={{ month: 'short', day: 'numeric' }}
+                          />
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              )}
             </CardContent>
           </Card>
         </div>
@@ -440,37 +501,45 @@ export default function OrganizationDashboardPage() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="space-y-3">
-                {topAttackedAssets.map((asset, index) => (
-                  <div
-                    key={asset.asset}
-                    className="flex items-center justify-between p-3 rounded-lg bg-secondary/50"
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center text-sm font-medium text-primary">
-                        {index + 1}
+              {topAssets.length === 0 ? (
+                <div className="text-center py-6">
+                  <p className="text-sm text-muted-foreground">
+                    {t('dashboard.org.assets.empty')}
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {topAssets.map((asset, index) => (
+                    <div
+                      key={asset.asset}
+                      className="flex items-center justify-between p-3 rounded-lg bg-secondary/50"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center text-sm font-medium text-primary">
+                          {index + 1}
+                        </div>
+                        <div>
+                          <p className="text-sm font-medium text-foreground truncate max-w-[140px]">
+                            {asset.asset}
+                          </p>
+                          <SeverityBadge
+                            severity={asset.severity}
+                            className="mt-1"
+                          />
+                        </div>
                       </div>
-                      <div>
-                        <p className="text-sm font-medium text-foreground truncate max-w-[140px]">
-                          {asset.asset}
+                      <div className="text-right">
+                        <p className="text-lg font-bold text-foreground">
+                          {asset.reports}
                         </p>
-                        <SeverityBadge
-                          severity={asset.severity}
-                          className="mt-1"
-                        />
+                        <p className="text-xs text-muted-foreground">
+                          {t('dashboard.org.assets.reports')}
+                        </p>
                       </div>
                     </div>
-                    <div className="text-right">
-                      <p className="text-lg font-bold text-foreground">
-                        {asset.reports}
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        {t('dashboard.org.assets.reports')}
-                      </p>
-                    </div>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              )}
             </CardContent>
           </Card>
 
@@ -485,32 +554,45 @@ export default function OrganizationDashboardPage() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
-                {recentActivity.map((activity) => {
-                  const Icon =
-                    activityIcons[
-                      activity.type as keyof typeof activityIcons
-                    ] || Activity
-                  return (
-                    <div key={activity.id} className="flex items-start gap-3">
-                      <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-                        <Icon className="h-4 w-4 text-primary" />
+              {activityItems.length === 0 ? (
+                <div className="text-center py-6">
+                  <p className="text-sm text-muted-foreground">
+                    {t('dashboard.org.activity.empty')}
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {activityItems.map((item) => {
+                    const Icon = activityIcons[item.type] ?? Activity
+                    return (
+                      <div key={item.id} className="flex items-start gap-3">
+                        <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                          <Icon className="h-4 w-4 text-primary" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm text-foreground">
+                            {t(`dashboard.org.activity.event.${item.type}`)}
+                          </p>
+                          <p className="text-xs text-muted-foreground truncate">
+                            {item.reportTitle}
+                          </p>
+                          <p className="text-xs text-muted-foreground mt-1">
+                            <FormattedDate
+                              date={item.createdAt}
+                              options={{
+                                month: 'short',
+                                day: 'numeric',
+                                hour: '2-digit',
+                                minute: '2-digit',
+                              }}
+                            />
+                          </p>
+                        </div>
                       </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm text-foreground">
-                          {activity.action}
-                        </p>
-                        <p className="text-xs text-muted-foreground truncate">
-                          {activity.target}
-                        </p>
-                        <p className="text-xs text-muted-foreground mt-1">
-                          {activity.time}
-                        </p>
-                      </div>
-                    </div>
-                  )
-                })}
-              </div>
+                    )
+                  })}
+                </div>
+              )}
             </CardContent>
           </Card>
 
@@ -630,21 +712,49 @@ export default function OrganizationDashboardPage() {
           </CardContent>
         </Card>
 
-        {/* Empty State Example */}
-        <Card className="mt-6 border-dashed">
-          <CardContent className="p-8 text-center">
-            <div className="h-16 w-16 rounded-full bg-secondary flex items-center justify-center mx-auto mb-4">
-              <AlertTriangle className="h-8 w-8 text-muted-foreground" />
-            </div>
-            <h3 className="text-lg font-semibold text-foreground mb-2">
-              {t('dashboard.org.empty.title')}
-            </h3>
-            <p className="text-muted-foreground mb-4 max-w-sm mx-auto">
-              {t('dashboard.org.empty.body')}
-            </p>
-            <Badge variant="outline">{t('dashboard.org.empty.badge')}</Badge>
-          </CardContent>
-        </Card>
+      </div>
+    </div>
+  )
+}
+
+function ChartSkeleton({ height }: { height: number }) {
+  return (
+    <div
+      className="w-full rounded-lg bg-secondary/30 animate-pulse"
+      style={{ height }}
+    />
+  )
+}
+
+function ChartEmpty({
+  t,
+}: {
+  t: (key: string, vars?: Record<string, string | number>) => string
+}) {
+  return (
+    <div className="text-center py-8">
+      <p className="text-sm text-muted-foreground">
+        {t('dashboard.charts.empty')}
+      </p>
+    </div>
+  )
+}
+
+function ChartError({
+  message,
+  t,
+}: {
+  message: string
+  t: (key: string, vars?: Record<string, string | number>) => string
+}) {
+  return (
+    <div className="flex items-start gap-2 rounded-lg border border-destructive/30 bg-destructive/10 p-3">
+      <AlertCircle className="h-4 w-4 text-destructive shrink-0 mt-0.5" />
+      <div className="space-y-1 min-w-0">
+        <p className="text-sm font-medium text-foreground">
+          {t('dashboard.charts.error.title')}
+        </p>
+        <p className="text-xs text-muted-foreground break-words">{message}</p>
       </div>
     </div>
   )

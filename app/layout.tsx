@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/next'
 import { Navigation } from '@/components/navigation'
 import { Footer } from '@/components/footer'
+import { Toaster } from '@/components/ui/sonner'
 import { LocaleProvider } from '@/lib/i18n/locale-provider'
 import { DEFAULT_LOCALE } from '@/lib/i18n/dictionary'
 import { AuthProvider } from '@/lib/auth/auth-provider'
@@ -51,6 +52,7 @@ export default function RootLayout({
             <Navigation />
             <main className="flex-1 pt-16">{children}</main>
             <Footer />
+            <Toaster />
             {process.env.NODE_ENV === 'production' && <Analytics />}
           </AuthProvider>
         </LocaleProvider>

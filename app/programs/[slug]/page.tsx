@@ -42,7 +42,11 @@ import { FormattedDate } from '@/components/formatted-date'
 import { useT } from '@/lib/i18n/locale-provider'
 import { useProgram, usePrograms } from '@/lib/data/hooks'
 import { cn, formatAZN, formatAZNRange } from '@/lib/utils'
+import { useAuth } from '@/lib/auth/auth-provider'
+import { useSavedProgramIds } from '@/lib/data/saved-programs'
 import { ReportSubmissionModal } from '@/components/report-submission-modal'
+import { toast } from 'sonner'
+import { BookmarkCheck } from 'lucide-react'
 
 const statusColors = {
   active: 'bg-success/20 text-success border-success/30',
@@ -75,9 +79,67 @@ export default function ProgramDetailPage({
   const { slug } = use(params)
   const t = useT()
   const [isReportModalOpen, setIsReportModalOpen] = useState(false)
+  const { session } = useAuth()
+  const isResearcher = session?.role === 'researcher'
+  const isOrganization = session?.role === 'organization'
 
   const { data: program, loading } = useProgram(slug)
   const { data: allPrograms } = usePrograms()
+
+  const { isSaved, toggle: toggleSaved } = useSavedProgramIds(
+    isResearcher ? session?.userId : null,
+  )
+  const programIsSaved = program ? isSaved(program.id) : false
+
+  const handleBookmark = () => {
+    if (!program) return
+    if (!session) {
+      toast.message(t('program.actions.bookmark.signinTitle'), {
+        description: t('program.actions.bookmark.signinBody'),
+      })
+      return
+    }
+    if (!isResearcher) {
+      toast.message(t('program.actions.bookmark.researcherOnlyTitle'), {
+        description: t('program.actions.bookmark.researcherOnlyBody'),
+      })
+      return
+    }
+    const nowSaved = toggleSaved(program.id)
+    toast.success(
+      nowSaved
+        ? t('program.actions.bookmark.added')
+        : t('program.actions.bookmark.removed'),
+      {
+        description: program.name,
+      },
+    )
+  }
+
+  const handleShare = async () => {
+    if (typeof window === 'undefined' || !program) return
+    const url = `${window.location.origin}/programs/${program.slug}`
+    const shareData = {
+      title: `${program.name} — HackTheBug`,
+      text: program.description,
+      url,
+    }
+    try {
+      if (typeof navigator !== 'undefined' && navigator.share) {
+        await navigator.share(shareData)
+        return
+      }
+    } catch (err) {
+      // Cancellation by the user — silently ignore.
+      if (err instanceof Error && err.name === 'AbortError') return
+    }
+    try {
+      await navigator.clipboard.writeText(url)
+      toast.success(t('program.actions.share.copied'), { description: url })
+    } catch {
+      toast.error(t('program.actions.share.failed'))
+    }
+  }
 
   if (loading) {
     return (
@@ -207,17 +269,49 @@ export default function ProgramDetailPage({
                 </div>
               </div>
               <div className="flex gap-2">
+                {isOrganization ? (
+                  <Button
+                    variant="outline"
+                    disabled
+                    className="flex-1 sm:flex-none"
+                    title={t('program.actions.submit.orgDisabled')}
+                  >
+                    <FileText className="h-4 w-4 mr-2" />
+                    {t('program.actions.submit.orgLabel')}
+                  </Button>
+                ) : (
+                  <Button
+                    onClick={() => setIsReportModalOpen(true)}
+                    className="flex-1 sm:flex-none"
+                  >
+                    <FileText className="h-4 w-4 mr-2" />
+                    {t('program.actions.submit')}
+                  </Button>
+                )}
+                {!isOrganization && (
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={handleBookmark}
+                    aria-label={t('program.actions.bookmark.label')}
+                    aria-pressed={programIsSaved}
+                    className={cn(
+                      programIsSaved && 'border-primary/50 bg-primary/10',
+                    )}
+                  >
+                    {programIsSaved ? (
+                      <BookmarkCheck className="h-4 w-4 text-primary" />
+                    ) : (
+                      <Bookmark className="h-4 w-4" />
+                    )}
+                  </Button>
+                )}
                 <Button
-                  onClick={() => setIsReportModalOpen(true)}
-                  className="flex-1 sm:flex-none"
+                  variant="outline"
+                  size="icon"
+                  onClick={handleShare}
+                  aria-label={t('program.actions.share.label')}
                 >
-                  <FileText className="h-4 w-4 mr-2" />
-                  {t('program.actions.submit')}
-                </Button>
-                <Button variant="outline" size="icon">
-                  <Bookmark className="h-4 w-4" />
-                </Button>
-                <Button variant="outline" size="icon">
                   <Share2 className="h-4 w-4" />
                 </Button>
               </div>

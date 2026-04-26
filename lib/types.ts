@@ -133,27 +133,6 @@ export interface Report {
   weaknessType: string
 }
 
-export interface OrgDashboardStats {
-  totalReports: number
-  openReports: number
-  avgTriageTime: string
-  criticalFindings: number
-  rewardsPaid: number
-  resolvedThisMonth: number
-}
-
-export interface ChartDataPoint {
-  name: string
-  value: number
-  fill?: string
-}
-
-export interface TimelineDataPoint {
-  month: string
-  reports: number
-  resolved?: number
-}
-
 export interface PlatformStats {
   activePrograms: number
   verifiedResearchers: number

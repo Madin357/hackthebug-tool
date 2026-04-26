@@ -16,7 +16,15 @@ import {
   listReportsForResearcher,
 } from '@/lib/supabase/queries/reports'
 import {
+  getOrganizationActivity,
+  getOrganizationChartData,
+  getOrganizationDashboardStats,
+  getResearcherChartData,
   getResearcherDashboardStats,
+  type OrganizationChartData,
+  type OrganizationDashboardStats,
+  type OrgActivityItem,
+  type ResearcherChartData,
   type ResearcherDashboardStats,
 } from '@/lib/supabase/queries/dashboard'
 import type { Program, Report, Researcher } from '@/lib/types'
@@ -170,5 +178,58 @@ export function useResearcherDashboardStats(
         ? getResearcherDashboardStats(client, researcherId)
         : Promise.resolve<ResearcherDashboardStats | null>(null),
     [researcherId],
+  )
+}
+
+export function useResearcherChartData(
+  researcherId: string | null | undefined,
+): AsyncState<ResearcherChartData | null> {
+  const client = useMemo(() => getSupabaseClient(), [])
+  return useAsync(
+    () =>
+      researcherId
+        ? getResearcherChartData(client, researcherId)
+        : Promise.resolve<ResearcherChartData | null>(null),
+    [researcherId],
+  )
+}
+
+export function useOrganizationDashboardStats(
+  organizationId: string | null | undefined,
+): AsyncState<OrganizationDashboardStats | null> {
+  const client = useMemo(() => getSupabaseClient(), [])
+  return useAsync(
+    () =>
+      organizationId
+        ? getOrganizationDashboardStats(client, organizationId)
+        : Promise.resolve<OrganizationDashboardStats | null>(null),
+    [organizationId],
+  )
+}
+
+export function useOrganizationChartData(
+  organizationId: string | null | undefined,
+): AsyncState<OrganizationChartData | null> {
+  const client = useMemo(() => getSupabaseClient(), [])
+  return useAsync(
+    () =>
+      organizationId
+        ? getOrganizationChartData(client, organizationId)
+        : Promise.resolve<OrganizationChartData | null>(null),
+    [organizationId],
+  )
+}
+
+export function useOrganizationActivity(
+  organizationId: string | null | undefined,
+  limit = 6,
+): AsyncState<OrgActivityItem[]> {
+  const client = useMemo(() => getSupabaseClient(), [])
+  return useAsync(
+    () =>
+      organizationId
+        ? getOrganizationActivity(client, organizationId, limit)
+        : Promise.resolve<OrgActivityItem[]>([]),
+    [organizationId, limit],
   )
 }

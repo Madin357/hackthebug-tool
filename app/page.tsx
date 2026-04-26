@@ -26,6 +26,7 @@ import { SectionHeading } from '@/components/section-heading'
 import { ProgramCard } from '@/components/program-card'
 import { useT } from '@/lib/i18n/locale-provider'
 import { useFeaturedPrograms } from '@/lib/data/hooks'
+import { useAuth, dashboardPathForRole } from '@/lib/auth/auth-provider'
 import { platformStats } from '@/lib/mock-data'
 
 const fadeInUp = {
@@ -77,6 +78,11 @@ const roadmapPhases = [
 export default function HomePage() {
   const t = useT()
   const { data: featuredPrograms } = useFeaturedPrograms(3)
+  const { session } = useAuth()
+  const dashboardHref = session ? dashboardPathForRole(session.role) : '/login'
+  const dashboardCtaKey = session
+    ? 'home.cta.goToDashboard'
+    : 'home.cta.tryDashboard'
 
   return (
     <div className="relative">
@@ -489,9 +495,7 @@ export default function HomePage() {
                   </Link>
                 </Button>
                 <Button asChild variant="outline" size="lg">
-                  <Link href="/dashboard/researcher">
-                    {t('home.cta.tryDashboard')}
-                  </Link>
+                  <Link href={dashboardHref}>{t(dashboardCtaKey)}</Link>
                 </Button>
               </div>
               <p className="mt-6 text-xs text-muted-foreground">

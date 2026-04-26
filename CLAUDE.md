@@ -75,9 +75,31 @@ and `DATABASE_PLAN.md` for the schema reference.
   `useAuth().session.organizationId` before composing inserts —
   RLS will reject anything that doesn't match.
 - **Pages import from `lib/data/hooks.ts` for live data and from
-  `lib/mock-data.ts` only for the remaining static UI constants
-  (`industries`, `weaknessCategories`, dashboard chart data, KPI tiles).
+  `lib/mock-data.ts` only for the three remaining static UI constants
+  (`platformStats`, `industries`, `weaknessCategories`).
   Components don't import from either** — they take props.
+- **All charts must come from Supabase.** Every recharts surface in
+  the app reads from a query in `lib/supabase/queries/dashboard.ts`
+  (or its kin) via a hook in `lib/data/hooks.ts`. **Do not** hard‑code
+  chart data, do not read from `lib/mock-data.ts` for chart values,
+  do not show old mock numbers while loading. The pattern is
+  `data ? <Chart .../> : !data && error ? <ChartError/> : <ChartSkeleton/>`
+  with a `<ChartEmpty/>` for the all-zeros case. Researcher charts
+  must be scoped to the current researcher's `researcher_id`; org
+  charts must be scoped to programs whose `organization_id` matches
+  the current org session.
+- **Toasts:** use `import { toast } from 'sonner'` from any client
+  component. The `<Toaster>` is mounted once in `app/layout.tsx`.
+  Use `toast.success` for successful state-changing actions
+  (bookmark added, link copied), `toast.error` for failures,
+  `toast.message` for "Coming soon" placeholders. Toast titles +
+  descriptions go through `useT()` like every other UI string.
+- **Buttons must never be left dead.** Audit every clickable
+  element: it must either (a) navigate via `<Link>`, (b) submit
+  a form, (c) call a real handler that mutates state or fires
+  Supabase, or (d) toast a clear "Coming soon" / "Researchers
+  only" message. A button with `onClick=undefined` and no `href`
+  is a bug.
 - **Use `cn()` from `lib/utils.ts`** for conditional class strings. Don't
   hand‑concat with template strings.
 - **Reach for shadcn primitives** in `components/ui/` before hand‑rolling. If
@@ -164,6 +186,20 @@ decision and every line of copy should be defensible against that bar.
   - Keep the navigation honest — the `Navigation` component already hides
     the wrong dashboard's link when authenticated; if you add a new
     protected route, mirror that pattern.
+- **Role-aware buttons on public pages must conditionally render,
+  not just CSS-hide.** Anywhere a button only makes sense for one
+  role (Submit Report, Bookmark Program, Manage Program, Triage,
+  Reward), branch on `useAuth().session?.role` and either render
+  the alternate UI for the other role (e.g., a disabled
+  "Submitting is for researchers" placeholder) or omit the button
+  entirely. CSS-only `hidden` is brittle and doesn't survive
+  `pageSource`; conditional rendering also keeps the markup
+  honest in DevTools.
+- **Anonymous users get the public surface only.** Protected
+  pages (`/dashboard/*` etc.) live behind `RoleGate`. Public-page
+  buttons that require sign-in (Bookmark, Submit Report) must
+  prompt with a toast or link to `/login?next=<currentPath>`
+  instead of silently failing.
 - **Never claim auth or verification is real.** Don't add copy that says
   "verified user", "you are signed in securely", "your account is
   protected", etc. The current model is a demo, and SİMA verification is

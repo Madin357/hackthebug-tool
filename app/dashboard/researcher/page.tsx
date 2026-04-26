@@ -53,17 +53,16 @@ import { StatCard } from '@/components/stat-card'
 import { SeverityBadge } from '@/components/severity-badge'
 import { StatusBadge } from '@/components/status-badge'
 import { useT } from '@/lib/i18n/locale-provider'
-import { formatAZN } from '@/lib/utils'
+import { cn, formatAZN } from '@/lib/utils'
 import { useAuth } from '@/lib/auth/auth-provider'
 import {
   usePrograms,
+  useResearcherChartData,
   useResearcherDashboardStats,
   useResearcherReports,
 } from '@/lib/data/hooks'
-import {
-  researcherReportsTimeline,
-  severityDistribution,
-} from '@/lib/mock-data'
+import { useSavedProgramIds } from '@/lib/data/saved-programs'
+import { toast } from 'sonner'
 
 const badgeMeta = [
   { keySuffix: 'first', icon: Target, color: 'text-critical' },
@@ -79,10 +78,11 @@ export default function ResearcherDashboardPage() {
 
   const { data: programsData } = usePrograms()
   const allPrograms = programsData ?? []
+  const { ids: savedIds } = useSavedProgramIds(researcherId)
+  const savedPrograms = allPrograms.filter((p) => savedIds.includes(p.id))
   const recommendedPrograms = allPrograms
-    .filter((p) => p.status === 'active')
+    .filter((p) => p.status === 'active' && !savedIds.includes(p.id))
     .slice(0, 3)
-  const savedPrograms = allPrograms.slice(0, 2)
 
   const { data: reportsData } = useResearcherReports(researcherId)
   const reports = reportsData ?? []
@@ -90,6 +90,17 @@ export default function ResearcherDashboardPage() {
   const { data: stats, error: statsError } =
     useResearcherDashboardStats(researcherId)
   const statPlaceholder = '—'
+
+  const { data: charts, error: chartsError } =
+    useResearcherChartData(researcherId)
+  const timelineData = charts?.timeline ?? []
+  const severityData = charts?.severity ?? []
+  const severityHasData = severityData.some((s) => s.value > 0)
+
+  const handleViewAllReports = () =>
+    toast.message(t('dashboard.researcher.recent.toast.title'), {
+      description: t('dashboard.researcher.recent.toast.body'),
+    })
 
   return (
     <div className="py-8 sm:py-12">
@@ -202,32 +213,40 @@ export default function ResearcherDashboardPage() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <ResponsiveContainer width="100%" height={250}>
-                <BarChart data={researcherReportsTimeline}>
-                  <CartesianGrid
-                    strokeDasharray="3 3"
-                    className="stroke-border"
-                  />
-                  <XAxis
-                    dataKey="month"
-                    className="text-xs fill-muted-foreground"
-                  />
-                  <YAxis className="text-xs fill-muted-foreground" />
-                  <Tooltip
-                    contentStyle={{
-                      backgroundColor: 'var(--card)',
-                      border: '1px solid var(--border)',
-                      borderRadius: '8px',
-                    }}
-                    labelStyle={{ color: 'var(--foreground)' }}
-                  />
-                  <Bar
-                    dataKey="reports"
-                    fill="var(--primary)"
-                    radius={[4, 4, 0, 0]}
-                  />
-                </BarChart>
-              </ResponsiveContainer>
+              {chartsError ? (
+                <ChartError message={chartsError.message} t={t} />
+              ) : !charts ? (
+                <ChartSkeleton height={250} />
+              ) : timelineData.every((p) => p.reports === 0) ? (
+                <ChartEmpty t={t} />
+              ) : (
+                <ResponsiveContainer width="100%" height={250}>
+                  <BarChart data={timelineData}>
+                    <CartesianGrid
+                      strokeDasharray="3 3"
+                      className="stroke-border"
+                    />
+                    <XAxis
+                      dataKey="month"
+                      className="text-xs fill-muted-foreground"
+                    />
+                    <YAxis className="text-xs fill-muted-foreground" />
+                    <Tooltip
+                      contentStyle={{
+                        backgroundColor: 'var(--card)',
+                        border: '1px solid var(--border)',
+                        borderRadius: '8px',
+                      }}
+                      labelStyle={{ color: 'var(--foreground)' }}
+                    />
+                    <Bar
+                      dataKey="reports"
+                      fill="var(--primary)"
+                      radius={[4, 4, 0, 0]}
+                    />
+                  </BarChart>
+                </ResponsiveContainer>
+              )}
             </CardContent>
           </Card>
 
@@ -242,44 +261,60 @@ export default function ResearcherDashboardPage() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <ResponsiveContainer width="100%" height={200}>
-                <PieChart>
-                  <Pie
-                    data={severityDistribution.slice(0, 4)}
-                    cx="50%"
-                    cy="50%"
-                    innerRadius={50}
-                    outerRadius={80}
-                    paddingAngle={2}
-                    dataKey="value"
-                  >
-                    {severityDistribution.slice(0, 4).map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.fill} />
-                    ))}
-                  </Pie>
-                  <Tooltip
-                    contentStyle={{
-                      backgroundColor: 'var(--card)',
-                      border: '1px solid var(--border)',
-                      borderRadius: '8px',
-                    }}
-                  />
-                </PieChart>
-              </ResponsiveContainer>
-              <div className="flex flex-wrap justify-center gap-3 mt-4">
-                {severityDistribution.slice(0, 4).map((item) => (
-                  <div
-                    key={item.name}
-                    className="flex items-center gap-1.5 text-xs"
-                  >
-                    <div
-                      className="h-2 w-2 rounded-full"
-                      style={{ backgroundColor: item.fill }}
-                    />
-                    <span className="text-muted-foreground">{item.name}</span>
+              {chartsError ? (
+                <ChartError message={chartsError.message} t={t} />
+              ) : !charts ? (
+                <ChartSkeleton height={200} />
+              ) : !severityHasData ? (
+                <ChartEmpty t={t} />
+              ) : (
+                <>
+                  <ResponsiveContainer width="100%" height={200}>
+                    <PieChart>
+                      <Pie
+                        data={severityData.filter((s) => s.value > 0)}
+                        cx="50%"
+                        cy="50%"
+                        innerRadius={50}
+                        outerRadius={80}
+                        paddingAngle={2}
+                        dataKey="value"
+                      >
+                        {severityData
+                          .filter((s) => s.value > 0)
+                          .map((entry) => (
+                            <Cell key={entry.severity} fill={entry.fill} />
+                          ))}
+                      </Pie>
+                      <Tooltip
+                        contentStyle={{
+                          backgroundColor: 'var(--card)',
+                          border: '1px solid var(--border)',
+                          borderRadius: '8px',
+                        }}
+                      />
+                    </PieChart>
+                  </ResponsiveContainer>
+                  <div className="flex flex-wrap justify-center gap-3 mt-4">
+                    {severityData
+                      .filter((s) => s.value > 0)
+                      .map((item) => (
+                        <div
+                          key={item.severity}
+                          className="flex items-center gap-1.5 text-xs"
+                        >
+                          <div
+                            className="h-2 w-2 rounded-full"
+                            style={{ backgroundColor: item.fill }}
+                          />
+                          <span className="text-muted-foreground">
+                            {t(`severity.${item.severity}`)}
+                          </span>
+                        </div>
+                      ))}
                   </div>
-                ))}
-              </div>
+                </>
+              )}
             </CardContent>
           </Card>
         </div>
@@ -298,13 +333,25 @@ export default function ResearcherDashboardPage() {
                     {t('dashboard.researcher.recent.subtitle')}
                   </CardDescription>
                 </div>
-                <Button variant="outline" size="sm">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleViewAllReports}
+                >
                   {t('common.viewAll')}
                 </Button>
               </div>
             </CardHeader>
             <CardContent>
-              <Table>
+              {reports.length === 0 && (
+                <div className="text-center py-6">
+                  <FileText className="h-10 w-10 text-muted-foreground mx-auto mb-2" />
+                  <p className="text-sm text-muted-foreground">
+                    {t('dashboard.researcher.recent.empty')}
+                  </p>
+                </div>
+              )}
+              <Table className={cn(reports.length === 0 && 'hidden')}>
                 <TableHeader>
                   <TableRow>
                     <TableHead>
@@ -426,40 +473,54 @@ export default function ResearcherDashboardPage() {
                   <Bookmark className="h-5 w-5 text-primary" />
                   {t('dashboard.researcher.saved.title')}
                 </CardTitle>
-                <Button variant="ghost" size="sm">
-                  {t('common.viewAll')}
+                <Button variant="ghost" size="sm" asChild>
+                  <Link href="/programs">{t('common.viewAll')}</Link>
                 </Button>
               </div>
             </CardHeader>
             <CardContent>
-              <div className="space-y-3">
-                {savedPrograms.map((program) => (
-                  <Link
-                    key={program.id}
-                    href={`/programs/${program.slug}`}
-                    className="flex items-center justify-between p-3 rounded-lg bg-secondary/50 hover:bg-secondary transition-colors"
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                        <Globe className="h-5 w-5 text-primary" />
+              {savedPrograms.length === 0 ? (
+                <div className="text-center py-6">
+                  <Bookmark className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
+                  <p className="text-sm text-muted-foreground mb-3">
+                    {t('dashboard.researcher.saved.empty')}
+                  </p>
+                  <Button asChild variant="outline" size="sm">
+                    <Link href="/programs">
+                      {t('dashboard.researcher.saved.browse')}
+                    </Link>
+                  </Button>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {savedPrograms.map((program) => (
+                    <Link
+                      key={program.id}
+                      href={`/programs/${program.slug}`}
+                      className="flex items-center justify-between p-3 rounded-lg bg-secondary/50 hover:bg-secondary transition-colors"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                          <Globe className="h-5 w-5 text-primary" />
+                        </div>
+                        <div>
+                          <p className="font-medium text-foreground text-sm">
+                            {program.name}
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            {program.organization}
+                          </p>
+                        </div>
                       </div>
-                      <div>
-                        <p className="font-medium text-foreground text-sm">
-                          {program.name}
-                        </p>
-                        <p className="text-xs text-muted-foreground">
-                          {program.organization}
-                        </p>
-                      </div>
-                    </div>
-                    <Badge variant="outline" className="text-xs">
-                      {t('dashboard.researcher.maxLabel', {
-                        amount: program.rewardRange.max.toLocaleString(),
-                      })}
-                    </Badge>
-                  </Link>
-                ))}
-              </div>
+                      <Badge variant="outline" className="text-xs">
+                        {t('dashboard.researcher.maxLabel', {
+                          amount: program.rewardRange.max.toLocaleString(),
+                        })}
+                      </Badge>
+                    </Link>
+                  ))}
+                </div>
+              )}
             </CardContent>
           </Card>
 
@@ -476,38 +537,89 @@ export default function ResearcherDashboardPage() {
               </div>
             </CardHeader>
             <CardContent>
-              <div className="space-y-3">
-                {recommendedPrograms.map((program) => (
-                  <Link
-                    key={program.id}
-                    href={`/programs/${program.slug}`}
-                    className="flex items-center justify-between p-3 rounded-lg bg-secondary/50 hover:bg-secondary transition-colors"
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                        <Target className="h-5 w-5 text-primary" />
-                      </div>
-                      <div>
-                        <p className="font-medium text-foreground text-sm">
-                          {program.name}
-                        </p>
-                        <div className="flex items-center gap-2 mt-0.5">
-                          <Badge variant="secondary" className="text-xs">
-                            {program.industry}
-                          </Badge>
-                          <span className="text-xs text-muted-foreground">
-                            {program.assetsCount}
-                          </span>
+              {recommendedPrograms.length === 0 ? (
+                <div className="text-center py-6">
+                  <p className="text-sm text-muted-foreground">
+                    {t('dashboard.researcher.recommended.empty')}
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {recommendedPrograms.map((program) => (
+                    <Link
+                      key={program.id}
+                      href={`/programs/${program.slug}`}
+                      className="flex items-center justify-between p-3 rounded-lg bg-secondary/50 hover:bg-secondary transition-colors"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                          <Target className="h-5 w-5 text-primary" />
+                        </div>
+                        <div>
+                          <p className="font-medium text-foreground text-sm">
+                            {program.name}
+                          </p>
+                          <div className="flex items-center gap-2 mt-0.5">
+                            <Badge variant="secondary" className="text-xs">
+                              {program.industry}
+                            </Badge>
+                            <span className="text-xs text-muted-foreground">
+                              {program.assetsCount}
+                            </span>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                    <ArrowRight className="h-4 w-4 text-muted-foreground" />
-                  </Link>
-                ))}
-              </div>
+                      <ArrowRight className="h-4 w-4 text-muted-foreground" />
+                    </Link>
+                  ))}
+                </div>
+              )}
             </CardContent>
           </Card>
         </div>
+      </div>
+    </div>
+  )
+}
+
+function ChartSkeleton({ height }: { height: number }) {
+  return (
+    <div
+      className="w-full rounded-lg bg-secondary/30 animate-pulse"
+      style={{ height }}
+    />
+  )
+}
+
+function ChartEmpty({
+  t,
+}: {
+  t: (key: string, vars?: Record<string, string | number>) => string
+}) {
+  return (
+    <div className="text-center py-8">
+      <p className="text-sm text-muted-foreground">
+        {t('dashboard.charts.empty')}
+      </p>
+    </div>
+  )
+}
+
+function ChartError({
+  message,
+  t,
+}: {
+  message: string
+  t: (key: string, vars?: Record<string, string | number>) => string
+}) {
+  return (
+    <div className="flex items-start gap-2 rounded-lg border border-destructive/30 bg-destructive/10 p-3">
+      <AlertCircle className="h-4 w-4 text-destructive shrink-0 mt-0.5" />
+      <div className="space-y-1 min-w-0">
+        <p className="text-sm font-medium text-foreground">
+          {t('dashboard.charts.error.title')}
+        </p>
+        <p className="text-xs text-muted-foreground break-words">{message}</p>
       </div>
     </div>
   )
