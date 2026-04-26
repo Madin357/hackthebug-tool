@@ -1,7 +1,11 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type { Database, ProfileRow } from '@/lib/supabase/database.types'
-import type { Researcher } from '@/lib/types'
+import type { ReportStatus, Researcher, Severity } from '@/lib/types'
 import { mapResearcher } from '@/lib/supabase/mappers'
+import {
+  computeResearcherStats,
+  type ScoringReport,
+} from '@/lib/scoring/researcher-stats'
 
 type Client = SupabaseClient<Database>
 
@@ -39,22 +43,69 @@ export async function getProfileByEmail(
 }
 
 /**
- * Researcher leaderboard. Returns researchers ordered by points descending,
- * with a 1-based `rank` attached. Only `role = 'researcher'`.
+ * Researcher leaderboard. Pulls every researcher profile and every
+ * report in parallel, then computes scoring fields (points, reputation,
+ * report counts, total rewards) from the reports via
+ * `computeResearcherStats`. The persisted `profiles.points/...` columns
+ * are snapshots and intentionally ignored — the helper is the single
+ * source of truth, see CLAUDE.md > "Researcher stats are derived from
+ * reports". Final order is by computed points descending; rank is
+ * 1-based on that order.
  */
 export async function listResearchers(
   client: Client,
   limit = 50,
 ): Promise<Researcher[]> {
-  const { data, error } = await client
-    .from('profiles')
-    .select('*')
-    .eq('role', 'researcher')
-    .order('points', { ascending: false })
-    .limit(limit)
+  const [profilesRes, reportsRes] = await Promise.all([
+    client
+      .from('profiles')
+      .select('*')
+      .eq('role', 'researcher')
+      .limit(limit),
+    client
+      .from('reports')
+      .select('researcher_id, severity, status, reward_amount'),
+  ])
 
-  if (error) throw error
-  return (data ?? []).map((row, index) => mapResearcher(row, index + 1))
+  if (profilesRes.error) throw profilesRes.error
+  if (reportsRes.error) throw reportsRes.error
+
+  const profiles = (profilesRes.data ?? []) as ProfileRow[]
+  const reportRows = (reportsRes.data ?? []) as Array<{
+    researcher_id: string | null
+    severity: Severity
+    status: ReportStatus
+    reward_amount: number | null
+  }>
+
+  const byResearcher = new Map<string, ScoringReport[]>()
+  for (const r of reportRows) {
+    if (!r.researcher_id) continue
+    const list = byResearcher.get(r.researcher_id) ?? []
+    list.push({
+      severity: r.severity,
+      status: r.status,
+      reward_amount: r.reward_amount,
+    })
+    byResearcher.set(r.researcher_id, list)
+  }
+
+  const enriched = profiles.map((row) => ({
+    row,
+    stats: computeResearcherStats(byResearcher.get(row.id) ?? []),
+  }))
+
+  enriched.sort((a, b) => {
+    if (b.stats.points !== a.stats.points) return b.stats.points - a.stats.points
+    if (b.stats.reportsAccepted !== a.stats.reportsAccepted) {
+      return b.stats.reportsAccepted - a.stats.reportsAccepted
+    }
+    return a.row.display_name.localeCompare(b.row.display_name)
+  })
+
+  return enriched.map(({ row, stats }, index) =>
+    mapResearcher(row, index + 1, stats),
+  )
 }
 
 /**

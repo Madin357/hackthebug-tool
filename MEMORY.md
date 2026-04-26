@@ -437,6 +437,90 @@ To be implemented after the hackathon, in roughly this order:
 
 ## Last Actions
 
+### 2026‑04‑26 — Researcher stats now derived from reports
+
+- **What:** Replaced the static `profiles.points / reputation /
+  reports_accepted / reports_submitted / total_rewards` snapshot reads
+  with values computed from each researcher's actual `reports`. The
+  five fields now flow through one helper —
+  `lib/scoring/researcher-stats.ts > computeResearcherStats(reports)`
+  — wired into both query seams: `listResearchers` joins all
+  researcher profiles with all reports in two parallel round-trips,
+  groups reports by `researcher_id`, computes stats, sorts by points
+  desc, and produces a 1-based rank; `getResearcherDashboardStats`
+  computes the same per-researcher stats for the signed-in
+  researcher and re-derives the rank by computing every
+  researcher's points from the same dataset (so rank can never
+  disagree with the leaderboard order). `mapResearcher` now requires
+  a `ResearcherStats` argument so the snapshot columns can never
+  silently leak into the UI.
+- **Points formula:** `sum over reports of SEVERITY_POINTS[severity]
+  * STATUS_MULTIPLIER[status]`, rounded to int. Severity bases —
+  `informational` 10, `low` 25, `medium` 75, `high` 200, `critical`
+  500. Status multipliers — `rewarded` 1.5, `resolved` 1.2,
+  `triaged` 0.6, `pending` 0.3, `duplicate` 0.1, `invalid` 0,
+  `draft` 0.
+- **Reputation formula:** `round(min(100, (acceptedOrRewarded /
+  total) * 80 + min(total, 20)))` where `acceptedOrRewarded` =
+  reports with status `resolved` or `rewarded`. Returns 0 when
+  `total === 0` (so brand-new accounts don't land at a misleading
+  20).
+- **Why:** CyberNomad and the other seeded researchers had snapshot
+  values (points / reputation) that no longer matched their actual
+  reports — for example, a researcher could sit at 14,200 points on
+  the leaderboard while having only one or two reports accepted in
+  the database. The new derivation pass means the leaderboard, the
+  researcher dashboard KPI tiles, and the org "Top Researchers"
+  widget all reflect the same arithmetic on the same source rows.
+- **Files touched:**
+  - **Added:** `lib/scoring/researcher-stats.ts` (helper +
+    `SEVERITY_POINTS` / `STATUS_MULTIPLIER` constants),
+    `supabase/recalc_researcher_stats.sql` (mirrors the formulas in
+    SQL so the persisted snapshot columns can be re-baked).
+  - **Modified:** `lib/supabase/mappers.ts > mapResearcher` (now
+    takes a required `ResearcherStats` argument);
+    `lib/supabase/queries/profiles.ts > listResearchers` (parallel
+    profiles + reports fetch, group, derive, sort);
+    `lib/supabase/queries/dashboard.ts >
+    getResearcherDashboardStats` (uses the helper for KPIs +
+    re-derives rank).
+  - **Doc:** `CLAUDE.md` got the rule under section 2;
+    `MEMORY.md` got this entry.
+- **Action required from the user:** the in-app UI is now correct
+  without any DB change (queries derive on every read), but the
+  `profiles` snapshot columns are still stale in the database.
+  Run `supabase/recalc_researcher_stats.sql` in the Supabase SQL
+  Editor once to re-bake them; the trailing `SELECT` in the file
+  prints the result. Re-run any time the seed changes.
+- **Next step:** Optional — promote the recalc into a Supabase
+  trigger on `INSERT/UPDATE/DELETE OF reports` so snapshots stay
+  fresh automatically. Until then the frontend is the safe layer
+  and the SQL is a manual reset.
+
+### 2026‑04‑26 — Codified researcher scoring rules
+
+- **What:** Added a new "Researcher stats are derived from reports,
+  not stored as truth" rule to `CLAUDE.md > section 2 (Coding rules)`
+  that locks in the canonical scoring formulas before the
+  implementation pass that follows. The five researcher fields
+  (`reportsSubmitted`, `reportsAccepted`, `totalRewards`, `points`,
+  `reputation`) must always be computed from the `reports` table via
+  `lib/scoring/researcher-stats.ts > computeResearcherStats()`; the
+  same-named columns on `profiles` are snapshots only.
+- **Why:** Profile scoring values (e.g. CyberNomad's points) drifted
+  from the actual reports because they were stored as static columns
+  and never recomputed. Codifying the rule first prevents future
+  Claude sessions from re-introducing hardcoded values, and makes the
+  implementation diff small and predictable.
+- **Files touched:** `CLAUDE.md` (one new bullet under coding rules
+  with the Points and Reputation formulas + a pointer to the SQL
+  recalc).
+- **Next step:** Implement `lib/scoring/researcher-stats.ts`, route
+  `listResearchers` / `getResearcherById` through it, ship the SQL
+  recalc file, and verify the leaderboard / dashboard / researcher
+  cards reflect the computed values. Then add a separate "Last
+  Actions" entry summarizing the implementation.
+
 ### 2026‑04‑26 — Country flag emoji on the leaderboard
 
 - **What:** Added a small country flag next to each researcher's

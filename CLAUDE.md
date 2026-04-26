@@ -88,6 +88,38 @@ and `DATABASE_PLAN.md` for the schema reference.
   must be scoped to the current researcher's `researcher_id`; org
   charts must be scoped to programs whose `organization_id` matches
   the current org session.
+- **Researcher stats are derived from reports, not stored as truth.**
+  The five scoring fields on a researcher — `reportsSubmitted`,
+  `reportsAccepted`, `totalRewards`, `points`, `reputation` — are
+  always computed from that researcher's actual `reports` rows via
+  the shared helper `computeResearcherStats(reports)` in
+  `lib/scoring/researcher-stats.ts`. The `profiles` table columns of
+  the same names are scoring snapshots that can drift; never read
+  them directly into the UI. Queries that surface a `Researcher`
+  (e.g. `listResearchers`, `getResearcherById`) are responsible for
+  joining the reports and overwriting the snapshot fields with the
+  computed values before returning.
+
+  **Points formula:** `sum over reports of (severity_base *
+  status_multiplier)`, rounded to an integer.
+  - severity bases — `informational` 10, `low` 25, `medium` 75,
+    `high` 200, `critical` 500
+  - status multipliers — `rewarded` 1.5, `resolved` 1.2,
+    `triaged` 0.6, `pending` 0.3, `duplicate` 0.1, `invalid` 0,
+    `draft` 0
+
+  **Reputation formula** (0–100, integer):
+  `round(min(100, (acceptedOrRewarded / total) * 80 + min(total, 20)))`
+  where `acceptedOrRewarded` counts reports whose status is
+  `resolved` or `rewarded`. Returns `0` when `total === 0`.
+
+  When the persisted snapshot columns drift, run
+  `supabase/recalc_researcher_stats.sql` in the Supabase SQL Editor
+  to re-snapshot every profile from the `reports` table — the SQL
+  uses the same severity bases and status multipliers as the TS
+  helper. Add new constants in only one place (`SEVERITY_POINTS`
+  and `STATUS_MULTIPLIER` in the helper) and mirror them in the SQL
+  file in the same change.
 - **Every recharts `<Tooltip />` must spread `chartTooltipProps`**
   from `lib/charts/tooltip.ts`. Recharts colors each item line in
   the bar/line/cell's own fill by default — that becomes invisible

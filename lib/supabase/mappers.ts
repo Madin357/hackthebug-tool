@@ -19,6 +19,7 @@ import type {
   ProgramScopeRow,
   ReportRow,
 } from '@/lib/supabase/database.types'
+import type { ResearcherStats } from '@/lib/scoring/researcher-stats'
 
 /**
  * DB row → app domain type. The frontend components were written against
@@ -146,8 +147,20 @@ export function mapProgramDetail(row: ProgramRowWithRelations): Program {
   return program
 }
 
-/** Researcher card / leaderboard / profile lookup. */
-export function mapResearcher(row: ProfileRow, rank: number): Researcher {
+/**
+ * Researcher card / leaderboard / profile lookup.
+ *
+ * `stats` is the canonical source of truth for the five scoring fields
+ * (`points`, `reputation`, `reports*`, `totalRewards`) and MUST be
+ * provided by the query layer — the `profiles` table columns of the
+ * same names are snapshots that drift. See
+ * `lib/scoring/researcher-stats.ts` for how they're computed.
+ */
+export function mapResearcher(
+  row: ProfileRow,
+  rank: number,
+  stats: ResearcherStats,
+): Researcher {
   return {
     id: row.id,
     name: row.display_name,
@@ -155,14 +168,14 @@ export function mapResearcher(row: ProfileRow, rank: number): Researcher {
     avatar: row.avatar_url ?? undefined,
     country: row.country,
     countryCode: row.country_code,
-    points: row.points,
-    reportsAccepted: row.reports_accepted,
-    reportsSubmitted: row.reports_submitted,
-    reputation: row.reputation,
+    points: stats.points,
+    reportsAccepted: stats.reportsAccepted,
+    reportsSubmitted: stats.reportsSubmitted,
+    reputation: stats.reputation,
     rank,
     badges: [],
     joinedDate: row.joined_at,
-    totalRewards: row.total_rewards,
+    totalRewards: stats.totalRewards,
   }
 }
 

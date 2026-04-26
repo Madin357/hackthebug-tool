@@ -1,6 +1,10 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type { Database } from '@/lib/supabase/database.types'
 import type { ReportStatus, Severity } from '@/lib/types'
+import {
+  computeResearcherStats,
+  type ScoringReport,
+} from '@/lib/scoring/researcher-stats'
 
 type Client = SupabaseClient<Database>
 
@@ -29,84 +33,90 @@ const PENDING_STATUSES: ReportStatus[] = ['pending', 'triaged']
 
 /**
  * Aggregates the six KPI tiles on the researcher dashboard for a single
- * researcher in three parallel round-trips:
+ * researcher in two parallel round-trips:
  *
- *   1. The researcher's own profile row (for `points` / `reputation`).
- *   2. Every report they own (for the count + sum buckets).
- *   3. All researcher profiles ordered by `points` desc (for rank).
+ *   1. Every report they own — feeds `computeResearcherStats()` for the
+ *      five derived fields (totalReports, acceptedReports, totalRewards,
+ *      points, reputation). `pendingTriage` is also derived from the
+ *      same rows.
+ *   2. Every researcher's reports (lightweight projection) so we can
+ *      compute everyone's points and rank the current researcher
+ *      against them.
  *
- * Rank is computed by `findIndex` on the points-ordered list — sufficient
- * for the demo dataset (~10 researchers). At scale this should switch to
- * `count(*) WHERE points > $me.points + 1` to avoid the round-trip.
+ * The persisted `profiles.points / profiles.reputation` columns are
+ * intentionally not read — the helper is the single source of truth
+ * (see CLAUDE.md > "Researcher stats are derived from reports").
+ * Sufficient for the demo dataset (~10 researchers, single-digit
+ * report rows each); at scale, replace the second round-trip with a
+ * SQL view or RPC that returns ranked points.
  */
 export async function getResearcherDashboardStats(
   client: Client,
   researcherId: string,
 ): Promise<ResearcherDashboardStats> {
-  const [profileRes, reportsRes, rankingRes] = await Promise.all([
-    client
-      .from('profiles')
-      .select('id, points, reputation, total_rewards')
-      .eq('id', researcherId)
-      .maybeSingle(),
+  const [reportsRes, allReportsRes] = await Promise.all([
     client
       .from('reports')
-      .select('status, reward_amount')
+      .select('severity, status, reward_amount')
       .eq('researcher_id', researcherId),
     client
-      .from('profiles')
-      .select('id, points')
-      .eq('role', 'researcher')
-      .order('points', { ascending: false }),
+      .from('reports')
+      .select('researcher_id, severity, status, reward_amount')
+      .not('researcher_id', 'is', null),
   ])
 
-  if (profileRes.error) throw profileRes.error
   if (reportsRes.error) throw reportsRes.error
-  if (rankingRes.error) throw rankingRes.error
+  if (allReportsRes.error) throw allReportsRes.error
 
-  const profile = profileRes.data
-  const reports = (reportsRes.data ?? []) as Array<{
+  const myReports = (reportsRes.data ?? []) as Array<{
+    severity: Severity
     status: ReportStatus
     reward_amount: number | null
   }>
-  const ranking = (rankingRes.data ?? []) as Array<{
-    id: string
-    points: number
-  }>
 
-  const totalReports = reports.length
-  const acceptedReports = reports.filter((r) =>
-    ACCEPTED_STATUSES.includes(r.status),
-  ).length
-  const pendingTriage = reports.filter((r) =>
+  const myStats = computeResearcherStats(myReports)
+  const pendingTriage = myReports.filter((r) =>
     PENDING_STATUSES.includes(r.status),
   ).length
-  const totalRewards = reports.reduce(
-    (sum, r) =>
-      sum + (typeof r.reward_amount === 'number' ? r.reward_amount : 0),
-    0,
-  )
 
-  // Reputation: prefer the DB value; if missing or zero, derive a safe
-  // fallback from the accepted/submitted ratio. Brand-new researchers
-  // with zero reports get 0.
-  const dbReputation = profile?.reputation ?? 0
-  const reputationScore =
-    dbReputation > 0
-      ? dbReputation
-      : totalReports > 0
-        ? Math.round((acceptedReports / totalReports) * 100)
-        : 0
+  // Rank: compute every researcher's points from the same dataset.
+  const allReportsRows = (allReportsRes.data ?? []) as Array<{
+    researcher_id: string | null
+    severity: Severity
+    status: ReportStatus
+    reward_amount: number | null
+  }>
+  const byResearcher = new Map<string, ScoringReport[]>()
+  for (const r of allReportsRows) {
+    if (!r.researcher_id) continue
+    const list = byResearcher.get(r.researcher_id) ?? []
+    list.push({
+      severity: r.severity,
+      status: r.status,
+      reward_amount: r.reward_amount,
+    })
+    byResearcher.set(r.researcher_id, list)
+  }
+  // Make sure the current researcher is in the ranking even when they
+  // have zero reports — otherwise a brand-new account would skip the
+  // bottom of the list and pretend to be unranked.
+  if (!byResearcher.has(researcherId)) byResearcher.set(researcherId, [])
 
-  const rankIndex = ranking.findIndex((r) => r.id === researcherId)
-  const rank = rankIndex >= 0 ? rankIndex + 1 : ranking.length + 1
+  const ranked = Array.from(byResearcher.entries())
+    .map(([id, reports]) => ({
+      id,
+      points: computeResearcherStats(reports).points,
+    }))
+    .sort((a, b) => b.points - a.points)
+  const rankIndex = ranked.findIndex((r) => r.id === researcherId)
+  const rank = rankIndex >= 0 ? rankIndex + 1 : ranked.length + 1
 
   return {
-    totalReports,
-    acceptedReports,
+    totalReports: myStats.reportsSubmitted,
+    acceptedReports: myStats.reportsAccepted,
     pendingTriage,
-    totalRewards,
-    reputationScore,
+    totalRewards: myStats.totalRewards,
+    reputationScore: myStats.reputation,
     rank,
   }
 }
