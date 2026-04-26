@@ -37,9 +37,13 @@ lands.
   - Components that consume `useT()` must be `'use client'`.
   - For interpolation, the dict supports `{var}` placeholders and `t()`
     accepts a vars object: `t('report.description', { program: name })`.
-  - For locale‑aware date formatting, use `useLocale()` to get `locale`,
-    then pass `locale === 'az' ? 'az-AZ' : 'en-US'` to
-    `toLocaleDateString`.
+  - For locale‑aware date formatting, use `<FormattedDate>` from
+    `components/formatted-date.tsx`. Do **not** call
+    `toLocaleDateString('az-AZ', …)` directly inside a component — Node's
+    bundled ICU data falls back to `M04 20` while the browser produces
+    `20 apr`, causing a hydration mismatch. `FormattedDate` renders
+    `en-US` on the server and on first client paint, then swaps after
+    mount.
   - **Do not** hard‑code English (or Azerbaijani) strings in pages or
     components. The only exceptions are: brand name `HackTheBug`, mock
     data values (program names, organization names, industry names,

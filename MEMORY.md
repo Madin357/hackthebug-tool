@@ -197,6 +197,7 @@ hackthebug-tool/
 | `Footer`                         | 4‑column footer: brand + AZ‑citizens‑only badge + social, Platform links, Resources links, Legal links, "Hackathon Demo" tag. |
 | `LocaleSwitcher`                 | EN/AZ toggle group; toggles `useLocale().setLocale`, persists to `localStorage` (`htb-locale`). Used in Navigation desktop bar + mobile drawer. |
 | `RoleGate`                       | Client wrapper for protected pages. Shows a loader while `useAuth()` resolves, redirects unauthenticated users to `/login?next=…`, shows an inline "Access denied" card with link to the user's own dashboard + logout when the role doesn't match. |
+| `FormattedDate`                  | Renders `en-US` on the server + first client paint, then swaps to the user's locale after mount. Use this anywhere a locale-aware date is shown — formatting `az-AZ` directly during SSR causes a hydration mismatch because Node.js Intl falls back to `M04 20` while the browser produces `20 apr`. |
 | `ProgramCard`                    | Animated card showing org icon, name, status, type/industry/tags, rewards range, asset count, last updated, "View Program" CTA, featured ribbon. Used on home and `/programs`. |
 | `SectionHeading`                 | Optional badge + h2 + subtitle, optionally centered, with fade‑in‑on‑view animation.     |
 | `SeverityBadge`                  | Pill with colored dot for critical/high/medium/low/informational.                        |
@@ -349,6 +350,34 @@ To be implemented after the hackathon, in roughly this order:
   and the `LOCALES` array.
 
 ## Last Actions
+
+### 2026‑04‑26 — Fix locale-date hydration mismatch via `<FormattedDate>`
+
+- **What:** Dates rendered via `toLocaleDateString('az-AZ', …)` produced a
+  hydration mismatch — Node.js's bundled ICU data falls back to `M04 20`
+  for `az-AZ`, but the browser renders `20 apr`. Added
+  `components/formatted-date.tsx` which renders `en-US` on the server and
+  on first client paint, then swaps to the user's locale after a
+  `useEffect` mount flag. Replaced all four user-visible locale-date call
+  sites (program card, program detail header, program detail updates
+  timeline, organization dashboard recent-reports column) with
+  `<FormattedDate>`.
+- **Why:** Hydration warnings break the demo's polish and force React to
+  re-render the entire affected subtree on the client. Centralizing the
+  date formatting also makes it easy to handle future Intl differences
+  (relative time, calendars, etc.) in one place.
+- **Files touched:** added `components/formatted-date.tsx`. Modified
+  `components/program-card.tsx`, `app/programs/[slug]/page.tsx`,
+  `app/dashboard/organization/page.tsx`, `MEMORY.md`. Each updated page /
+  component switched its `useLocale()` import to `useT()` since the
+  `locale` field is no longer needed at the call site.
+- **Verification:** `pnpm build` succeeds, all 9 routes prerender. `pnpm
+  exec tsc --noEmit` runs clean. Browser-side: reload `/` and watch the
+  Recent / Featured Programs grid — no hydration warning, dates briefly
+  show in `en-US` then swap to `az-AZ` ("20 apr").
+- **Next step:** none — the fix is local. Future locale-aware formatting
+  (numbers, relative time) should follow the same pattern: format with a
+  Node-safe locale on the server, swap after mount.
 
 ### 2026‑04‑26 — Demo login + role-based dashboard separation + DB plan
 

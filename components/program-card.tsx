@@ -5,8 +5,9 @@ import { motion } from 'framer-motion'
 import { Building2, Clock, DollarSign, Target, ArrowRight } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { FormattedDate } from '@/components/formatted-date'
 import { cn } from '@/lib/utils'
-import { useLocale } from '@/lib/i18n/locale-provider'
+import { useT } from '@/lib/i18n/locale-provider'
 import type { Program } from '@/lib/types'
 
 interface ProgramCardProps {
@@ -22,7 +23,7 @@ const statusColors = {
 }
 
 export function ProgramCard({ program, index = 0 }: ProgramCardProps) {
-  const { locale, t } = useLocale()
+  const t = useT()
 
   return (
     <motion.div
@@ -107,10 +108,10 @@ export function ProgramCard({ program, index = 0 }: ProgramCardProps) {
                 {t('programCard.updated')}
               </p>
               <p className="text-sm font-medium text-foreground">
-                {new Date(program.lastUpdated).toLocaleDateString(
-                  locale === 'az' ? 'az-AZ' : 'en-US',
-                  { month: 'short', day: 'numeric' },
-                )}
+                <FormattedDate
+                  date={program.lastUpdated}
+                  options={{ month: 'short', day: 'numeric' }}
+                />
               </p>
             </div>
           </div>

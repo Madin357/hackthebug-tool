@@ -49,7 +49,8 @@ import {
 import { StatCard } from '@/components/stat-card'
 import { SeverityBadge } from '@/components/severity-badge'
 import { StatusBadge } from '@/components/status-badge'
-import { useLocale } from '@/lib/i18n/locale-provider'
+import { FormattedDate } from '@/components/formatted-date'
+import { useT } from '@/lib/i18n/locale-provider'
 import {
   orgDashboardStats,
   reports,
@@ -85,8 +86,7 @@ const activityIcons = {
 } as const
 
 export default function OrganizationDashboardPage() {
-  const { locale, t } = useLocale()
-  const dateLocale = locale === 'az' ? 'az-AZ' : 'en-US'
+  const t = useT()
 
   const pipelineData = pipelineKeys.map((p) => ({
     stage: t(p.key),
@@ -389,10 +389,10 @@ export default function OrganizationDashboardPage() {
                         <StatusBadge status={report.status} />
                       </TableCell>
                       <TableCell className="text-muted-foreground text-sm">
-                        {new Date(report.submittedDate).toLocaleDateString(
-                          dateLocale,
-                          { month: 'short', day: 'numeric' },
-                        )}
+                        <FormattedDate
+                          date={report.submittedDate}
+                          options={{ month: 'short', day: 'numeric' }}
+                        />
                       </TableCell>
                     </TableRow>
                   ))}

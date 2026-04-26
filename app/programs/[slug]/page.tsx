@@ -37,7 +37,8 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { SeverityBadge } from '@/components/severity-badge'
-import { useLocale } from '@/lib/i18n/locale-provider'
+import { FormattedDate } from '@/components/formatted-date'
+import { useT } from '@/lib/i18n/locale-provider'
 import { programs } from '@/lib/mock-data'
 import { cn } from '@/lib/utils'
 import { ReportSubmissionModal } from '@/components/report-submission-modal'
@@ -71,7 +72,7 @@ export default function ProgramDetailPage({
   params: Promise<{ slug: string }>
 }) {
   const { slug } = use(params)
-  const { locale, t } = useLocale()
+  const t = useT()
   const [isReportModalOpen, setIsReportModalOpen] = useState(false)
 
   const program = programs.find((p) => p.slug === slug)
@@ -79,8 +80,6 @@ export default function ProgramDetailPage({
   if (!program) {
     notFound()
   }
-
-  const dateLocale = locale === 'az' ? 'az-AZ' : 'en-US'
 
   return (
     <div className="py-8 sm:py-12">
@@ -166,10 +165,10 @@ export default function ProgramDetailPage({
                     </span>
                   </div>
                   <p className="font-semibold text-foreground">
-                    {new Date(program.lastUpdated).toLocaleDateString(
-                      dateLocale,
-                      { month: 'short', day: 'numeric' },
-                    )}
+                    <FormattedDate
+                      date={program.lastUpdated}
+                      options={{ month: 'short', day: 'numeric' }}
+                    />
                   </p>
                 </div>
               </div>
@@ -496,14 +495,14 @@ export default function ProgramDetailPage({
                           {t(`program.updates.type.${update.type}`)}
                         </Badge>
                         <span className="text-xs text-muted-foreground">
-                          {new Date(update.date).toLocaleDateString(
-                            dateLocale,
-                            {
+                          <FormattedDate
+                            date={update.date}
+                            options={{
                               month: 'long',
                               day: 'numeric',
                               year: 'numeric',
-                            },
-                          )}
+                            }}
+                          />
                         </span>
                       </div>
                       <h3 className="font-medium text-foreground">
