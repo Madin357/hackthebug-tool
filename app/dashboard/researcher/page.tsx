@@ -53,16 +53,13 @@ import { SeverityBadge } from '@/components/severity-badge'
 import { StatusBadge } from '@/components/status-badge'
 import { useT } from '@/lib/i18n/locale-provider'
 import { formatAZN } from '@/lib/utils'
+import { useAuth } from '@/lib/auth/auth-provider'
+import { usePrograms, useResearcherReports } from '@/lib/data/hooks'
 import {
   researcherDashboardStats,
-  reports,
   researcherReportsTimeline,
   severityDistribution,
-  programs,
-  researchers,
 } from '@/lib/mock-data'
-
-const currentResearcher = researchers[0]
 
 const badgeMeta = [
   { keySuffix: 'first', icon: Target, color: 'text-critical' },
@@ -70,13 +67,21 @@ const badgeMeta = [
   { keySuffix: 'top10', icon: Trophy, color: 'text-primary' },
 ] as const
 
-const recommendedPrograms = programs
-  .filter((p) => p.status === 'active')
-  .slice(0, 3)
-const savedPrograms = programs.slice(0, 2)
-
 export default function ResearcherDashboardPage() {
   const t = useT()
+  const { session } = useAuth()
+  const researcherId = session?.researcherId ?? session?.userId ?? null
+  const displayName = session?.displayName ?? '—'
+
+  const { data: programsData } = usePrograms()
+  const allPrograms = programsData ?? []
+  const recommendedPrograms = allPrograms
+    .filter((p) => p.status === 'active')
+    .slice(0, 3)
+  const savedPrograms = allPrograms.slice(0, 2)
+
+  const { data: reportsData } = useResearcherReports(researcherId)
+  const reports = reportsData ?? []
 
   return (
     <div className="py-8 sm:py-12">
@@ -105,7 +110,7 @@ export default function ResearcherDashboardPage() {
               </div>
               <h1 className="text-3xl font-bold text-foreground">
                 {t('dashboard.researcher.welcome', {
-                  name: currentResearcher.name,
+                  name: displayName,
                 })}
               </h1>
               <p className="text-muted-foreground mt-1">

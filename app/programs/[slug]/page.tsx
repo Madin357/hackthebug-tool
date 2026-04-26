@@ -40,7 +40,7 @@ import {
 import { SeverityBadge } from '@/components/severity-badge'
 import { FormattedDate } from '@/components/formatted-date'
 import { useT } from '@/lib/i18n/locale-provider'
-import { programs } from '@/lib/mock-data'
+import { useProgram, usePrograms } from '@/lib/data/hooks'
 import { cn, formatAZN, formatAZNRange } from '@/lib/utils'
 import { ReportSubmissionModal } from '@/components/report-submission-modal'
 
@@ -76,7 +76,23 @@ export default function ProgramDetailPage({
   const t = useT()
   const [isReportModalOpen, setIsReportModalOpen] = useState(false)
 
-  const program = programs.find((p) => p.slug === slug)
+  const { data: program, loading } = useProgram(slug)
+  const { data: allPrograms } = usePrograms()
+
+  if (loading) {
+    return (
+      <div className="py-8 sm:py-12">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 space-y-8">
+          <div className="h-6 w-32 rounded bg-card/60 animate-pulse" />
+          <div className="rounded-2xl border border-border bg-card/60 h-48 animate-pulse" />
+          <div className="grid lg:grid-cols-3 gap-6">
+            <div className="lg:col-span-2 h-64 rounded-xl border border-border bg-card/60 animate-pulse" />
+            <div className="h-64 rounded-xl border border-border bg-card/60 animate-pulse" />
+          </div>
+        </div>
+      </div>
+    )
+  }
 
   if (!program) {
     notFound()
@@ -618,7 +634,7 @@ export default function ProgramDetailPage({
             {t('program.related.title')}
           </h2>
           <div className="grid md:grid-cols-3 gap-6">
-            {programs
+            {(allPrograms ?? [])
               .filter(
                 (p) => p.id !== program.id && p.industry === program.industry,
               )

@@ -16,7 +16,8 @@ import {
 import { SectionHeading } from '@/components/section-heading'
 import { ProgramCard } from '@/components/program-card'
 import { useT } from '@/lib/i18n/locale-provider'
-import { programs, industries } from '@/lib/mock-data'
+import { usePrograms } from '@/lib/data/hooks'
+import { industries } from '@/lib/mock-data'
 import type { ProgramStatus, ProgramType } from '@/lib/types'
 
 const programTypeCodes: Array<'all' | ProgramType> = [
@@ -40,6 +41,7 @@ const sortOptions = [
 
 export default function ProgramsPage() {
   const t = useT()
+  const { data: programs, loading: programsLoading } = usePrograms()
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedIndustry, setSelectedIndustry] = useState('all')
   const [selectedType, setSelectedType] = useState('all')
@@ -49,7 +51,7 @@ export default function ProgramsPage() {
   const [showFilters, setShowFilters] = useState(false)
 
   const filteredPrograms = useMemo(() => {
-    let result = [...programs]
+    let result = [...(programs ?? [])]
 
     if (searchQuery) {
       const query = searchQuery.toLowerCase()
@@ -96,7 +98,7 @@ export default function ProgramsPage() {
     }
 
     return result
-  }, [searchQuery, selectedIndustry, selectedType, selectedStatus, sortBy])
+  }, [programs, searchQuery, selectedIndustry, selectedType, selectedStatus, sortBy])
 
   const activeFiltersCount = [
     selectedIndustry !== 'all',
@@ -371,7 +373,22 @@ export default function ProgramsPage() {
         </div>
 
         {/* Programs Grid/List */}
-        {filteredPrograms.length > 0 ? (
+        {programsLoading ? (
+          <div
+            className={
+              viewMode === 'grid'
+                ? 'grid md:grid-cols-2 lg:grid-cols-3 gap-6'
+                : 'space-y-4'
+            }
+          >
+            {Array.from({ length: 6 }).map((_, i) => (
+              <div
+                key={i}
+                className="rounded-xl border border-border bg-card/50 h-64 animate-pulse"
+              />
+            ))}
+          </div>
+        ) : filteredPrograms.length > 0 ? (
           <div
             className={
               viewMode === 'grid'

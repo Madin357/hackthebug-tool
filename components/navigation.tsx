@@ -60,8 +60,8 @@ export function Navigation() {
     ? dashboardItems.filter((item) => item.role === session.role)
     : dashboardItems
 
-  const handleLogout = () => {
-    logout()
+  const handleLogout = async () => {
+    await logout()
     setMobileMenuOpen(false)
     router.push('/')
   }
@@ -149,9 +149,14 @@ export function Navigation() {
                 t={t}
               />
             ) : (
-              <Button asChild>
-                <Link href="/login">{t('nav.cta.login')}</Link>
-              </Button>
+              <>
+                <Button asChild variant="ghost">
+                  <Link href="/register">{t('nav.cta.register')}</Link>
+                </Button>
+                <Button asChild>
+                  <Link href="/login">{t('nav.cta.login')}</Link>
+                </Button>
+              </>
             )}
           </div>
 
@@ -242,14 +247,24 @@ export function Navigation() {
                     </Button>
                   </div>
                 ) : (
-                  <Button asChild className="w-full">
-                    <Link
-                      href="/login"
-                      onClick={() => setMobileMenuOpen(false)}
-                    >
-                      {t('nav.cta.login')}
-                    </Link>
-                  </Button>
+                  <div className="space-y-2">
+                    <Button asChild variant="outline" className="w-full">
+                      <Link
+                        href="/register"
+                        onClick={() => setMobileMenuOpen(false)}
+                      >
+                        {t('nav.cta.register')}
+                      </Link>
+                    </Button>
+                    <Button asChild className="w-full">
+                      <Link
+                        href="/login"
+                        onClick={() => setMobileMenuOpen(false)}
+                      >
+                        {t('nav.cta.login')}
+                      </Link>
+                    </Button>
+                  </div>
                 )}
               </div>
             </div>

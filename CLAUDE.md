@@ -8,20 +8,22 @@
 
 ## 1. Project context (one paragraph)
 
-This repo is **Hack The Bug**, a frontend‑only Next.js demo of a bug bounty /
+This repo is **Hack The Bug**, a Next.js + Supabase demo of a bug bounty /
 responsible disclosure platform built **exclusively for citizens of the
 Republic of Azerbaijan**. The goal of the current iteration is a polished,
-premium hackathon demo — not a production app. There is no backend, no
-database, no real payments, **no real SİMA / identity verification (it is
-planned, not active)**. The only "auth" is a deliberate mock in `lib/auth/`
-with two demo accounts (researcher + organization) that drives role-based
-dashboard separation via `RoleGate`; the session lives in `localStorage` and
-is **not a security boundary**. Everything else is mocked locally in
-`lib/mock-data.ts`. The UI is bilingual (English + Azerbaijani) via a small
-local dictionary in `lib/i18n/`; the user toggles language from the navigation
-bar and the choice is stored in `localStorage`. See `MEMORY.md` for the full
-picture and `DATABASE_PLAN.md` for the planned schema once a real backend
-lands.
+premium hackathon demo — not a production app. The backend is Supabase
+(Postgres + Supabase Auth, anon key in `.env`); the schema and seed are
+in the SQL the user ran in the Supabase SQL Editor. There are no real
+payments and **no real SİMA / identity verification (it is planned, not
+active)**. Auth runs through Supabase Auth via `lib/auth/auth-provider.tsx`
+(`useAuth()` API unchanged from the prior mock so consumers don't need
+edits). Domain data flows through `lib/supabase/queries/*` and the hooks
+in `lib/data/hooks.ts`; `lib/mock-data.ts` now only holds static UI
+constants (chart data, KPI tiles, filter option lists). The UI is
+bilingual (English + Azerbaijani) via a small local dictionary in
+`lib/i18n/`; the user toggles language from the navigation bar and the
+choice is stored in `localStorage`. See `MEMORY.md` for the full picture
+and `DATABASE_PLAN.md` for the schema reference.
 
 ## 2. Coding rules
 
@@ -51,10 +53,31 @@ lands.
     strings (aria labels for icon‑only buttons are fine to translate when
     needed).
 - **Type everything that crosses a component boundary.** Add new fields to
-  `lib/types.ts` first, then back them with mock entries in `lib/mock-data.ts`,
-  then consume in components.
-- **Pages import from `lib/mock-data.ts`. Components don't.** Components take
-  props. This keeps the future "swap mock for fetch" diff small and local.
+  `lib/types.ts` first, then mirror them in `lib/supabase/database.types.ts`
+  (and run a migration to add the column in Supabase), then expose them
+  through `lib/supabase/mappers.ts`.
+- **Reads go through the data layer, never via raw `supabase.from(...)`
+  in pages.** Add a query helper in `lib/supabase/queries/<resource>.ts`
+  (small, typed, returns mapped domain types), then a hook in
+  `lib/data/hooks.ts` that wraps it. Pages call the hook. This keeps DB
+  shape changes confined to two files. The browser client is a singleton
+  — get it from `getSupabaseClient()` (`lib/supabase/client.ts`).
+- **Writes also go through the query layer** (e.g.,
+  `createProgramWithScopesAndRewards`, `createOrganization`,
+  `completeOrganizationProfile`, `updateResearcherProfile`). Pages
+  invoke them directly from form submit handlers — no extra hook
+  needed for one-shot mutations. Errors should bubble up so the form
+  can show a useful message (and bucket Supabase error strings into
+  i18n keys when surfaced to the user).
+- **Multi-program orgs.** Each organization can publish many programs
+  (the schema already enforces `programs.organization_id` not
+  unique). Org-side flows must always check
+  `useAuth().session.organizationId` before composing inserts —
+  RLS will reject anything that doesn't match.
+- **Pages import from `lib/data/hooks.ts` for live data and from
+  `lib/mock-data.ts` only for the remaining static UI constants
+  (`industries`, `weaknessCategories`, dashboard chart data, KPI tiles).
+  Components don't import from either** — they take props.
 - **Use `cn()` from `lib/utils.ts`** for conditional class strings. Don't
   hand‑concat with template strings.
 - **Reach for shadcn primitives** in `components/ui/` before hand‑rolling. If
@@ -179,17 +202,17 @@ decision and every line of copy should be defensible against that bar.
 These are explicitly out of scope for this hackathon iteration. Don't add
 them, don't sketch them in code, don't add stub files for them.
 
-- ❌ Real backend (no API routes that call external services, no server
-  actions that mutate persisted state).
-- ❌ Real database (no Prisma/Drizzle/Supabase/Postgres wiring).
-- ❌ Real authentication libraries (no NextAuth/Clerk/Auth.js/Supabase
-  Auth). The current `lib/auth/*` mock with a `localStorage` session is
-  the entire auth surface for this iteration. Real auth, password hashing,
-  session cookies, and SİMA verification land in the backend phase
-  (see `DATABASE_PLAN.md`).
-- ❌ Real registration flow (the demo accounts in
-  `lib/auth/mock-users.ts` are the only logins; "Sign up" CTAs, if added,
-  stay decorative).
+- ❌ A second backend (route handlers may exist but heavy mutations should
+  go through Supabase. Server actions that hit other external services
+  need explicit sign-off).
+- ❌ A second database / ORM. Supabase Postgres is the source of truth;
+  don't bolt on Prisma/Drizzle/etc. without flagging the cost.
+- ❌ A second auth library (no NextAuth/Clerk/Auth.js). Supabase Auth via
+  `lib/auth/auth-provider.tsx` is the entire auth surface. SİMA
+  verification will plug into the same provider when it lands.
+- ❌ A new registration flow until SİMA is wired up. The demo accounts
+  in `lib/auth/mock-users.ts` (`demoCredentials` constant) are the only
+  documented logins; any "Sign up" CTAs stay decorative.
 - ❌ Real payments (Stripe/PayPal/etc.).
 - ❌ Real SİMA / e‑imza / digital identity integration.
 - ❌ Real email/SMS notifications.

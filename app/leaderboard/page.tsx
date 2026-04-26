@@ -28,7 +28,7 @@ import {
 } from 'lucide-react'
 import { useT } from '@/lib/i18n/locale-provider'
 import { formatAZN } from '@/lib/utils'
-import { researchers } from '@/lib/mock-data'
+import { useResearchers } from '@/lib/data/hooks'
 
 const timeframeKeys = [
   { value: 'all-time', key: 'leaderboard.timeframe.allTime' },
@@ -78,6 +78,8 @@ export default function LeaderboardPage() {
   const [timeframe, setTimeframe] = useState('all-time')
   const [category, setCategory] = useState('overall')
 
+  const { data: researchersData } = useResearchers()
+  const researchers = researchersData ?? []
   const topThree = researchers.slice(0, 3)
 
   return (

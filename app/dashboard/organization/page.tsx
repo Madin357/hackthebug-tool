@@ -50,17 +50,22 @@ import { StatCard } from '@/components/stat-card'
 import { SeverityBadge } from '@/components/severity-badge'
 import { StatusBadge } from '@/components/status-badge'
 import { FormattedDate } from '@/components/formatted-date'
+import Link from 'next/link'
 import { useT } from '@/lib/i18n/locale-provider'
 import { useAuth } from '@/lib/auth/auth-provider'
 import {
+  useOrganization,
+  useOrganizationPrograms,
+  useOrganizationReports,
+  useResearchers,
+} from '@/lib/data/hooks'
+import { formatAZNRange } from '@/lib/utils'
+import {
   orgDashboardStats,
-  organizations,
-  reports,
   reportsTimeline,
   severityDistribution,
   topAttackedAssets,
   recentActivity,
-  researchers,
 } from '@/lib/mock-data'
 
 const pipelineKeys = [
@@ -90,10 +95,19 @@ const activityIcons = {
 export default function OrganizationDashboardPage() {
   const t = useT()
   const { session } = useAuth()
-  const orgName =
-    organizations.find((o) => o.id === session?.organizationId)?.name ??
-    session?.displayName ??
-    '—'
+  const organizationId = session?.organizationId ?? null
+
+  const { data: organization } = useOrganization(organizationId)
+  const orgName = organization?.name ?? session?.displayName ?? '—'
+
+  const { data: reportsData } = useOrganizationReports(organizationId)
+  const reports = reportsData ?? []
+
+  const { data: myProgramsData } = useOrganizationPrograms(organizationId)
+  const myPrograms = myProgramsData ?? []
+
+  const { data: researchersData } = useResearchers()
+  const researchers = researchersData ?? []
 
   const pipelineData = pipelineKeys.map((p) => ({
     stage: t(p.key),
@@ -140,7 +154,11 @@ export default function OrganizationDashboardPage() {
                   {orgName}
                 </span>
               </div>
-              <Button>{t('dashboard.org.viewProgram')}</Button>
+              <Button asChild>
+                <Link href="/dashboard/organization/programs/new">
+                  {t('dashboard.org.myPrograms.create')}
+                </Link>
+              </Button>
             </div>
           </div>
         </motion.div>
@@ -547,6 +565,70 @@ export default function OrganizationDashboardPage() {
             </CardContent>
           </Card>
         </div>
+
+        {/* My programs */}
+        <Card className="mt-6">
+          <CardHeader>
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <CardTitle className="flex items-center gap-2">
+                  <Target className="h-5 w-5 text-primary" />
+                  {t('dashboard.org.myPrograms.title')}
+                </CardTitle>
+                <CardDescription>
+                  {t('dashboard.org.myPrograms.subtitle')}
+                </CardDescription>
+              </div>
+              <Button asChild size="sm">
+                <Link href="/dashboard/organization/programs/new">
+                  {t('dashboard.org.myPrograms.create')}
+                </Link>
+              </Button>
+            </div>
+          </CardHeader>
+          <CardContent>
+            {myPrograms.length === 0 ? (
+              <div className="text-center py-8">
+                <p className="text-sm text-muted-foreground mb-4">
+                  {t('dashboard.org.myPrograms.empty')}
+                </p>
+                <Button asChild variant="outline" size="sm">
+                  <Link href="/dashboard/organization/programs/new">
+                    {t('dashboard.org.myPrograms.create')}
+                  </Link>
+                </Button>
+              </div>
+            ) : (
+              <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
+                {myPrograms.map((program) => (
+                  <Link
+                    key={program.id}
+                    href={`/programs/${program.slug}`}
+                    className="block rounded-lg border border-border bg-secondary/40 hover:bg-secondary hover:border-primary/50 transition-colors p-4 space-y-2"
+                  >
+                    <div className="flex items-start justify-between gap-2">
+                      <p className="font-medium text-foreground line-clamp-1">
+                        {program.name}
+                      </p>
+                      <Badge variant="outline" className="text-xs shrink-0">
+                        {t(`programStatus.${program.status}`)}
+                      </Badge>
+                    </div>
+                    <p className="text-xs text-muted-foreground line-clamp-2">
+                      {program.description}
+                    </p>
+                    <p className="text-xs font-mono text-foreground">
+                      {formatAZNRange(
+                        program.rewardRange.min,
+                        program.rewardRange.max,
+                      )}
+                    </p>
+                  </Link>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
 
         {/* Empty State Example */}
         <Card className="mt-6 border-dashed">

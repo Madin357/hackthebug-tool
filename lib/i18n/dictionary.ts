@@ -45,6 +45,7 @@ const en: Dict = {
   'nav.dashboard.organization': 'Organization View',
   'nav.cta.launchDemo': 'Launch Demo',
   'nav.cta.login': 'Log in',
+  'nav.cta.register': 'Sign up',
   'nav.cta.logout': 'Log out',
   'nav.user.myDashboard': 'Dashboard',
   'nav.user.signedInAs': 'Signed in as',
@@ -580,12 +581,136 @@ const en: Dict = {
 
   // ─── Access denied / role gate
   'roleGate.checking': 'Checking your session...',
+  'roleGate.stillChecking':
+    'Still working on it — your network or Supabase project may be slow to respond.',
+  'roleGate.tryAgain': 'Reload',
   'roleGate.denied.title': 'Access denied',
   'roleGate.denied.body':
     'This dashboard is for {requiredRole} accounts only. You are signed in as {currentRole}.',
   'roleGate.denied.goToMine': 'Go to dashboard',
   'roleGate.denied.logout': 'Log out',
   'roleGate.redirecting': 'Redirecting to log in...',
+
+  // ─── Register page
+  'register.badge': 'Demo signup',
+  'register.title': 'Create your account',
+  'register.subtitle':
+    'Pick a side. Researcher accounts can browse programs and file reports; organization accounts can publish programs and triage incoming reports.',
+  'register.tab.researcher': 'Researcher',
+  'register.tab.organization': 'Organization',
+  'register.field.email': 'Email',
+  'register.field.password': 'Password',
+  'register.field.password.help':
+    'Minimum 6 characters (Supabase requirement).',
+  'register.field.displayName': 'Display name',
+  'register.field.displayName.help':
+    'Shown in the navigation, dashboards, and the leaderboard.',
+  'register.field.handle': 'Handle (optional)',
+  'register.field.handle.help':
+    'Public researcher handle — letters and numbers only, no spaces.',
+  'register.field.yourName': 'Your name',
+  'register.field.yourName.help':
+    'Shown in the org user pill — e.g., "AZAL Security Team".',
+  'register.field.orgName': 'Organization name',
+  'register.field.orgName.help':
+    'The legal / public name of your organization.',
+  'register.field.orgSlug': 'Slug',
+  'register.field.orgSlug.help':
+    'URL fragment for your organization. Auto-generated from the name; edit if needed. Letters / numbers / hyphens only.',
+  'register.field.orgIndustry': 'Industry',
+  'register.field.orgIndustry.placeholder': 'Pick an industry',
+  'register.submit': 'Create account',
+  'register.submitting': 'Creating account...',
+  'register.haveAccount': 'Already have an account?',
+  'register.logIn': 'Log in',
+  'register.error.missingFields':
+    'Please fill in every required field.',
+  'register.error.invalidEmail': 'Please enter a valid email address.',
+  'register.error.weakPassword':
+    'Password must be at least 6 characters.',
+  'register.error.invalidSlug':
+    'Slug can only contain letters, numbers, and hyphens.',
+  'register.error.emailTaken':
+    'An account with this email already exists. Try logging in instead.',
+  'register.error.slugTaken':
+    'That organization slug is already taken — pick another.',
+  'register.error.unknown':
+    'Sign-up failed. Check your network connection and try again.',
+  'register.notice.confirmEmail':
+    'We sent a confirmation link to {email}. Click it, then log in.',
+  'register.notice.demoOnly':
+    'Demo signup. Real registration would require SİMA-verified Azerbaijani identity.',
+
+  // ─── Org dashboard: my programs widget
+  'dashboard.org.myPrograms.title': 'My programs',
+  'dashboard.org.myPrograms.subtitle':
+    'Programs your organization has published.',
+  'dashboard.org.myPrograms.empty':
+    'You have not published any programs yet.',
+  'dashboard.org.myPrograms.create': 'Create program',
+  'dashboard.org.myPrograms.viewAll': 'View all',
+
+  // ─── Create program page
+  'createProgram.back': 'Back to dashboard',
+  'createProgram.badge': 'Org tooling',
+  'createProgram.title': 'Publish a new program',
+  'createProgram.subtitle':
+    'Define scope, rules, and demo reward tiers. Real testing requires explicit official authorization — every program card carries that notice on the public page.',
+  'createProgram.section.basics': 'Basics',
+  'createProgram.section.scope': 'In-scope assets',
+  'createProgram.section.rewards': 'Reward tier',
+  'createProgram.section.publish': 'Publish',
+  'createProgram.field.name': 'Program name',
+  'createProgram.field.name.placeholder': 'e.g., AZAL Mobile App Disclosure',
+  'createProgram.field.slug': 'Slug',
+  'createProgram.field.slug.help':
+    'URL fragment under /programs/. Auto-generated; edit if you want.',
+  'createProgram.field.description': 'Short description',
+  'createProgram.field.description.placeholder':
+    'One-sentence summary shown on the program card.',
+  'createProgram.field.longDescription': 'Long description (optional)',
+  'createProgram.field.longDescription.placeholder':
+    'Context, motivation, and any extra detail for the program detail page.',
+  'createProgram.field.type': 'Program type',
+  'createProgram.field.type.bug-bounty': 'Bug Bounty',
+  'createProgram.field.type.vdp': 'Vulnerability Disclosure (VDP)',
+  'createProgram.field.type.private-preview': 'Private Preview',
+  'createProgram.field.status': 'Status',
+  'createProgram.field.status.active': 'Active',
+  'createProgram.field.status.upcoming': 'Upcoming',
+  'createProgram.field.featured': 'Feature on the home page',
+  'createProgram.scope.target': 'Target',
+  'createProgram.scope.targetPlaceholder':
+    'e.g., Customer Portal, Public API, Mobile Application',
+  'createProgram.scope.type': 'Type',
+  'createProgram.scope.add': 'Add scope item',
+  'createProgram.scope.empty':
+    'Add at least one in-scope item before publishing.',
+  'createProgram.tier.label': 'Demo reward tier',
+  'createProgram.tier.help':
+    'Each tier seeds a 5-row severity table (informational → critical) with realistic AZN ranges. All values are demo / planned.',
+  'createProgram.tier.low.title': 'Low',
+  'createProgram.tier.low.body': 'Smaller surface — up to 3,500 AZN.',
+  'createProgram.tier.standard.title': 'Standard',
+  'createProgram.tier.standard.body':
+    'Average commercial / public service — up to 5,000 AZN.',
+  'createProgram.tier.high.title': 'High',
+  'createProgram.tier.high.body':
+    'High-impact infrastructure — up to 7,000 AZN.',
+  'createProgram.tier.top.title': 'Top',
+  'createProgram.tier.top.body':
+    'Highest impact / most sensitive — up to 9,000 AZN.',
+  'createProgram.submit': 'Publish program',
+  'createProgram.submitting': 'Publishing...',
+  'createProgram.cancel': 'Cancel',
+  'createProgram.error.missingFields':
+    'Fill in name, description, and at least one scope item.',
+  'createProgram.error.invalidSlug':
+    'Slug can only contain letters, numbers, and hyphens.',
+  'createProgram.error.slugTaken':
+    'A program with this slug already exists. Pick another.',
+  'createProgram.error.unknown':
+    'Could not publish the program. See the browser console for details.',
 }
 
 // ─── Azerbaijani translation ───────────────────────────────────────────────
@@ -627,6 +752,7 @@ const az: Dict = {
   'nav.dashboard.organization': 'Təşkilat görünüşü',
   'nav.cta.launchDemo': 'Demonu başlat',
   'nav.cta.login': 'Daxil ol',
+  'nav.cta.register': 'Qeydiyyatdan keç',
   'nav.cta.logout': 'Çıxış et',
   'nav.user.myDashboard': 'İdarə paneli',
   'nav.user.signedInAs': 'Daxil olub:',
@@ -1174,12 +1300,138 @@ const az: Dict = {
 
   // ─── Access denied / role gate
   'roleGate.checking': 'Sessiyan yoxlanılır...',
+  'roleGate.stillChecking':
+    'Hələ də yoxlanır — şəbəkə və ya Supabase layihən yavaş cavab verə bilər.',
+  'roleGate.tryAgain': 'Yenidən yüklə',
   'roleGate.denied.title': 'Giriş qadağandır',
   'roleGate.denied.body':
     'Bu panel yalnız {requiredRole} hesabları üçündür. Sən {currentRole} kimi daxil olmusan.',
   'roleGate.denied.goToMine': 'İdarə panelinə keç',
   'roleGate.denied.logout': 'Çıxış et',
   'roleGate.redirecting': 'Daxil olma səhifəsinə yönləndirilirsən...',
+
+  // ─── Register page
+  'register.badge': 'Demo qeydiyyat',
+  'register.title': 'Hesab yarat',
+  'register.subtitle':
+    'Tərəfini seç. Tədqiqatçı hesabları proqramlara baxa və hesabat göndərə bilər; təşkilat hesabları proqram dərc edib gələn hesabatları yoxlaya bilər.',
+  'register.tab.researcher': 'Tədqiqatçı',
+  'register.tab.organization': 'Təşkilat',
+  'register.field.email': 'E-poçt',
+  'register.field.password': 'Şifrə',
+  'register.field.password.help':
+    'Minimum 6 simvol (Supabase tələbi).',
+  'register.field.displayName': 'Görünən ad',
+  'register.field.displayName.help':
+    'Naviqasiyada, panellərdə və reytinqdə görünür.',
+  'register.field.handle': 'İstifadəçi adı (istəyə bağlı)',
+  'register.field.handle.help':
+    'İctimai tədqiqatçı adı — yalnız hərflər və rəqəmlər, boşluq olmadan.',
+  'register.field.yourName': 'Adınız',
+  'register.field.yourName.help':
+    'İstifadəçi düyməsində görünür — məsələn, "AZAL Təhlükəsizlik Komandası".',
+  'register.field.orgName': 'Təşkilatın adı',
+  'register.field.orgName.help':
+    'Təşkilatınızın hüquqi / ictimai adı.',
+  'register.field.orgSlug': 'Slug',
+  'register.field.orgSlug.help':
+    'Təşkilatınız üçün URL parçası. Addan avtomatik yaradılır; lazım olsa düzəlt. Yalnız hərf / rəqəm / defis.',
+  'register.field.orgIndustry': 'Sahə',
+  'register.field.orgIndustry.placeholder': 'Sahə seç',
+  'register.submit': 'Hesab yarat',
+  'register.submitting': 'Hesab yaradılır...',
+  'register.haveAccount': 'Artıq hesabın var?',
+  'register.logIn': 'Daxil ol',
+  'register.error.missingFields':
+    'Zəhmət olmasa bütün məcburi sahələri doldur.',
+  'register.error.invalidEmail': 'Düzgün e-poçt ünvanı daxil et.',
+  'register.error.weakPassword':
+    'Şifrə minimum 6 simvol olmalıdır.',
+  'register.error.invalidSlug':
+    'Slug yalnız hərf, rəqəm və defis ola bilər.',
+  'register.error.emailTaken':
+    'Bu e-poçtla artıq hesab var. Daxil olmağı sına.',
+  'register.error.slugTaken':
+    'Bu təşkilat slug-ı artıq tutulub — başqa bir tane seç.',
+  'register.error.unknown':
+    'Qeydiyyat alınmadı. Şəbəkəni yoxla və yenidən cəhd et.',
+  'register.notice.confirmEmail':
+    '{email} ünvanına təsdiq linki göndərdik. Üzərinə klik et, sonra daxil ol.',
+  'register.notice.demoOnly':
+    'Demo qeydiyyat. Real qeydiyyat SİMA ilə doğrulanmış Azərbaycan vətəndaşlığı tələb edəcək.',
+
+  // ─── Org dashboard: my programs widget
+  'dashboard.org.myPrograms.title': 'Mənim proqramlarım',
+  'dashboard.org.myPrograms.subtitle':
+    'Təşkilatınızın dərc etdiyi proqramlar.',
+  'dashboard.org.myPrograms.empty':
+    'Hələ heç bir proqram dərc etməmisən.',
+  'dashboard.org.myPrograms.create': 'Proqram yarat',
+  'dashboard.org.myPrograms.viewAll': 'Hamısını gör',
+
+  // ─── Create program page
+  'createProgram.back': 'Panelə qayıt',
+  'createProgram.badge': 'Təşkilat alətləri',
+  'createProgram.title': 'Yeni proqram dərc et',
+  'createProgram.subtitle':
+    'Sahə, qaydalar və demo mükafat səviyyəsini təyin et. Real test rəsmi yazılı icazə tələb edir — hər proqram kartı bu xəbərdarlığı daşıyır.',
+  'createProgram.section.basics': 'Əsas məlumatlar',
+  'createProgram.section.scope': 'Əhatə daxili aktivlər',
+  'createProgram.section.rewards': 'Mükafat səviyyəsi',
+  'createProgram.section.publish': 'Dərc et',
+  'createProgram.field.name': 'Proqramın adı',
+  'createProgram.field.name.placeholder':
+    'məsələn, AZAL Mobil Tətbiq Açıqlaması',
+  'createProgram.field.slug': 'Slug',
+  'createProgram.field.slug.help':
+    '/programs/ altındakı URL parçası. Avtomatik yaradılır; istəyirsənsə düzəlt.',
+  'createProgram.field.description': 'Qısa təsvir',
+  'createProgram.field.description.placeholder':
+    'Proqram kartında göstərilən bir cümləlik xülasə.',
+  'createProgram.field.longDescription': 'Uzun təsvir (istəyə bağlı)',
+  'createProgram.field.longDescription.placeholder':
+    'Proqram detalı səhifəsi üçün kontekst, motivasiya və əlavə təfərrüatlar.',
+  'createProgram.field.type': 'Proqram növü',
+  'createProgram.field.type.bug-bounty': 'Bug Bounty',
+  'createProgram.field.type.vdp': 'Zəiflik açıqlama (VDP)',
+  'createProgram.field.type.private-preview': 'Qapalı önbaxış',
+  'createProgram.field.status': 'Status',
+  'createProgram.field.status.active': 'Aktiv',
+  'createProgram.field.status.upcoming': 'Yaxınlaşır',
+  'createProgram.field.featured': 'Ana səhifədə seçilmiş et',
+  'createProgram.scope.target': 'Hədəf',
+  'createProgram.scope.targetPlaceholder':
+    'məsələn, Müştəri portalı, Public API, Mobil tətbiq',
+  'createProgram.scope.type': 'Növ',
+  'createProgram.scope.add': 'Sahə əlavə et',
+  'createProgram.scope.empty':
+    'Dərc etmədən əvvəl ən azı bir əhatə daxili element əlavə et.',
+  'createProgram.tier.label': 'Demo mükafat səviyyəsi',
+  'createProgram.tier.help':
+    'Hər səviyyə realist AZN aralıqlı 5 sətirli ciddiyyət cədvəli yaradır (məlumat → kritik). Bütün dəyərlər demo / planlaşdırılmışdır.',
+  'createProgram.tier.low.title': 'Aşağı',
+  'createProgram.tier.low.body':
+    'Kiçik səth — 3,500 AZN-ə qədər.',
+  'createProgram.tier.standard.title': 'Standart',
+  'createProgram.tier.standard.body':
+    'Orta kommersiya / ictimai xidmət — 5,000 AZN-ə qədər.',
+  'createProgram.tier.high.title': 'Yüksək',
+  'createProgram.tier.high.body':
+    'Yüksək təsirli infrastruktur — 7,000 AZN-ə qədər.',
+  'createProgram.tier.top.title': 'Ən yüksək',
+  'createProgram.tier.top.body':
+    'Ən təsirli / ən həssas — 9,000 AZN-ə qədər.',
+  'createProgram.submit': 'Proqramı dərc et',
+  'createProgram.submitting': 'Dərc edilir...',
+  'createProgram.cancel': 'Ləğv et',
+  'createProgram.error.missingFields':
+    'Adı, təsviri və ən azı bir əhatə elementini doldur.',
+  'createProgram.error.invalidSlug':
+    'Slug yalnız hərf, rəqəm və defis ola bilər.',
+  'createProgram.error.slugTaken':
+    'Bu slug ilə proqram artıq mövcuddur. Başqa bir tane seç.',
+  'createProgram.error.unknown':
+    'Proqramı dərc etmək alınmadı. Təfərrüatlar üçün brauzer konsolunu yoxla.',
 }
 
 const dictionaries: Record<Locale, Dict> = { en, az }

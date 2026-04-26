@@ -1,20 +1,18 @@
 'use client'
 
 /**
- * DEMO ONLY — frontend mock auth.
+ * Supabase-backed AuthProvider.
  *
- * The "session" lives in localStorage under `htb-session`. There is no
- * cryptographic signing, no expiry enforcement, no httpOnly cookie, no
- * server-side check. Anyone with browser dev tools can edit it. This is
- * acceptable ONLY because the hackathon prototype has no real data behind
- * any of the dashboards.
+ * Every async path is wrapped in try/catch and a hard 8-second safety
+ * timeout flips status to `'unauthenticated'` if neither
+ * `getSession()` nor `onAuthStateChange` has resolved by then. That
+ * way the UI (in particular `RoleGate`) never gets stuck on
+ * "Checking your session…" if the network is slow or the profile
+ * lookup fails.
  *
- * When a real backend lands:
- *   - replace login() with a fetch to a real auth endpoint
- *   - move the session token to an HttpOnly + Secure cookie set by the server
- *   - add server-side route guards (middleware) instead of relying on
- *     client-only RoleGate
- *   - add SİMA identity verification before granting researcher role
+ * The hook surface (`useAuth().status / .session / .login / .logout`,
+ * plus `dashboardPathForRole`) is unchanged so consumers
+ * (RoleGate, Navigation, /login, dashboards, /register) keep working.
  */
 
 import {
@@ -23,101 +21,218 @@ import {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from 'react'
+import type { Session as AuthSession } from '@supabase/supabase-js'
+import { getSupabaseClient } from '@/lib/supabase/client'
+import {
+  getProfileByEmail,
+  getProfileById,
+} from '@/lib/supabase/queries/profiles'
+import type { ProfileRow } from '@/lib/supabase/database.types'
 import type { Session, UserRole } from '@/lib/types'
-import { findCredential } from '@/lib/auth/mock-users'
-
-const STORAGE_KEY = 'htb-session'
 
 export type AuthStatus = 'loading' | 'authenticated' | 'unauthenticated'
 
 export type LoginResult =
   | { ok: true; session: Session }
-  | { ok: false; error: 'invalid-credentials' | 'missing-fields' }
+  | {
+      ok: false
+      error:
+        | 'invalid-credentials'
+        | 'missing-fields'
+        | 'profile-not-found'
+        | 'unknown'
+      message?: string
+    }
 
 interface AuthContextValue {
   status: AuthStatus
   session: Session | null
-  login: (email: string, password: string) => LoginResult
-  logout: () => void
+  login: (email: string, password: string) => Promise<LoginResult>
+  logout: () => Promise<void>
+  /** Re-fetches the profile row for the current auth user. Useful right
+   *  after sign-up or after editing the profile. */
+  refresh: () => Promise<void>
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null)
 
-function isSession(value: unknown): value is Session {
-  if (!value || typeof value !== 'object') return false
-  const v = value as Partial<Session>
-  return (
-    typeof v.userId === 'string' &&
-    typeof v.email === 'string' &&
-    (v.role === 'researcher' || v.role === 'organization') &&
-    typeof v.displayName === 'string' &&
-    typeof v.issuedAt === 'string'
-  )
+const BOOT_TIMEOUT_MS = 8000
+
+function profileToSession(profile: ProfileRow): Session {
+  return {
+    userId: profile.id,
+    email: profile.email,
+    role: profile.role as UserRole,
+    displayName: profile.display_name,
+    researcherId: profile.role === 'researcher' ? profile.id : undefined,
+    organizationId: profile.organization_id ?? undefined,
+    issuedAt: new Date().toISOString(),
+  }
 }
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
+  const supabase = useMemo(() => getSupabaseClient(), [])
   const [session, setSession] = useState<Session | null>(null)
   const [status, setStatus] = useState<AuthStatus>('loading')
+  const cancelledRef = useRef(false)
 
-  useEffect(() => {
-    try {
-      const raw = window.localStorage.getItem(STORAGE_KEY)
-      if (raw) {
-        const parsed = JSON.parse(raw) as unknown
-        if (isSession(parsed)) {
-          setSession(parsed)
-          setStatus('authenticated')
+  const resolveProfile = useCallback(
+    async (
+      authUserId: string,
+      email: string | undefined,
+    ): Promise<ProfileRow | null> => {
+      const byId = await getProfileById(supabase, authUserId)
+      if (byId) return byId
+      if (email) return await getProfileByEmail(supabase, email)
+      return null
+    },
+    [supabase],
+  )
+
+  const applyAuthSession = useCallback(
+    async (authSession: AuthSession | null) => {
+      if (cancelledRef.current) return
+      try {
+        if (!authSession) {
+          setSession(null)
+          setStatus('unauthenticated')
           return
         }
+        const profile = await resolveProfile(
+          authSession.user.id,
+          authSession.user.email ?? undefined,
+        )
+        if (cancelledRef.current) return
+        if (!profile) {
+          // Auth user exists but no profile row — bail out cleanly. Fire
+          // signOut without awaiting so a slow network call can't hold
+          // the bootstrap hostage.
+          void supabase.auth.signOut()
+          setSession(null)
+          setStatus('unauthenticated')
+          return
+        }
+        setSession(profileToSession(profile))
+        setStatus('authenticated')
+      } catch (err) {
+        // eslint-disable-next-line no-console
+        console.error('[auth] failed to apply auth session', err)
+        if (!cancelledRef.current) {
+          setSession(null)
+          setStatus('unauthenticated')
+        }
       }
-    } catch {
-      // ignore parse / storage errors and fall through to unauthenticated
-    }
-    setStatus('unauthenticated')
-  }, [])
+    },
+    [resolveProfile, supabase],
+  )
 
-  const login = useCallback((email: string, password: string): LoginResult => {
-    if (!email || !password) {
-      return { ok: false, error: 'missing-fields' }
-    }
-    const cred = findCredential(email, password)
-    if (!cred) {
-      return { ok: false, error: 'invalid-credentials' }
-    }
-    const next: Session = {
-      userId: cred.user.id,
-      email: cred.user.email,
-      role: cred.user.role,
-      displayName: cred.user.displayName,
-      researcherId: cred.user.researcherId,
-      organizationId: cred.user.organizationId,
-      issuedAt: new Date().toISOString(),
-    }
-    setSession(next)
-    setStatus('authenticated')
-    try {
-      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(next))
-    } catch {
-      // ignore — auth still works for the current tab
-    }
-    return { ok: true, session: next }
-  }, [])
+  useEffect(() => {
+    cancelledRef.current = false
 
-  const logout = useCallback(() => {
-    setSession(null)
-    setStatus('unauthenticated')
-    try {
-      window.localStorage.removeItem(STORAGE_KEY)
-    } catch {
-      // ignore
+    // Hard timeout: if we're still 'loading' after BOOT_TIMEOUT_MS, force
+    // 'unauthenticated' so RoleGate redirects to /login instead of
+    // hanging on the loader forever.
+    const timer = setTimeout(() => {
+      if (cancelledRef.current) return
+      setStatus((prev) => (prev === 'loading' ? 'unauthenticated' : prev))
+    }, BOOT_TIMEOUT_MS)
+
+    // Eager bootstrap. Errors fall through to 'unauthenticated'.
+    supabase.auth
+      .getSession()
+      .then(({ data }) => applyAuthSession(data.session))
+      .catch((err) => {
+        // eslint-disable-next-line no-console
+        console.error('[auth] getSession failed', err)
+        if (!cancelledRef.current) {
+          setSession(null)
+          setStatus('unauthenticated')
+        }
+      })
+
+    // Subscribe for ongoing changes (login / logout / token refresh).
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, authSession) => {
+      void applyAuthSession(authSession)
+    })
+
+    return () => {
+      cancelledRef.current = true
+      clearTimeout(timer)
+      subscription.unsubscribe()
     }
-  }, [])
+  }, [supabase, applyAuthSession])
+
+  const login = useCallback(
+    async (email: string, password: string): Promise<LoginResult> => {
+      if (!email || !password) {
+        return { ok: false, error: 'missing-fields' }
+      }
+
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: email.trim(),
+        password,
+      })
+
+      if (error || !data.session) {
+        const message = error?.message ?? 'Sign-in failed.'
+        const code = message.toLowerCase().includes('invalid')
+          ? 'invalid-credentials'
+          : 'unknown'
+        return { ok: false, error: code, message }
+      }
+
+      const authUser = data.session.user
+      try {
+        const profile = await resolveProfile(
+          authUser.id,
+          authUser.email ?? undefined,
+        )
+        if (!profile) {
+          void supabase.auth.signOut()
+          return { ok: false, error: 'profile-not-found' }
+        }
+        const next = profileToSession(profile)
+        setSession(next)
+        setStatus('authenticated')
+        return { ok: true, session: next }
+      } catch (err) {
+        // eslint-disable-next-line no-console
+        console.error('[auth] login profile lookup failed', err)
+        return {
+          ok: false,
+          error: 'unknown',
+          message: err instanceof Error ? err.message : String(err),
+        }
+      }
+    },
+    [supabase, resolveProfile],
+  )
+
+  const logout = useCallback(async () => {
+    try {
+      await supabase.auth.signOut()
+    } catch (err) {
+      // eslint-disable-next-line no-console
+      console.error('[auth] signOut failed', err)
+    } finally {
+      setSession(null)
+      setStatus('unauthenticated')
+    }
+  }, [supabase])
+
+  const refresh = useCallback(async () => {
+    const { data } = await supabase.auth.getSession()
+    await applyAuthSession(data.session)
+  }, [supabase, applyAuthSession])
 
   const value = useMemo<AuthContextValue>(
-    () => ({ status, session, login, logout }),
-    [status, session, login, logout],
+    () => ({ status, session, login, logout, refresh }),
+    [status, session, login, logout, refresh],
   )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

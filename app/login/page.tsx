@@ -59,7 +59,7 @@ function LoginContent() {
     }
   }, [status, session, nextParam, router])
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     if (!email || !password) {
       setErrorKey('login.error.missingFields')
@@ -71,7 +71,7 @@ function LoginContent() {
     }
     setIsSubmitting(true)
     setErrorKey(null)
-    const result = login(email, password)
+    const result = await login(email, password)
     if (!result.ok) {
       setIsSubmitting(false)
       setErrorKey(

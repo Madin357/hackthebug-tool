@@ -35,33 +35,37 @@ for now and will be layered on later.
 
 ## Current Technical State
 
-- Frontend‑only Next.js app. **No backend, no database, no real
-  registration, no real SİMA / identity verification, no real payments.**
-- **Mock auth (demo only) is now wired in.** Two hard‑coded credentials live
-  in `lib/auth/mock-users.ts`: `researcher@hackthebug.demo / researcher123`
-  (linked to researcher `id: '1'` = CyberNomad) and
-  `org@hackthebug.demo / org123` (linked to organization
-  `id: 'org-azal'` = Azərbaycan Hava Yolları). Sessions are stored in
-  `localStorage` under `htb-session` and exposed via `useAuth()` from
-  `lib/auth/auth-provider.tsx`. `RoleGate` (`components/role-gate.tsx`) wraps
-  each dashboard via a tiny route‑segment `layout.tsx` and handles
-  loading / unauthenticated / wrong‑role states. **This is not a security
-  boundary** — see security notes in `DATABASE_PLAN.md` and the
-  file‑level docstrings in `lib/auth/*`.
-- All data is mocked locally in `lib/mock-data.ts`. All 10 researchers are
-  AZ‑based (country: Azerbaijan, countryCode: AZ). The 13 program / 13
-  organization records correspond to AZCON Holding entities (AZAL, ADY,
-  ASCO, Bakı Metropoliteni, BakuBus, Bakı Gəmiqayırma Zavodu, Azərkosmos,
-  Aztelekom, AzInTelecom, Azərpoçt, Bakı Taksi Xidməti, Teleradio, Milli
-  Süni İntellekt Mərkəzi). **Live testing of any of these is NOT
-  authorized in this build** — every program is shown as a demo card,
-  scopes are labelled "Pending official authorization", and reward
-  ranges are **demo / planned values in AZN** with a per‑severity reward
-  table (4 tiers: LOW / STANDARD / HIGH / TOP). Programs carry a
-  per‑program "Demo / planned reward range — not a real bounty
-  commitment" callout above the rewards table; the program‑detail page
-  also keeps the "Pending official authorization" warning banner above
-  the header card.
+- **The frontend is now wired to Supabase.** Live data (organizations,
+  programs, scopes, rewards, reports, profiles) flows through
+  `lib/supabase/queries/*` and the hooks in `lib/data/hooks.ts`. Auth
+  uses Supabase Auth (`signInWithPassword` + cookie-backed session via
+  `@supabase/ssr`). No SİMA / identity verification yet, no real
+  payments.
+- **Auth runs through Supabase Auth.** `lib/auth/auth-provider.tsx`
+  calls `supabase.auth.signInWithPassword`, subscribes to
+  `onAuthStateChange`, and looks up the matching `public.profiles` row
+  (by `id`, falling back to `email`) so the existing `useAuth()` hook
+  surface (`status`, `session`, `login`, `logout`,
+  `dashboardPathForRole`) is unchanged. The two demo accounts live in
+  Supabase Auth (`researcher@hackthebug.az` / `Researcher123!` and
+  `organization@hackthebug.az` / `Organization123!`) — see "Last Actions"
+  for the one-time profile-id alignment SQL. `RoleGate`
+  (`components/role-gate.tsx`) still wraps each dashboard via a tiny
+  route-segment `layout.tsx`. RLS is **not yet enabled** — when you
+  enable it, see the policy scaffolding at the bottom of the SQL seed.
+- **Domain data lives in Supabase Postgres.** The 13 AZCON Holding
+  organizations + 13 programs + scopes + per-severity AZN rewards + 7
+  demo reports + timeline events are seeded by the SQL script the user
+  ran in the Supabase SQL Editor (mirrors the structure laid out in
+  `DATABASE_PLAN.md`). `lib/mock-data.ts` no longer holds programs,
+  organizations, researchers, or reports — only static UI constants
+  (`platformStats`, `industries`, `weaknessCategories`, dashboard chart
+  data, and KPI demo tiles).
+- **Live testing of any AZCON program is NOT authorized in this build.**
+  Every program card is a demo card, scope items are labelled "Pending
+  official authorization", reward ranges (AZN) are explicitly demo /
+  planned and never a real bounty commitment, and the program-detail
+  page carries a "Pending official authorization" warning banner.
 - Submitting a report opens a multi‑step modal that simulates submission with a
   `setTimeout` and shows a fake report ID. Nothing is persisted.
 - "SİMA — coming soon" / "Identity verification is planned" / "Demo
@@ -119,11 +123,27 @@ None at the moment. The eight pre‑existing defects identified during the
   (`dictionary.ts` with flat‑key EN/AZ + `locale-provider.tsx` with
   `LocaleProvider`/`useLocale`/`useT`). Default locale `'az'`, persisted via
   `localStorage` (`htb-locale`). EN/AZ toggle in `components/locale-switcher.tsx`.
-- **Auth (demo/mock):** local, dependency‑free in `lib/auth/`
-  (`mock-users.ts` with the 2 demo accounts + `auth-provider.tsx` exposing
-  `AuthProvider`/`useAuth`/`dashboardPathForRole`). Session stored in
-  `localStorage` under `htb-session`. `RoleGate` enforces dashboard
-  separation client‑side. **Not production‑safe.**
+- **Backend:** Supabase Postgres (project URL + anon key in `.env`).
+  `@supabase/supabase-js` + `@supabase/ssr`. Browser client is a
+  singleton in `lib/supabase/client.ts`; server components / route
+  handlers / actions use `lib/supabase/server.ts` which wires Next's
+  `cookies()` into the Supabase auth cookie. DB row types are
+  hand-written in `lib/supabase/database.types.ts` (regenerate via
+  `npx supabase gen types typescript` if/when schema diverges).
+- **Data layer:** per-resource query helpers in
+  `lib/supabase/queries/*` return rows mapped via
+  `lib/supabase/mappers.ts` into the existing app domain types
+  (`Program`, `Researcher`, `Report`, …). Pages consume them through
+  small `useAsync`-style hooks in `lib/data/hooks.ts` — no extra
+  dependency (no SWR / TanStack Query yet).
+- **Auth:** Supabase Auth via `@supabase/ssr`.
+  `lib/auth/auth-provider.tsx` calls `signInWithPassword`, subscribes
+  to `onAuthStateChange`, and resolves the matching `public.profiles`
+  row to build the same `Session` shape consumers already use. The
+  `useAuth()` API is unchanged so `RoleGate`, navigation, and the login
+  page work without edits. `RoleGate` enforces dashboard separation
+  client-side. **RLS is not enabled yet** — production must turn it on
+  (policy scaffolding lives at the bottom of the SQL seed).
 - **Theming:** `next-themes` installed but unused; dark mode is hard‑coded.
 - **Analytics:** `@vercel/analytics` (only mounted in production).
 - **Package manager:** both `package-lock.json` and `pnpm-lock.yaml` exist —
@@ -171,14 +191,30 @@ hackthebug-tool/
 │                                 #   toast/sonner/use-mobile dupes)
 ├── lib/
 │   ├── types.ts                  # Domain types: Program, Researcher, Report, User, Session, etc.
-│   ├── mock-data.ts              # All mock data + supporting lookup arrays (researchers all AZ)
-│   ├── utils.ts                  # `cn()` helper
+│   ├── mock-data.ts              # Static UI constants only (platformStats, industries,
+│   │                             #   weaknessCategories, dashboard chart data, KPI tiles)
+│   ├── utils.ts                  # `cn()`, `formatAZN()`, `formatAZNRange()` helpers
 │   ├── i18n/
-│   │   ├── dictionary.ts         # Flat‑key EN + AZ dictionary, translate() helper, Locale type
+│   │   ├── dictionary.ts         # Flat-key EN + AZ dictionary, translate() helper, Locale type
 │   │   └── locale-provider.tsx   # LocaleProvider + useLocale + useT hooks (localStorage backed)
-│   └── auth/
-│       ├── mock-users.ts         # 2 demo creds (researcher + organization) + Organization mock
-│       └── auth-provider.tsx     # AuthProvider + useAuth + dashboardPathForRole (localStorage backed)
+│   ├── auth/
+│   │   ├── mock-users.ts         # `demoCredentials` constants for /login display only
+│   │   └── auth-provider.tsx     # Supabase Auth-backed; same useAuth surface as before
+│   ├── supabase/
+│   │   ├── env.ts                # Reads NEXT_PUBLIC_SUPABASE_URL + anon key (multi-name fallback)
+│   │   ├── client.ts             # Singleton browser client (createBrowserClient)
+│   │   ├── server.ts             # createServerClient for RSC / route handlers / actions
+│   │   ├── database.types.ts     # Hand-written DB row types matching the SQL schema
+│   │   ├── mappers.ts            # DB row → app domain type (camelCase / nested shapes)
+│   │   └── queries/
+│   │       ├── programs.ts       # listPrograms, listFeaturedPrograms, getProgramBySlug
+│   │       ├── organizations.ts  # listOrganizations, getOrganizationById
+│   │       ├── profiles.ts       # getProfileById/Email, listResearchers
+│   │       └── reports.ts        # listReportsForResearcher / Organization, getReportById
+│   └── data/
+│       └── hooks.ts              # usePrograms / useProgram / useFeaturedPrograms /
+│                                 #   useResearchers / useResearcherReports /
+│                                 #   useOrganizationReports / useOrganization
 ├── hooks/
 │   └── use-mobile.ts             # md breakpoint hook (the canonical location)
 ├── components.json               # shadcn config (style: new-york, base: neutral)
@@ -201,9 +237,11 @@ hackthebug-tool/
 | `/programs/[slug]`               | Program detail with tabs: Overview / Scope / Rewards / Rules / Updates / Hall of Fame; "Submit Report" opens modal; "Similar Programs" footer. | Working  |
 | `/leaderboard`                   | Hero + filters + top‑3 podium + full rankings table + summary stats + CTA. Reads from `researchers`. | Working  |
 | `/about`                         | Hero + stats (driven by `platformStats`) + mission + values + 2025‑2026 roadmap + AZCON team roles + CTA. | Working  |
-| `/login`                         | Mock login form (email + password) + demo credentials card with one-click fill. Redirects to user's dashboard on success; if a `?next=/path` is provided it is honored. | Working  |
+| `/login`                         | Supabase-backed login form. Redirects to user's dashboard on success; if a `?next=/path` is provided it is honored. | Working  |
+| `/register`                      | Two-tab signup (Researcher / Organization). Researcher signup → trigger creates profile; org signup → also creates an organization row + promotes profile. Auto-redirects to the right dashboard. | Working  |
 | `/dashboard/researcher`          | Researcher KPI dashboard with charts, recent reports, achievements, SIMA banner, saved + recommended programs. **Wrapped in `RoleGate('researcher')`.** | Working  |
-| `/dashboard/organization`        | Org KPI dashboard with trend, severity, pipeline, recent reports, top assets, activity feed, top hackers. **Wrapped in `RoleGate('organization')`.** | Working  |
+| `/dashboard/organization`        | Org KPI dashboard with trend, severity, pipeline, recent reports, top assets, activity feed, top hackers, **plus a "My programs" widget + Create CTA**. Wrapped in `RoleGate('organization')`. | Working  |
+| `/dashboard/organization/programs/new` | Org-only form to publish a new program (name / slug / description / type / status / reward tier / dynamic in-scope rows). Composes program + scopes + reward tiers in three inserts. | Working  |
 
 ## Existing Components
 
@@ -379,6 +417,242 @@ To be implemented after the hackathon, in roughly this order:
   and the `LOCALES` array.
 
 ## Last Actions
+
+### 2026‑04‑26 — Hardened session, registration, multi-program orgs
+
+- **What:** (1) Auth bootstrap is now bullet-proof: every async path in
+  `lib/auth/auth-provider.tsx` is wrapped in try/catch, an 8-second
+  safety timeout flips the provider to `'unauthenticated'` if neither
+  `getSession()` nor `onAuthStateChange` resolves, and the new
+  `refresh()` method on `useAuth()` re-pulls the profile after sign-up
+  / profile edits. `RoleGate` now shows a "still working on it…"
+  message + a manual reload button after 4 seconds of loading.
+  (2) New `/register` page (`app/register/page.tsx`) with Researcher
+  and Organization tabs. Researcher signup calls
+  `supabase.auth.signUp` with display_name / handle metadata and lets
+  the `on_auth_user_created` trigger create the profile row;
+  organization signup also calls `createOrganization` and then
+  `completeOrganizationProfile` to promote the freshly-created
+  researcher profile into an org profile linked to the new org.
+  Confirmation-email path is handled gracefully. (3) Multi-program
+  per organization: the schema already supported it; added
+  `createProgramWithScopesAndRewards` in
+  `lib/supabase/queries/programs.ts` (composes program + in-scope rows
+  + the COMMON out-of-scope baseline + 5 severity reward rows from a
+  chosen LOW/STANDARD/HIGH/TOP tier), `listProgramsForOrganization`,
+  and a `useOrganizationPrograms` hook. New page
+  `app/dashboard/organization/programs/new/page.tsx` is a full
+  publishing form (name + slug + description + type + status + tier +
+  dynamic in-scope rows). The org dashboard now shows a "My programs"
+  widget with a Create button next to the org-name chip.
+  (4) Navigation: anonymous users see both "Sign up" (ghost) and
+  "Log in" buttons (desktop + mobile drawer). Sign-up link added to
+  the i18n dictionary alongside the full register / create-program /
+  my-programs key sets in EN and AZ. (5) `lib/utils.ts` got a small
+  `slugify()` helper that handles Azerbaijani diacritics
+  (ə → e, ş → s, etc.) so org / program names produce clean URLs.
+- **Why:** The user reported `/dashboard/*` getting stuck on
+  "Checking your session…" — that was the bootstrap hanging on a
+  thrown error inside the profile lookup. They also asked for a real
+  registration flow and for orgs to publish many programs (what AZAL
+  would actually do with its WebApp + Mobile + API surfaces).
+- **Files touched:** added `app/register/page.tsx`,
+  `app/dashboard/organization/programs/new/page.tsx`. Modified
+  `lib/auth/auth-provider.tsx`, `lib/utils.ts`,
+  `lib/i18n/dictionary.ts`, `lib/data/hooks.ts`,
+  `lib/supabase/queries/profiles.ts`,
+  `lib/supabase/queries/programs.ts`,
+  `lib/supabase/queries/organizations.ts`,
+  `components/role-gate.tsx`, `components/navigation.tsx`,
+  `app/dashboard/organization/page.tsx`, `MEMORY.md`, `CLAUDE.md`.
+- **One-time Supabase setup the user must run:**
+  1. **Disable email confirmation** for the demo:
+     Dashboard → Authentication → Providers → Email → toggle
+     "Confirm email" OFF (otherwise the register page shows the
+     "check your email" notice instead of auto-signing in).
+  2. **Add the auto-create-profile trigger** (so signUp
+     automatically creates a `public.profiles` row):
+     ```sql
+     CREATE OR REPLACE FUNCTION public.handle_new_auth_user()
+     RETURNS TRIGGER LANGUAGE plpgsql SECURITY DEFINER SET search_path = public AS $$
+     BEGIN
+       INSERT INTO public.profiles (id, email, role, display_name, handle, country, country_code)
+       VALUES (
+         NEW.id,
+         NEW.email,
+         'researcher',
+         COALESCE(NULLIF(NEW.raw_user_meta_data->>'display_name', ''),
+                  split_part(NEW.email, '@', 1)),
+         NULLIF(NEW.raw_user_meta_data->>'handle', ''),
+         COALESCE(NULLIF(NEW.raw_user_meta_data->>'country', ''), 'Azerbaijan'),
+         COALESCE(NULLIF(NEW.raw_user_meta_data->>'country_code', ''), 'AZ')
+       );
+       RETURN NEW;
+     END;
+     $$;
+
+     DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
+     CREATE TRIGGER on_auth_user_created
+       AFTER INSERT ON auth.users
+       FOR EACH ROW EXECUTE FUNCTION public.handle_new_auth_user();
+     ```
+  3. **Add INSERT / UPDATE RLS policies** so registration and
+     program publishing actually work under RLS:
+     ```sql
+     -- Organizations: any authenticated user can create one (org sign-up).
+     DROP POLICY IF EXISTS "authenticated_inserts_organizations" ON organizations;
+     CREATE POLICY "authenticated_inserts_organizations"
+       ON organizations FOR INSERT TO authenticated WITH CHECK (TRUE);
+
+     -- Profiles: a user can update only their own row (org-signup promotes
+     -- the auto-created profile from researcher → organization).
+     DROP POLICY IF EXISTS "profiles_self_update" ON profiles;
+     CREATE POLICY "profiles_self_update"
+       ON profiles FOR UPDATE TO authenticated
+       USING (id = auth.uid())
+       WITH CHECK (id = auth.uid());
+
+     -- Programs: an authenticated user can insert programs for their org.
+     DROP POLICY IF EXISTS "org_inserts_own_programs" ON programs;
+     CREATE POLICY "org_inserts_own_programs"
+       ON programs FOR INSERT TO authenticated
+       WITH CHECK (
+         organization_id = (
+           SELECT organization_id FROM profiles WHERE id = auth.uid()
+         )
+       );
+
+     -- Program scopes: insert for programs of own org.
+     DROP POLICY IF EXISTS "org_inserts_own_program_scopes" ON program_scopes;
+     CREATE POLICY "org_inserts_own_program_scopes"
+       ON program_scopes FOR INSERT TO authenticated
+       WITH CHECK (
+         program_id IN (
+           SELECT id FROM programs
+           WHERE organization_id = (
+             SELECT organization_id FROM profiles WHERE id = auth.uid()
+           )
+         )
+       );
+
+     -- Program rewards: same.
+     DROP POLICY IF EXISTS "org_inserts_own_program_rewards" ON program_rewards;
+     CREATE POLICY "org_inserts_own_program_rewards"
+       ON program_rewards FOR INSERT TO authenticated
+       WITH CHECK (
+         program_id IN (
+           SELECT id FROM programs
+           WHERE organization_id = (
+             SELECT organization_id FROM profiles WHERE id = auth.uid()
+           )
+         )
+       );
+     ```
+- **Verification:** sign in with the existing demo accounts to confirm
+  the dashboards load (no more "Checking your session…" hang). Then
+  go to `/register`, sign up as a new organization with a fresh
+  email; the page should auto-redirect to
+  `/dashboard/organization`. Hit "Create program", fill the form,
+  submit — it should land on the new program's `/programs/<slug>`
+  page with scopes + rewards populated. The new program also shows
+  up in the public `/programs` directory and on the org dashboard's
+  "My programs" widget.
+
+### 2026‑04‑26 — Supabase integration (data + auth)
+
+- **What:** Wired the entire frontend to Supabase. (1) Foundation:
+  `lib/supabase/{env,client,server,database.types,mappers}.ts` plus
+  per-resource query helpers in `lib/supabase/queries/{programs,
+  organizations,profiles,reports}.ts`. The browser client is a
+  singleton via `@supabase/ssr`; the server client wires Next's
+  `cookies()` into the auth cookie. Hand-written `Database` types
+  match the SQL seed. Mappers convert snake_case rows to the existing
+  camelCase app types so no component shapes had to change. (2) Data
+  hooks: `lib/data/hooks.ts` exposes `usePrograms`,
+  `useFeaturedPrograms`, `useProgram`, `useResearchers`,
+  `useResearcherReports`, `useOrganizationReports`, `useOrganization`
+  — small `useAsync` wrappers, no extra dependency. (3) Auth:
+  `lib/auth/auth-provider.tsx` rewritten to use Supabase Auth
+  (`signInWithPassword` + `onAuthStateChange`), resolving the matching
+  `public.profiles` row to keep the same `Session` shape and
+  `useAuth()` surface so `RoleGate` / navigation / login page worked
+  without edits. (4) Pages migrated: `app/page.tsx` (featured
+  programs), `app/programs/page.tsx` (directory + skeleton loading
+  state), `app/programs/[slug]/page.tsx` (detail + similar programs +
+  full skeleton), `app/leaderboard/page.tsx` (researchers),
+  `app/dashboard/researcher/page.tsx` (uses
+  `useAuth().session.displayName` for the welcome line + saved /
+  recommended programs + the user's own reports), and
+  `app/dashboard/organization/page.tsx` (looks up org name via
+  `useOrganization(session.organizationId)` + fetches reports against
+  the org's programs). (5) `lib/mock-data.ts` slimmed to static UI
+  constants only — `programs`, `organizations`, `researchers`, and
+  `reports` arrays are gone. (6) `lib/auth/mock-users.ts` reduced to
+  the `demoCredentials` constants used for /login display, with the
+  new `.az` emails. (7) The `login` and `logout` callbacks are now
+  async; `app/login/page.tsx` and `components/navigation.tsx` updated
+  accordingly.
+- **Why:** Database is in Supabase now; the app should read from it.
+  Keeping the existing `lib/types.ts` shapes via mappers meant the
+  large component layer didn't need rewriting; a tiny `useAsync` hook
+  family avoided pulling in SWR or TanStack Query for the hackathon.
+- **Files touched:** added `lib/supabase/env.ts`,
+  `lib/supabase/client.ts`, `lib/supabase/server.ts`,
+  `lib/supabase/database.types.ts`, `lib/supabase/mappers.ts`,
+  `lib/supabase/queries/programs.ts`,
+  `lib/supabase/queries/organizations.ts`,
+  `lib/supabase/queries/profiles.ts`,
+  `lib/supabase/queries/reports.ts`, `lib/data/hooks.ts`. Modified
+  `lib/auth/auth-provider.tsx`, `lib/auth/mock-users.ts`,
+  `lib/mock-data.ts`, `app/page.tsx`, `app/programs/page.tsx`,
+  `app/programs/[slug]/page.tsx`, `app/leaderboard/page.tsx`,
+  `app/dashboard/researcher/page.tsx`,
+  `app/dashboard/organization/page.tsx`, `app/login/page.tsx`,
+  `components/navigation.tsx`, `MEMORY.md`, `CLAUDE.md`.
+- **Setup the user must do once before sign-in works:**
+  1. `npm install @supabase/supabase-js @supabase/ssr`
+  2. In Supabase Dashboard → Authentication → Users → Add user, create
+     `researcher@hackthebug.az` (password `Researcher123!`) and
+     `organization@hackthebug.az` (password `Organization123!`), with
+     "Auto Confirm User" ON.
+  3. Run this one-time SQL in the Supabase SQL Editor to align
+     `public.profiles.id` with the freshly-created `auth.users.id`
+     values and re-link the seeded reports to the real researcher:
+     ```sql
+     DO $$
+     DECLARE
+       v_researcher_id UUID;
+       v_org_id UUID;
+     BEGIN
+       SELECT id INTO v_researcher_id FROM auth.users WHERE email = 'researcher@hackthebug.az';
+       SELECT id INTO v_org_id        FROM auth.users WHERE email = 'organization@hackthebug.az';
+       IF v_researcher_id IS NULL OR v_org_id IS NULL THEN
+         RAISE EXCEPTION 'Create both auth users in Supabase Dashboard first.';
+       END IF;
+       DELETE FROM profiles WHERE id IN (
+         '11111111-1111-1111-1111-111111111111',
+         '22222222-2222-2222-2222-222222222222'
+       );
+       INSERT INTO profiles (id, email, role, display_name, handle, organization_id,
+         points, reputation, reports_accepted, reports_submitted, total_rewards, joined_at)
+       VALUES
+         (v_researcher_id, 'researcher@hackthebug.az', 'researcher', 'CyberNomad',
+          'cybernomad', NULL, 12500, 98, 42, 58, 28500, '2025-03-10T00:00:00Z'),
+         (v_org_id, 'organization@hackthebug.az', 'organization', 'AZAL Security Team',
+          NULL, 'aaaaaaaa-0000-0000-0000-000000000001', 0, 0, 0, 0, 0, '2026-01-15T00:00:00Z');
+       UPDATE reports SET researcher_id = v_researcher_id WHERE researcher_id IS NULL;
+     END $$;
+     ```
+- **Verification:** the user should run `npm install` (the two
+  packages above), then `npm run build` and `npx tsc --noEmit`. After
+  the auth setup above, sign in with either demo account from /login
+  and confirm the dashboards render with live data.
+- **Next step:** when the demo is happy, enable RLS on every table and
+  uncomment the policy block at the bottom of the SQL seed (it follows
+  the conventions established by the new auth flow:
+  `profiles.id = auth.uid()`, researcher sees own reports, org sees
+  reports against programs they own). The frontend code requires no
+  changes — RLS is enforced server-side.
 
 ### 2026‑04‑26 — Demo AZN reward tiers + simplify dashboard nav label
 

@@ -1,69 +1,31 @@
 /**
- * DEMO ONLY — frontend mock auth.
+ * DEMO ONLY — credential constants for the hackathon prototype.
  *
- * These records are bundled into the client. Do NOT use them, or anything
- * resembling them, in production. Real backend auth must:
- *   - keep credentials server-side
- *   - hash passwords (argon2id / bcrypt)
- *   - issue HttpOnly + Secure session cookies (or signed JWTs)
- *   - layer SİMA identity verification on top before granting researcher
- *     access at launch
+ * Real authentication now goes through Supabase Auth (see
+ * `lib/auth/auth-provider.tsx`). The two values exported here are kept
+ * solely so the `/login` page (and any "what credentials should I use"
+ * helper) has a single source of truth for the demo accounts seeded into
+ * the database.
  *
- * For the hackathon prototype, the password is compared in plain text on the
- * client purely so the demo flow is testable. See DATABASE_PLAN.md.
+ * The matching Supabase Auth users must exist before sign-in works:
+ *   - researcher@hackthebug.az / Researcher123!
+ *   - organization@hackthebug.az / Organization123!
+ *
+ * Create them via Supabase Dashboard → Authentication → Users → Add user
+ * (with "Auto Confirm User" ON), then run the one-time SQL migration
+ * documented in MEMORY.md > Last Actions to align `public.profiles.id`
+ * with the new `auth.users.id` values.
+ *
+ * Production must replace these helpers with a real signup / invite flow.
  */
-
-import type { User } from '@/lib/types'
-
-interface MockCredential {
-  user: User
-  password: string
-}
-
-export const mockCredentials: MockCredential[] = [
-  {
-    user: {
-      id: 'usr-researcher-1',
-      email: 'researcher@hackthebug.demo',
-      role: 'researcher',
-      displayName: 'CyberNomad',
-      researcherId: '1',
-    },
-    password: 'researcher123',
-  },
-  {
-    user: {
-      id: 'usr-organization-1',
-      email: 'org@hackthebug.demo',
-      role: 'organization',
-      displayName: 'AZAL',
-      // Matches `organizations[0]` in `lib/mock-data.ts` — the canonical
-      // organization records live there, not here.
-      organizationId: 'org-azal',
-    },
-    password: 'org123',
-  },
-]
-
-export function findCredential(
-  email: string,
-  password: string,
-): MockCredential | null {
-  const normalizedEmail = email.trim().toLowerCase()
-  const match = mockCredentials.find(
-    (c) =>
-      c.user.email.toLowerCase() === normalizedEmail && c.password === password,
-  )
-  return match ?? null
-}
 
 export const demoCredentials = {
   researcher: {
-    email: mockCredentials[0].user.email,
-    password: mockCredentials[0].password,
+    email: 'researcher@hackthebug.az',
+    password: 'Researcher123!',
   },
   organization: {
-    email: mockCredentials[1].user.email,
-    password: mockCredentials[1].password,
+    email: 'organization@hackthebug.az',
+    password: 'Organization123!',
   },
 } as const

@@ -25,7 +25,8 @@ import { Badge } from '@/components/ui/badge'
 import { SectionHeading } from '@/components/section-heading'
 import { ProgramCard } from '@/components/program-card'
 import { useT } from '@/lib/i18n/locale-provider'
-import { programs, platformStats } from '@/lib/mock-data'
+import { useFeaturedPrograms } from '@/lib/data/hooks'
+import { platformStats } from '@/lib/mock-data'
 
 const fadeInUp = {
   initial: { opacity: 0, y: 20 },
@@ -75,7 +76,7 @@ const roadmapPhases = [
 
 export default function HomePage() {
   const t = useT()
-  const featuredPrograms = programs.filter((p) => p.featured).slice(0, 3)
+  const { data: featuredPrograms } = useFeaturedPrograms(3)
 
   return (
     <div className="relative">
@@ -332,7 +333,7 @@ export default function HomePage() {
           </div>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {featuredPrograms.map((program, index) => (
+            {(featuredPrograms ?? []).map((program, index) => (
               <ProgramCard key={program.id} program={program} index={index} />
             ))}
           </div>

@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { Loader2, ShieldAlert, ShieldCheck } from 'lucide-react'
@@ -15,11 +15,14 @@ interface RoleGateProps {
   children: React.ReactNode
 }
 
+const STALE_LOADING_MS = 4000
+
 export function RoleGate({ role, children }: RoleGateProps) {
   const t = useT()
   const router = useRouter()
   const pathname = usePathname()
   const { status, session, logout } = useAuth()
+  const [staleLoading, setStaleLoading] = useState(false)
 
   useEffect(() => {
     if (status === 'unauthenticated') {
@@ -28,8 +31,36 @@ export function RoleGate({ role, children }: RoleGateProps) {
     }
   }, [status, pathname, router])
 
+  // If loading drags on, show a friendlier "still working on it" hint and a
+  // manual reload button. The auth provider's own 8-second safety timeout
+  // will resolve to 'unauthenticated' shortly after this.
+  useEffect(() => {
+    if (status !== 'loading') {
+      setStaleLoading(false)
+      return
+    }
+    const timer = setTimeout(() => setStaleLoading(true), STALE_LOADING_MS)
+    return () => clearTimeout(timer)
+  }, [status])
+
   if (status === 'loading') {
-    return <FullScreenStatus icon="loader" message={t('roleGate.checking')} />
+    return (
+      <FullScreenStatus
+        icon="loader"
+        message={t('roleGate.checking')}
+        hint={staleLoading ? t('roleGate.stillChecking') : undefined}
+        action={
+          staleLoading
+            ? {
+                label: t('roleGate.tryAgain'),
+                onClick: () => {
+                  if (typeof window !== 'undefined') window.location.reload()
+                },
+              }
+            : undefined
+        }
+      />
+    )
   }
 
   if (status === 'unauthenticated') {
@@ -77,13 +108,17 @@ export function RoleGate({ role, children }: RoleGateProps) {
 function FullScreenStatus({
   icon,
   message,
+  hint,
+  action,
 }: {
   icon: 'loader' | 'check'
   message: string
+  hint?: string
+  action?: { label: string; onClick: () => void }
 }) {
   return (
     <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center px-4 py-12">
-      <div className="flex flex-col items-center gap-4 text-center">
+      <div className="flex flex-col items-center gap-4 text-center max-w-sm">
         <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center">
           {icon === 'loader' ? (
             <Loader2 className="h-6 w-6 text-primary animate-spin" />
@@ -92,6 +127,14 @@ function FullScreenStatus({
           )}
         </div>
         <p className="text-sm text-muted-foreground">{message}</p>
+        {hint && (
+          <p className="text-xs text-muted-foreground/80">{hint}</p>
+        )}
+        {action && (
+          <Button variant="outline" size="sm" onClick={action.onClick}>
+            {action.label}
+          </Button>
+        )}
       </div>
     </div>
   )
