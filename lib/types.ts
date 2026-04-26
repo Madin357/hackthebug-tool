@@ -46,12 +46,6 @@ export interface Program {
     min: number
     max: number
   }
-  /**
-   * When true, the program offers only public recognition (no monetary
-   * rewards). UI surfaces should display "Recognition" instead of a
-   * `$min - $max` range.
-   */
-  recognitionOnly?: boolean
   assetsCount: number
   lastUpdated: string
   tags: string[]

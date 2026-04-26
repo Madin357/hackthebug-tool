@@ -60,18 +60,53 @@ const COMMON_RULES = [
   'Respect operational safety, user privacy, and applicable law',
 ]
 
-const RECOGNITION_REWARDS = [
-  { severity: 'critical' as const, minReward: 0, maxReward: 0, sla: 'Recognition only' },
-  { severity: 'high'     as const, minReward: 0, maxReward: 0, sla: 'Recognition only' },
-  { severity: 'medium'   as const, minReward: 0, maxReward: 0, sla: 'Recognition only' },
-  { severity: 'low'      as const, minReward: 0, maxReward: 0, sla: 'Recognition only' },
+/**
+ * Demo / planned reward tiers, in AZN. Values are illustrative only — they
+ * show what an officially authorized program could plausibly pay. Nothing
+ * here is a real bounty commitment from any organization.
+ *
+ * Tier shape:
+ *   - LOW       — smaller surface, fewer assets (BakuBus, Bakı Taksi)
+ *   - STANDARD  — average commercial / public service (ASCO, Bakı Metro,
+ *                 Bakı Shipyard, Azərpoçt, Teleradio)
+ *   - HIGH      — high-impact infrastructure (AZAL, ADY, Aztelekom,
+ *                 AzInTelecom)
+ *   - TOP       — highest-impact / most sensitive (Azərkosmos, MSIM)
+ */
+const REWARDS_LOW = [
+  { severity: 'critical' as const, minReward: 1500, maxReward: 3500, sla: '24 hours' },
+  { severity: 'high'     as const, minReward: 600,  maxReward: 1200, sla: '48 hours' },
+  { severity: 'medium'   as const, minReward: 200,  maxReward: 450,  sla: '72 hours' },
+  { severity: 'low'      as const, minReward: 50,   maxReward: 125,  sla: '5 days' },
+]
+const REWARDS_STANDARD = [
+  { severity: 'critical' as const, minReward: 2000, maxReward: 5000, sla: '24 hours' },
+  { severity: 'high'     as const, minReward: 700,  maxReward: 1500, sla: '48 hours' },
+  { severity: 'medium'   as const, minReward: 250,  maxReward: 550,  sla: '72 hours' },
+  { severity: 'low'      as const, minReward: 75,   maxReward: 175,  sla: '5 days' },
+]
+const REWARDS_HIGH = [
+  { severity: 'critical' as const, minReward: 3500, maxReward: 7000, sla: '12 hours' },
+  { severity: 'high'     as const, minReward: 1200, maxReward: 2500, sla: '24 hours' },
+  { severity: 'medium'   as const, minReward: 350,  maxReward: 800,  sla: '48 hours' },
+  { severity: 'low'      as const, minReward: 100,  maxReward: 250,  sla: '5 days' },
+]
+const REWARDS_TOP = [
+  { severity: 'critical' as const, minReward: 4500, maxReward: 9000, sla: '8 hours' },
+  { severity: 'high'     as const, minReward: 1500, maxReward: 3000, sla: '24 hours' },
+  { severity: 'medium'   as const, minReward: 400,  maxReward: 1000, sla: '48 hours' },
+  { severity: 'low'      as const, minReward: 150,  maxReward: 300,  sla: '3 days' },
 ]
 
-const PENDING_RESPONSE_TIMES = {
-  firstResponse: 'TBD at launch',
-  triage: 'TBD at launch',
-  resolution: 'TBD at launch',
-}
+const RANGE_LOW = { min: 50, max: 3500 }
+const RANGE_STANDARD = { min: 75, max: 5000 }
+const RANGE_HIGH = { min: 100, max: 7000 }
+const RANGE_TOP = { min: 150, max: 9000 }
+
+const RESPONSE_LOW = { firstResponse: '< 12 hours', triage: '< 48 hours', resolution: '< 30 days' }
+const RESPONSE_STANDARD = { firstResponse: '< 8 hours',  triage: '< 24 hours', resolution: '< 21 days' }
+const RESPONSE_HIGH = { firstResponse: '< 4 hours',  triage: '< 16 hours', resolution: '< 14 days' }
+const RESPONSE_TOP = { firstResponse: '< 2 hours',  triage: '< 12 hours', resolution: '< 10 days' }
 
 export const programs: Program[] = [
   {
@@ -82,12 +117,11 @@ export const programs: Program[] = [
     description:
       'Demo card for the national flag carrier. Real testing of any AZAL system requires explicit official authorization.',
     longDescription:
-      'Azərbaycan Hava Yolları (AZAL) operates the country’s flag carrier and ground services. This card sketches what a coordinated vulnerability disclosure program could look like for AZAL’s passenger-facing surfaces. Scope categories below are illustrative; no testing is authorized until AZAL publishes an official program.',
+      'Azərbaycan Hava Yolları (AZAL) operates the country’s flag carrier and ground services. This card sketches what a coordinated vulnerability disclosure program could look like for AZAL’s passenger-facing surfaces. Scope categories below are illustrative; reward ranges are demo / planned values; no testing is authorized until AZAL publishes an official program.',
     industry: 'Airline / Aviation',
     status: 'active',
     type: 'vdp',
-    rewardRange: { min: 0, max: 0 },
-    recognitionOnly: true,
+    rewardRange: RANGE_HIGH,
     assetsCount: 5,
     lastUpdated: '2026-04-22',
     tags: ['Aviation', 'Web', 'Mobile', 'Demo Card'],
@@ -105,13 +139,13 @@ export const programs: Program[] = [
       'Real passenger data',
       ...COMMON_OUT_OF_SCOPE,
     ],
-    rewards: RECOGNITION_REWARDS,
+    rewards: REWARDS_HIGH,
     rules: COMMON_RULES,
     updates: [
-      { id: '1', date: '2026-04-22', title: 'Demo program card published', description: 'Initial scope categories drafted for the AZCON Hackathon demo.', type: 'general' },
+      { id: '1', date: '2026-04-22', title: 'Demo program card published', description: 'Initial scope categories and demo reward tiers drafted for the AZCON Hackathon demo.', type: 'general' },
     ],
     hallOfFame: [],
-    responseTime: PENDING_RESPONSE_TIMES,
+    responseTime: RESPONSE_HIGH,
   },
   {
     id: '2',
@@ -121,12 +155,11 @@ export const programs: Program[] = [
     description:
       'Demo card for the national railway operator. Real testing requires explicit official authorization.',
     longDescription:
-      'Azərbaycan Dəmir Yolları (ADY) runs Azerbaijan’s national railway network for passengers and freight. This card describes a potential VDP for ADY’s customer-facing platforms. Scope is illustrative pending an official program.',
+      'Azərbaycan Dəmir Yolları (ADY) runs Azerbaijan’s national railway network for passengers and freight. This card describes a potential VDP for ADY’s customer-facing platforms. Scope is illustrative; reward ranges are demo / planned values pending an official program.',
     industry: 'Railway / Transport',
     status: 'active',
     type: 'vdp',
-    rewardRange: { min: 0, max: 0 },
-    recognitionOnly: true,
+    rewardRange: RANGE_HIGH,
     assetsCount: 4,
     lastUpdated: '2026-04-20',
     tags: ['Railway', 'Web', 'API', 'Demo Card'],
@@ -142,13 +175,13 @@ export const programs: Program[] = [
       'Real passenger data',
       ...COMMON_OUT_OF_SCOPE,
     ],
-    rewards: RECOGNITION_REWARDS,
+    rewards: REWARDS_HIGH,
     rules: COMMON_RULES,
     updates: [
-      { id: '1', date: '2026-04-20', title: 'Demo program card published', description: 'Initial scope categories drafted for the AZCON Hackathon demo.', type: 'general' },
+      { id: '1', date: '2026-04-20', title: 'Demo program card published', description: 'Initial scope categories and demo reward tiers drafted for the AZCON Hackathon demo.', type: 'general' },
     ],
     hallOfFame: [],
-    responseTime: PENDING_RESPONSE_TIMES,
+    responseTime: RESPONSE_HIGH,
   },
   {
     id: '3',
@@ -158,12 +191,11 @@ export const programs: Program[] = [
     description:
       'Demo card for the national Caspian shipping company. Real testing requires explicit official authorization.',
     longDescription:
-      'Azərbaycan Xəzər Dəniz Gəmiçiliyi (ASCO) operates merchant and tanker fleets on the Caspian. This card outlines what a private-preview disclosure program could look like for ASCO’s corporate digital surfaces. Scope is illustrative.',
+      'Azərbaycan Xəzər Dəniz Gəmiçiliyi (ASCO) operates merchant and tanker fleets on the Caspian. This card outlines what a private-preview disclosure program could look like for ASCO’s corporate digital surfaces. Reward ranges are demo / planned values.',
     industry: 'Maritime / Shipping',
     status: 'active',
     type: 'private-preview',
-    rewardRange: { min: 0, max: 0 },
-    recognitionOnly: true,
+    rewardRange: RANGE_STANDARD,
     assetsCount: 3,
     lastUpdated: '2026-04-15',
     tags: ['Maritime', 'Web', 'Demo Card'],
@@ -178,13 +210,13 @@ export const programs: Program[] = [
       'Customer or partner business data',
       ...COMMON_OUT_OF_SCOPE,
     ],
-    rewards: RECOGNITION_REWARDS,
+    rewards: REWARDS_STANDARD,
     rules: COMMON_RULES,
     updates: [
-      { id: '1', date: '2026-04-15', title: 'Demo program card published', description: 'Initial scope categories drafted for the AZCON Hackathon demo.', type: 'general' },
+      { id: '1', date: '2026-04-15', title: 'Demo program card published', description: 'Initial scope categories and demo reward tiers drafted for the AZCON Hackathon demo.', type: 'general' },
     ],
     hallOfFame: [],
-    responseTime: PENDING_RESPONSE_TIMES,
+    responseTime: RESPONSE_STANDARD,
   },
   {
     id: '4',
@@ -194,12 +226,11 @@ export const programs: Program[] = [
     description:
       'Demo card for Baku’s metro service. Real testing requires explicit official authorization.',
     longDescription:
-      'Bakı Metropoliteni operates Baku’s underground metro network. This card sketches a potential VDP for the metro’s customer-facing surfaces, including schedule and ticketing flows. Scope is illustrative pending an official program.',
+      'Bakı Metropoliteni operates Baku’s underground metro network. This card sketches a potential VDP for the metro’s customer-facing surfaces, including schedule and ticketing flows. Reward ranges are demo / planned values pending an official program.',
     industry: 'Metro / Public Transport',
     status: 'active',
     type: 'vdp',
-    rewardRange: { min: 0, max: 0 },
-    recognitionOnly: true,
+    rewardRange: RANGE_STANDARD,
     assetsCount: 4,
     lastUpdated: '2026-04-18',
     tags: ['Metro', 'Web', 'Mobile', 'Demo Card'],
@@ -215,13 +246,13 @@ export const programs: Program[] = [
       'Real passenger data',
       ...COMMON_OUT_OF_SCOPE,
     ],
-    rewards: RECOGNITION_REWARDS,
+    rewards: REWARDS_STANDARD,
     rules: COMMON_RULES,
     updates: [
-      { id: '1', date: '2026-04-18', title: 'Demo program card published', description: 'Initial scope categories drafted for the AZCON Hackathon demo.', type: 'general' },
+      { id: '1', date: '2026-04-18', title: 'Demo program card published', description: 'Initial scope categories and demo reward tiers drafted for the AZCON Hackathon demo.', type: 'general' },
     ],
     hallOfFame: [],
-    responseTime: PENDING_RESPONSE_TIMES,
+    responseTime: RESPONSE_STANDARD,
   },
   {
     id: '5',
@@ -231,12 +262,11 @@ export const programs: Program[] = [
     description:
       'Demo card for Baku’s public bus operator. Real testing requires explicit official authorization.',
     longDescription:
-      'BakuBus runs the city’s public bus fleet. This card outlines what a coordinated VDP could cover for the operator’s customer-facing surfaces. Scope is illustrative.',
+      'BakuBus runs the city’s public bus fleet. This card outlines what a coordinated VDP could cover for the operator’s customer-facing surfaces. Reward ranges are demo / planned values.',
     industry: 'Bus Transport',
     status: 'active',
     type: 'vdp',
-    rewardRange: { min: 0, max: 0 },
-    recognitionOnly: true,
+    rewardRange: RANGE_LOW,
     assetsCount: 3,
     lastUpdated: '2026-04-12',
     tags: ['Bus', 'Web', 'Mobile', 'Demo Card'],
@@ -251,13 +281,13 @@ export const programs: Program[] = [
       'Real customer data',
       ...COMMON_OUT_OF_SCOPE,
     ],
-    rewards: RECOGNITION_REWARDS,
+    rewards: REWARDS_LOW,
     rules: COMMON_RULES,
     updates: [
-      { id: '1', date: '2026-04-12', title: 'Demo program card published', description: 'Initial scope categories drafted for the AZCON Hackathon demo.', type: 'general' },
+      { id: '1', date: '2026-04-12', title: 'Demo program card published', description: 'Initial scope categories and demo reward tiers drafted for the AZCON Hackathon demo.', type: 'general' },
     ],
     hallOfFame: [],
-    responseTime: PENDING_RESPONSE_TIMES,
+    responseTime: RESPONSE_LOW,
   },
   {
     id: '6',
@@ -267,12 +297,11 @@ export const programs: Program[] = [
     description:
       'Demo card for the Baku Shipyard. Real testing requires explicit official authorization.',
     longDescription:
-      'Bakı Gəmiqayırma Zavodu (BSY) builds and maintains marine vessels. This card sketches what a private-preview disclosure program could look like for the shipyard’s corporate digital surfaces. Scope is illustrative.',
+      'Bakı Gəmiqayırma Zavodu (BSY) builds and maintains marine vessels. This card sketches what a private-preview disclosure program could look like for the shipyard’s corporate digital surfaces. Reward ranges are demo / planned values.',
     industry: 'Shipbuilding',
     status: 'upcoming',
     type: 'private-preview',
-    rewardRange: { min: 0, max: 0 },
-    recognitionOnly: true,
+    rewardRange: RANGE_STANDARD,
     assetsCount: 2,
     lastUpdated: '2026-04-10',
     tags: ['Shipbuilding', 'Web', 'Demo Card'],
@@ -286,13 +315,13 @@ export const programs: Program[] = [
       'Project / commercial data',
       ...COMMON_OUT_OF_SCOPE,
     ],
-    rewards: RECOGNITION_REWARDS,
+    rewards: REWARDS_STANDARD,
     rules: COMMON_RULES,
     updates: [
-      { id: '1', date: '2026-04-10', title: 'Demo program card published', description: 'Initial scope categories drafted for the AZCON Hackathon demo.', type: 'general' },
+      { id: '1', date: '2026-04-10', title: 'Demo program card published', description: 'Initial scope categories and demo reward tiers drafted for the AZCON Hackathon demo.', type: 'general' },
     ],
     hallOfFame: [],
-    responseTime: PENDING_RESPONSE_TIMES,
+    responseTime: RESPONSE_STANDARD,
   },
   {
     id: '7',
@@ -302,12 +331,11 @@ export const programs: Program[] = [
     description:
       'Demo card for Azerbaijan’s national satellite operator. Real testing requires explicit official authorization.',
     longDescription:
-      'Azərkosmos operates Azerbaijan’s satellite communications infrastructure. This card outlines a potential private-preview disclosure program for the operator’s corporate and customer-facing surfaces. Operational satellite and ground systems are explicitly out of scope. Scope is illustrative.',
+      'Azərkosmos operates Azerbaijan’s satellite communications infrastructure. This card outlines a potential private-preview disclosure program for the operator’s corporate and customer-facing surfaces. Operational satellite and ground systems are explicitly out of scope. Reward ranges are demo / planned values.',
     industry: 'Space / Satellite',
     status: 'upcoming',
     type: 'private-preview',
-    rewardRange: { min: 0, max: 0 },
-    recognitionOnly: true,
+    rewardRange: RANGE_TOP,
     assetsCount: 3,
     lastUpdated: '2026-04-25',
     tags: ['Space', 'Satellite', 'Demo Card'],
@@ -322,13 +350,13 @@ export const programs: Program[] = [
       'Customer mission data',
       ...COMMON_OUT_OF_SCOPE,
     ],
-    rewards: RECOGNITION_REWARDS,
+    rewards: REWARDS_TOP,
     rules: COMMON_RULES,
     updates: [
-      { id: '1', date: '2026-04-25', title: 'Demo program card published', description: 'Initial scope categories drafted for the AZCON Hackathon demo.', type: 'general' },
+      { id: '1', date: '2026-04-25', title: 'Demo program card published', description: 'Initial scope categories and demo reward tiers drafted for the AZCON Hackathon demo.', type: 'general' },
     ],
     hallOfFame: [],
-    responseTime: PENDING_RESPONSE_TIMES,
+    responseTime: RESPONSE_TOP,
   },
   {
     id: '8',
@@ -338,12 +366,11 @@ export const programs: Program[] = [
     description:
       'Demo card for Azerbaijan’s incumbent telecom operator. Real testing requires explicit official authorization.',
     longDescription:
-      'Aztelekom is Azerbaijan’s national telecommunications provider. This card sketches what a VDP could cover for Aztelekom’s customer-facing portals and mobile app. Scope is illustrative.',
+      'Aztelekom is Azerbaijan’s national telecommunications provider. This card sketches what a VDP could cover for Aztelekom’s customer-facing portals and mobile app. Reward ranges are demo / planned values.',
     industry: 'Telecommunications',
     status: 'active',
     type: 'vdp',
-    rewardRange: { min: 0, max: 0 },
-    recognitionOnly: true,
+    rewardRange: RANGE_HIGH,
     assetsCount: 4,
     lastUpdated: '2026-04-21',
     tags: ['Telecom', 'Web', 'Mobile', 'Demo Card'],
@@ -359,13 +386,13 @@ export const programs: Program[] = [
       'Subscriber traffic or call records',
       ...COMMON_OUT_OF_SCOPE,
     ],
-    rewards: RECOGNITION_REWARDS,
+    rewards: REWARDS_HIGH,
     rules: COMMON_RULES,
     updates: [
-      { id: '1', date: '2026-04-21', title: 'Demo program card published', description: 'Initial scope categories drafted for the AZCON Hackathon demo.', type: 'general' },
+      { id: '1', date: '2026-04-21', title: 'Demo program card published', description: 'Initial scope categories and demo reward tiers drafted for the AZCON Hackathon demo.', type: 'general' },
     ],
     hallOfFame: [],
-    responseTime: PENDING_RESPONSE_TIMES,
+    responseTime: RESPONSE_HIGH,
   },
   {
     id: '9',
@@ -375,12 +402,11 @@ export const programs: Program[] = [
     description:
       'Demo card for the national digital infrastructure operator. Real testing requires explicit official authorization.',
     longDescription:
-      'AzInTelecom runs national-scale digital infrastructure including data center and cloud services. This card outlines a potential VDP for the operator’s customer-facing portals and APIs. Scope is illustrative.',
+      'AzInTelecom runs national-scale digital infrastructure including data center and cloud services. This card outlines a potential VDP for the operator’s customer-facing portals and APIs. Reward ranges are demo / planned values.',
     industry: 'Cloud / Digital Infrastructure',
     status: 'active',
     type: 'vdp',
-    rewardRange: { min: 0, max: 0 },
-    recognitionOnly: true,
+    rewardRange: RANGE_HIGH,
     assetsCount: 3,
     lastUpdated: '2026-04-19',
     tags: ['Cloud', 'API', 'Demo Card'],
@@ -395,13 +421,13 @@ export const programs: Program[] = [
       'Underlying hypervisor / infrastructure',
       ...COMMON_OUT_OF_SCOPE,
     ],
-    rewards: RECOGNITION_REWARDS,
+    rewards: REWARDS_HIGH,
     rules: COMMON_RULES,
     updates: [
-      { id: '1', date: '2026-04-19', title: 'Demo program card published', description: 'Initial scope categories drafted for the AZCON Hackathon demo.', type: 'general' },
+      { id: '1', date: '2026-04-19', title: 'Demo program card published', description: 'Initial scope categories and demo reward tiers drafted for the AZCON Hackathon demo.', type: 'general' },
     ],
     hallOfFame: [],
-    responseTime: PENDING_RESPONSE_TIMES,
+    responseTime: RESPONSE_HIGH,
   },
   {
     id: '10',
@@ -411,12 +437,11 @@ export const programs: Program[] = [
     description:
       'Demo card for the national postal operator. Real testing requires explicit official authorization.',
     longDescription:
-      'Azərpoçt provides nationwide postal and logistics services. This card sketches a VDP for the operator’s customer-facing surfaces including tracking and online payment flows. Scope is illustrative.',
+      'Azərpoçt provides nationwide postal and logistics services. This card sketches a VDP for the operator’s customer-facing surfaces including tracking and online payment flows. Reward ranges are demo / planned values.',
     industry: 'Postal / Logistics',
     status: 'active',
     type: 'vdp',
-    rewardRange: { min: 0, max: 0 },
-    recognitionOnly: true,
+    rewardRange: RANGE_STANDARD,
     assetsCount: 4,
     lastUpdated: '2026-04-17',
     tags: ['Postal', 'Web', 'Mobile', 'Demo Card'],
@@ -432,13 +457,13 @@ export const programs: Program[] = [
       'Real recipient or financial data',
       ...COMMON_OUT_OF_SCOPE,
     ],
-    rewards: RECOGNITION_REWARDS,
+    rewards: REWARDS_STANDARD,
     rules: COMMON_RULES,
     updates: [
-      { id: '1', date: '2026-04-17', title: 'Demo program card published', description: 'Initial scope categories drafted for the AZCON Hackathon demo.', type: 'general' },
+      { id: '1', date: '2026-04-17', title: 'Demo program card published', description: 'Initial scope categories and demo reward tiers drafted for the AZCON Hackathon demo.', type: 'general' },
     ],
     hallOfFame: [],
-    responseTime: PENDING_RESPONSE_TIMES,
+    responseTime: RESPONSE_STANDARD,
   },
   {
     id: '11',
@@ -448,12 +473,11 @@ export const programs: Program[] = [
     description:
       'Demo card for the Baku municipal taxi service. Real testing requires explicit official authorization.',
     longDescription:
-      'Bakı Taksi Xidməti provides licensed taxi services in Baku. This card outlines a potential VDP for the operator’s customer and driver mobile apps and booking site. Scope is illustrative.',
+      'Bakı Taksi Xidməti provides licensed taxi services in Baku. This card outlines a potential VDP for the operator’s customer and driver mobile apps and booking site. Reward ranges are demo / planned values.',
     industry: 'Taxi / Mobility',
     status: 'active',
     type: 'vdp',
-    rewardRange: { min: 0, max: 0 },
-    recognitionOnly: true,
+    rewardRange: RANGE_LOW,
     assetsCount: 3,
     lastUpdated: '2026-04-14',
     tags: ['Mobility', 'Mobile', 'Web', 'Demo Card'],
@@ -468,13 +492,13 @@ export const programs: Program[] = [
       'Live ride dispatching or pricing engines',
       ...COMMON_OUT_OF_SCOPE,
     ],
-    rewards: RECOGNITION_REWARDS,
+    rewards: REWARDS_LOW,
     rules: COMMON_RULES,
     updates: [
-      { id: '1', date: '2026-04-14', title: 'Demo program card published', description: 'Initial scope categories drafted for the AZCON Hackathon demo.', type: 'general' },
+      { id: '1', date: '2026-04-14', title: 'Demo program card published', description: 'Initial scope categories and demo reward tiers drafted for the AZCON Hackathon demo.', type: 'general' },
     ],
     hallOfFame: [],
-    responseTime: PENDING_RESPONSE_TIMES,
+    responseTime: RESPONSE_LOW,
   },
   {
     id: '12',
@@ -484,12 +508,11 @@ export const programs: Program[] = [
     description:
       'Demo card for the national broadcasting infrastructure operator. Real testing requires explicit official authorization.',
     longDescription:
-      'Teleradio operates national broadcasting infrastructure for radio and television. This card sketches a VDP for the operator’s customer-facing portals and streaming app. Broadcasting and transmission infrastructure remain explicitly out of scope. Scope is illustrative.',
+      'Teleradio operates national broadcasting infrastructure for radio and television. This card sketches a VDP for the operator’s customer-facing portals and streaming app. Broadcasting and transmission infrastructure remain explicitly out of scope. Reward ranges are demo / planned values.',
     industry: 'Broadcasting / TV / Radio',
     status: 'active',
     type: 'vdp',
-    rewardRange: { min: 0, max: 0 },
-    recognitionOnly: true,
+    rewardRange: RANGE_STANDARD,
     assetsCount: 3,
     lastUpdated: '2026-04-13',
     tags: ['Broadcasting', 'Web', 'Demo Card'],
@@ -504,13 +527,13 @@ export const programs: Program[] = [
       'Editorial or production systems',
       ...COMMON_OUT_OF_SCOPE,
     ],
-    rewards: RECOGNITION_REWARDS,
+    rewards: REWARDS_STANDARD,
     rules: COMMON_RULES,
     updates: [
-      { id: '1', date: '2026-04-13', title: 'Demo program card published', description: 'Initial scope categories drafted for the AZCON Hackathon demo.', type: 'general' },
+      { id: '1', date: '2026-04-13', title: 'Demo program card published', description: 'Initial scope categories and demo reward tiers drafted for the AZCON Hackathon demo.', type: 'general' },
     ],
     hallOfFame: [],
-    responseTime: PENDING_RESPONSE_TIMES,
+    responseTime: RESPONSE_STANDARD,
   },
   {
     id: '13',
@@ -520,12 +543,11 @@ export const programs: Program[] = [
     description:
       'Demo card for the National Artificial Intelligence Center. Real testing requires explicit official authorization.',
     longDescription:
-      'Milli Süni İntellekt Mərkəzi (MSIM) is Azerbaijan’s national AI center. This card outlines a potential private-preview disclosure program for the center’s research portal, public APIs, and model-showcase surfaces. Scope is illustrative.',
+      'Milli Süni İntellekt Mərkəzi (MSIM) is Azerbaijan’s national AI center. This card outlines a potential private-preview disclosure program for the center’s research portal, public APIs, and model-showcase surfaces. Reward ranges are demo / planned values.',
     industry: 'Artificial Intelligence / National AI',
     status: 'upcoming',
     type: 'private-preview',
-    rewardRange: { min: 0, max: 0 },
-    recognitionOnly: true,
+    rewardRange: RANGE_TOP,
     assetsCount: 3,
     lastUpdated: '2026-04-26',
     tags: ['AI', 'API', 'Demo Card'],
@@ -540,13 +562,13 @@ export const programs: Program[] = [
       'Partner / research-collaborator systems',
       ...COMMON_OUT_OF_SCOPE,
     ],
-    rewards: RECOGNITION_REWARDS,
+    rewards: REWARDS_TOP,
     rules: COMMON_RULES,
     updates: [
-      { id: '1', date: '2026-04-26', title: 'Demo program card published', description: 'Initial scope categories drafted for the AZCON Hackathon demo.', type: 'general' },
+      { id: '1', date: '2026-04-26', title: 'Demo program card published', description: 'Initial scope categories and demo reward tiers drafted for the AZCON Hackathon demo.', type: 'general' },
     ],
     hallOfFame: [],
-    responseTime: PENDING_RESPONSE_TIMES,
+    responseTime: RESPONSE_TOP,
   },
 ]
 
@@ -776,7 +798,7 @@ export const reports: Report[] = [
     status: 'resolved',
     submittedDate: '2026-04-05',
     lastUpdated: '2026-04-10',
-    reward: 75,
+    reward: 350,
     asset: 'Customer Portal',
     weaknessType: 'Cross-Site Request Forgery',
   },
@@ -789,7 +811,7 @@ export const reports: Report[] = [
     status: 'rewarded',
     submittedDate: '2026-04-15',
     lastUpdated: '2026-04-18',
-    reward: 200,
+    reward: 150,
     asset: 'Tracking Site',
     weaknessType: 'Information Exposure',
   },

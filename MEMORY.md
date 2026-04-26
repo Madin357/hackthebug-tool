@@ -55,8 +55,13 @@ for now and will be layered on later.
   Aztelekom, AzInTelecom, Azərpoçt, Bakı Taksi Xidməti, Teleradio, Milli
   Süni İntellekt Mərkəzi). **Live testing of any of these is NOT
   authorized in this build** — every program is shown as a demo card,
-  scopes are labelled "Pending official authorization", and rewards are
-  recognition‑only.
+  scopes are labelled "Pending official authorization", and reward
+  ranges are **demo / planned values in AZN** with a per‑severity reward
+  table (4 tiers: LOW / STANDARD / HIGH / TOP). Programs carry a
+  per‑program "Demo / planned reward range — not a real bounty
+  commitment" callout above the rewards table; the program‑detail page
+  also keeps the "Pending official authorization" warning banner above
+  the header card.
 - Submitting a report opens a multi‑step modal that simulates submission with a
   `setTimeout` and shows a fake report ID. Nothing is persisted.
 - "SİMA — coming soon" / "Identity verification is planned" / "Demo
@@ -225,7 +230,7 @@ All mock data lives in `lib/mock-data.ts`, typed against `lib/types.ts`.
 | Export                          | Type                  | Purpose                                                                |
 | ------------------------------- | --------------------- | ---------------------------------------------------------------------- |
 | `platformStats`                 | `PlatformStats`       | 13 active programs, 312 verified researchers, 1,847 reports, <24h triage, $127.5K paid, 13 orgs (matches the AZCON list). |
-| `programs`                      | `Program[]`           | **Exactly 13 demo program cards**, one per AZCON Holding organization (see list above). Each is `recognitionOnly: true`, scoped to category names like "Official Website", "Customer Portal", "Public API" with description "Pending official authorization". No fake demo domains, no fabricated reward amounts. |
+| `programs`                      | `Program[]`           | **Exactly 13 demo program cards**, one per AZCON Holding organization (see list above). Each program has a `rewardRange` and a per‑severity `rewards` table in AZN, picked from one of four shared tiers (LOW / STANDARD / HIGH / TOP) defined inline in `lib/mock-data.ts`. Scope items use category names like "Official Website", "Customer Portal", "Public API" with description "Pending official authorization". No fake demo domains. **All reward values are demo / planned only** — see the "Real organization programs" rule in CLAUDE.md. |
 | `organizations`                 | `Organization[]`      | **Exactly 13** AZCON Holding organization records (`id`, `slug`, `name`, `industry`). Canonical source — `lib/auth/mock-users.ts` references `org-azal` from this list for the demo organization user. |
 | `researchers`                   | `Researcher[]`        | 10 fictional researchers (handles, country/code, points, reputation, badges, total rewards). **All 10 are AZ‑based** since AZ‑citizens‑only positioning shipped. |
 | `reports`                       | `Report[]`            | 7 sample vulnerability reports referencing the AZCON programs. Asset names use scope category labels ("Customer Portal", "Public API", etc.) — no fake demo domains. |
@@ -298,10 +303,14 @@ These are hard rules for this hackathon iteration:
   Teleradio, Milli Süni İntellekt Mərkəzi). Every program card carries a
   "Pending official authorization" notice on the program detail page,
   scope items use generic category names (no fake demo domains like
-  `*.demo`), and rewards are recognition‑only. **Do not** add language
-  that implies the platform has authorization to test these systems, or
-  that any researcher activity here is sanctioned by the listed
-  organization.
+  `*.demo`), and **reward ranges (in AZN) are clearly labelled as
+  "Demo / planned" — not a real bounty commitment**. The Rewards tab on
+  every program page carries a callout stating that values illustrate
+  what an officially authorized program could pay. **Do not** add
+  language that implies the platform has authorization to test these
+  systems, that the listed organizations are currently paying real
+  bounties, or that any researcher activity here is sanctioned by the
+  listed organization.
 - **Verification is planned, not active.** Always describe SİMA / identity
   verification with "coming soon", "planned", "demo only", "currently a
   demo", etc. Never write copy that implies verification is live or that
@@ -370,6 +379,60 @@ To be implemented after the hackathon, in roughly this order:
   and the `LOCALES` array.
 
 ## Last Actions
+
+### 2026‑04‑26 — Demo AZN reward tiers + simplify dashboard nav label
+
+- **What:** (1) Removed `recognitionOnly?: boolean` from the `Program`
+  type and from every program in `lib/mock-data.ts`. (2) Added four
+  shared, in-file reward tiers in AZN (LOW / STANDARD / HIGH / TOP) plus
+  matching `responseTime` constants; assigned each of the 13 AZCON
+  programs to a tier — Aviation/Telecom/Cloud/Railway are HIGH,
+  Space/AI are TOP, lower-traffic operators (BakuBus, Bakı Taksi) are
+  LOW, the rest are STANDARD. Every program now exposes a real
+  `rewardRange` (in AZN) and a 4-row `rewards` table per severity. (3)
+  Added two helpers in `lib/utils.ts`: `formatAZN(amount)` and
+  `formatAZNRange(min, max)`, both forced to `en-US` digit grouping so
+  server and client render identically (no hydration foot-gun). (4)
+  Replaced every `$X` currency display in the app with the AZN helper
+  output: program card, program detail header + Quick Stats max,
+  rewards table, home stats + preview, researcher dashboard total
+  rewards + recent reward column + saved-program max badge,
+  organization dashboard rewards-paid stat, leaderboard table column +
+  total-rewards stat. (5) Added `program.rewards.demoNote` (EN + AZ)
+  and a small Info callout above the Rewards table making the
+  "demo / planned — not a real bounty commitment" framing explicit.
+  Removed the now-dead `programCard.recognition`,
+  `program.rewards.recognitionOnlyTitle`,
+  `program.rewards.recognitionOnlyBody` keys from both EN and AZ blocks.
+  (6) Renamed the dashboard label `nav.user.myDashboard` from
+  "My dashboard" / "Mənim panelim" → "Dashboard" / "İdarə paneli";
+  same simplification applied to `login.goToDashboard` and
+  `roleGate.denied.goToMine`. (7) Updated `programCard.rewards` label
+  to "Demo rewards" / "Demo mükafat" and `program.quickStats.maxReward`
+  to "Max demo reward" / "Maks. demo mükafat" so the demo framing rides
+  along with the value itself. (8) `dashboard.researcher.maxLabel` now
+  outputs "{amount} AZN max" / "maks {amount} AZN" instead of the
+  literal-`$` template.
+- **Why:** The user asked to (a) simplify the "My Dashboard" nav label
+  and (b) replace the recognition-only framing with real demo reward
+  ranges in AZN, while keeping safety wording so nothing implies a real
+  paying program. Tiered reward arrays keep the 13 programs visually
+  distinct without duplicating data; the helper centralises currency
+  formatting so future tweaks happen in one place; the demo-note
+  callout + AZN suffix + "Demo / planned" labels keep the framing
+  honest end-to-end.
+- **Files touched:** modified `lib/types.ts`, `lib/utils.ts`,
+  `lib/mock-data.ts`, `lib/i18n/dictionary.ts`,
+  `components/program-card.tsx`, `app/programs/[slug]/page.tsx`,
+  `app/page.tsx`, `app/dashboard/researcher/page.tsx`,
+  `app/dashboard/organization/page.tsx`, `app/leaderboard/page.tsx`,
+  `MEMORY.md`, `CLAUDE.md`. No files added or removed.
+- **Verification:** see "Run manually" below — TypeScript and the build
+  should both run clean.
+- **Next step:** none in particular; the user may want to do a quick
+  browser pass to confirm AZN values render correctly across the
+  program directory, program detail Rewards tab, both dashboards, and
+  the leaderboard.
 
 ### 2026‑04‑26 — AZCON Holding org/program rewrite + header pill removal
 

@@ -24,6 +24,7 @@ import {
   Server,
   Code,
   AlertTriangle,
+  Info,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -40,7 +41,7 @@ import { SeverityBadge } from '@/components/severity-badge'
 import { FormattedDate } from '@/components/formatted-date'
 import { useT } from '@/lib/i18n/locale-provider'
 import { programs } from '@/lib/mock-data'
-import { cn } from '@/lib/utils'
+import { cn, formatAZN, formatAZNRange } from '@/lib/utils'
 import { ReportSubmissionModal } from '@/components/report-submission-modal'
 
 const statusColors = {
@@ -157,9 +158,10 @@ export default function ProgramDetailPage({
                     </span>
                   </div>
                   <p className="font-semibold text-foreground">
-                    {program.recognitionOnly
-                      ? t('programCard.recognition')
-                      : `$${program.rewardRange.min} - $${program.rewardRange.max.toLocaleString()}`}
+                    {formatAZNRange(
+                      program.rewardRange.min,
+                      program.rewardRange.max,
+                    )}
                   </p>
                 </div>
                 <div className="text-center sm:text-left">
@@ -306,9 +308,7 @@ export default function ProgramDetailPage({
                         {t('program.quickStats.maxReward')}
                       </span>
                       <span className="font-medium text-foreground">
-                        {program.recognitionOnly
-                          ? t('programCard.recognition')
-                          : `$${program.rewardRange.max.toLocaleString()}`}
+                        {formatAZN(program.rewardRange.max)}
                       </span>
                     </div>
                   </div>
@@ -416,46 +416,40 @@ export default function ProgramDetailPage({
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
+              className="space-y-4"
             >
-              {program.recognitionOnly ? (
-                <div className="rounded-xl border border-border bg-card p-8 text-center">
-                  <Trophy className="h-10 w-10 text-warning mx-auto mb-4" />
-                  <h3 className="text-lg font-semibold text-foreground mb-2">
-                    {t('program.rewards.recognitionOnlyTitle')}
-                  </h3>
-                  <p className="text-sm text-muted-foreground max-w-xl mx-auto">
-                    {t('program.rewards.recognitionOnlyBody')}
-                  </p>
-                </div>
-              ) : (
-                <div className="rounded-xl border border-border bg-card overflow-hidden">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>{t('program.rewards.severity')}</TableHead>
-                        <TableHead>{t('program.rewards.range')}</TableHead>
-                        <TableHead>{t('program.rewards.sla')}</TableHead>
+              <div className="flex items-start gap-3 p-3 rounded-lg bg-warning/5 border border-warning/30">
+                <Info className="h-4 w-4 text-warning shrink-0 mt-0.5" />
+                <p className="text-xs text-muted-foreground">
+                  {t('program.rewards.demoNote')}
+                </p>
+              </div>
+              <div className="rounded-xl border border-border bg-card overflow-hidden">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>{t('program.rewards.severity')}</TableHead>
+                      <TableHead>{t('program.rewards.range')}</TableHead>
+                      <TableHead>{t('program.rewards.sla')}</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {program.rewards.map((tier) => (
+                      <TableRow key={tier.severity}>
+                        <TableCell>
+                          <SeverityBadge severity={tier.severity} />
+                        </TableCell>
+                        <TableCell className="font-medium">
+                          {formatAZNRange(tier.minReward, tier.maxReward)}
+                        </TableCell>
+                        <TableCell className="text-muted-foreground">
+                          {tier.sla}
+                        </TableCell>
                       </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {program.rewards.map((tier) => (
-                        <TableRow key={tier.severity}>
-                          <TableCell>
-                            <SeverityBadge severity={tier.severity} />
-                          </TableCell>
-                          <TableCell className="font-medium">
-                            ${tier.minReward.toLocaleString()} - $
-                            {tier.maxReward.toLocaleString()}
-                          </TableCell>
-                          <TableCell className="text-muted-foreground">
-                            {tier.sla}
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </div>
-              )}
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
             </motion.div>
           </TabsContent>
 

@@ -27,6 +27,7 @@ import {
   Target,
 } from 'lucide-react'
 import { useT } from '@/lib/i18n/locale-provider'
+import { formatAZN } from '@/lib/utils'
 import { researchers } from '@/lib/mock-data'
 
 const timeframeKeys = [
@@ -373,7 +374,7 @@ export default function LeaderboardPage() {
                             <div className="flex items-center justify-end gap-2">
                               <DollarSign className="h-4 w-4 text-primary" />
                               <span className="font-medium text-foreground">
-                                ${researcher.totalRewards.toLocaleString()}
+                                {formatAZN(researcher.totalRewards)}
                               </span>
                             </div>
                           </td>
@@ -406,10 +407,12 @@ export default function LeaderboardPage() {
                 <CardContent className="p-6 text-center">
                   <DollarSign className="h-12 w-12 text-primary mx-auto mb-4" />
                   <p className="text-3xl font-bold text-foreground mb-2">
-                    $
-                    {researchers
-                      .reduce((acc, r) => acc + r.totalRewards, 0)
-                      .toLocaleString()}
+                    {formatAZN(
+                      researchers.reduce(
+                        (acc, r) => acc + r.totalRewards,
+                        0,
+                      ),
+                    )}
                   </p>
                   <p className="text-muted-foreground">
                     {t('leaderboard.stats.totalRewards')}

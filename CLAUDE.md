@@ -103,8 +103,18 @@ decision and every line of copy should be defensible against that bar.
     Payment Flow", "Tracking/Status Service", etc.) marked "Pending
     official authorization". **Never** invent fake demo domains like
     `app.organization.demo` or `*.test`.
-  - Rewards must be `recognitionOnly: true` until a real authorized
-    program with explicit reward tiers is published.
+  - **Reward amounts are always demo / planned, never real.** Programs
+    have a real `rewardRange` and `rewards` table in AZN, but every
+    surface that shows them must label the values as demo or planned —
+    use phrasing like "Demo rewards", "Demo / planned reward range",
+    "Max demo reward", and the `program.rewards.demoNote` callout that
+    sits above the Rewards table. **Never** write copy that says or
+    implies the listed organizations are currently paying real
+    bounties, that the platform pays bounties on their behalf, or that
+    a researcher will be paid for testing a real system today. New or
+    edited programs that reference a real organization stay on this
+    rule until that organization publishes an officially authorized
+    program with its own real reward tiers.
   - Copy must say testing requires explicit official authorization. The
     program detail page already carries a "Pending official
     authorization" warning banner — keep it.

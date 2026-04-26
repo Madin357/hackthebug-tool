@@ -6,7 +6,7 @@ import { Building2, Clock, DollarSign, Target, ArrowRight } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { FormattedDate } from '@/components/formatted-date'
-import { cn } from '@/lib/utils'
+import { cn, formatAZNRange } from '@/lib/utils'
 import { useT } from '@/lib/i18n/locale-provider'
 import type { Program } from '@/lib/types'
 
@@ -85,9 +85,10 @@ export function ProgramCard({ program, index = 0 }: ProgramCardProps) {
                 {t('programCard.rewards')}
               </p>
               <p className="text-sm font-medium text-foreground">
-                {program.recognitionOnly
-                  ? t('programCard.recognition')
-                  : `$${program.rewardRange.min} - $${program.rewardRange.max.toLocaleString()}`}
+                {formatAZNRange(
+                  program.rewardRange.min,
+                  program.rewardRange.max,
+                )}
               </p>
             </div>
           </div>

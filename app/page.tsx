@@ -45,7 +45,7 @@ const statsConfig = [
   { key: 'home.stats.verifiedResearchers', icon: Users, value: platformStats.verifiedResearchers.toString() },
   { key: 'home.stats.reportsSubmitted', icon: FileText, value: platformStats.reportsSubmitted.toLocaleString() },
   { key: 'home.stats.avgTriage', icon: Clock, value: platformStats.avgTriageTime },
-  { key: 'home.stats.rewardsPaid', icon: DollarSign, value: `$${(platformStats.rewardsPaid / 1000).toFixed(0)}K+` },
+  { key: 'home.stats.rewardsPaid', icon: DollarSign, value: `${(platformStats.rewardsPaid / 1000).toFixed(0)}K+ AZN` },
   { key: 'home.stats.organizations', icon: Shield, value: platformStats.organizationsJoined.toString() },
 ]
 
@@ -172,7 +172,7 @@ export default function HomePage() {
                     { labelKey: 'home.preview.openReports', value: '18' },
                     { labelKey: 'home.preview.resolved', value: '156' },
                     { labelKey: 'home.preview.critical', value: '3' },
-                    { labelKey: 'home.preview.rewards', value: '$12.5K' },
+                    { labelKey: 'home.preview.rewards', value: '12.5K AZN' },
                   ].map((stat) => (
                     <div
                       key={stat.labelKey}

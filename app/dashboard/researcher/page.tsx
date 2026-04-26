@@ -52,6 +52,7 @@ import { StatCard } from '@/components/stat-card'
 import { SeverityBadge } from '@/components/severity-badge'
 import { StatusBadge } from '@/components/status-badge'
 import { useT } from '@/lib/i18n/locale-provider'
+import { formatAZN } from '@/lib/utils'
 import {
   researcherDashboardStats,
   reports,
@@ -142,7 +143,7 @@ export default function ResearcherDashboardPage() {
           />
           <StatCard
             title={t('dashboard.researcher.stats.rewards')}
-            value={`$${researcherDashboardStats.totalRewards.toLocaleString()}`}
+            value={formatAZN(researcherDashboardStats.totalRewards)}
             icon={DollarSign}
             delay={0.3}
           />
@@ -319,7 +320,7 @@ export default function ResearcherDashboardPage() {
                       </TableCell>
                       <TableCell className="text-right font-medium">
                         {report.reward
-                          ? `$${report.reward.toLocaleString()}`
+                          ? formatAZN(report.reward)
                           : '-'}
                       </TableCell>
                     </TableRow>

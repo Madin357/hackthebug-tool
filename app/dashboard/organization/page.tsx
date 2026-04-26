@@ -175,7 +175,7 @@ export default function OrganizationDashboardPage() {
           />
           <StatCard
             title={t('dashboard.org.stats.rewardsPaid')}
-            value={`$${(orgDashboardStats.rewardsPaid / 1000).toFixed(1)}K`}
+            value={`${(orgDashboardStats.rewardsPaid / 1000).toFixed(1)}K AZN`}
             icon={DollarSign}
             delay={0.4}
           />

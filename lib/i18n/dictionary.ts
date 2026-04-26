@@ -46,7 +46,7 @@ const en: Dict = {
   'nav.cta.launchDemo': 'Launch Demo',
   'nav.cta.login': 'Log in',
   'nav.cta.logout': 'Log out',
-  'nav.user.myDashboard': 'My dashboard',
+  'nav.user.myDashboard': 'Dashboard',
   'nav.user.signedInAs': 'Signed in as',
   'nav.lang.label': 'Language',
   'nav.lang.short': 'Lang',
@@ -98,8 +98,7 @@ const en: Dict = {
 
   // ─── Program card
   'programCard.featured': 'Featured',
-  'programCard.rewards': 'Rewards',
-  'programCard.recognition': 'Recognition',
+  'programCard.rewards': 'Demo rewards',
   'programCard.assets': 'Assets',
   'programCard.updated': 'Updated',
   'programCard.viewProgram': 'View Program',
@@ -258,19 +257,17 @@ const en: Dict = {
   'program.quickStats': 'Quick Stats',
   'program.quickStats.inScope': 'In-Scope Assets',
   'program.quickStats.researchers': 'Researchers',
-  'program.quickStats.maxReward': 'Max Reward',
+  'program.quickStats.maxReward': 'Max demo reward',
   'program.safeHarbor.title': 'Safe Harbor',
   'program.safeHarbor.body':
     'This program provides safe harbor for Azerbaijani researchers who follow the program rules and test responsibly.',
   'program.scope.in': 'In Scope',
   'program.scope.out': 'Out of Scope',
   'program.rewards.severity': 'Severity',
-  'program.rewards.range': 'Reward Range',
+  'program.rewards.range': 'Reward Range (AZN)',
   'program.rewards.sla': 'Response SLA',
-  'program.rewards.recognitionOnlyTitle':
-    'Recognition-only program',
-  'program.rewards.recognitionOnlyBody':
-    'This program offers public recognition for valid findings — no monetary rewards. Once an official program is published, reward tiers may be added.',
+  'program.rewards.demoNote':
+    'Demo / planned reward range — values illustrate what an officially authorized program could pay. Not a real bounty commitment.',
   'program.authNotice.title': 'Pending official authorization',
   'program.authNotice.body':
     'This is a hackathon demo program card representing {org}. No actual testing of any {org} system is authorized in this build. Real testing requires explicit, written authorization from the organization.',
@@ -451,7 +448,7 @@ const en: Dict = {
     'SİMA verification for Azerbaijani citizens — planned. The current build is a demo and does not perform real verification.',
   'dashboard.researcher.saved.title': 'Saved Programs',
   'dashboard.researcher.recommended.title': 'Recommended for You',
-  'dashboard.researcher.maxLabel': '${amount} max',
+  'dashboard.researcher.maxLabel': '{amount} AZN max',
 
   // ─── Organization dashboard
   'dashboard.org.viewBadge': 'Organization Dashboard',
@@ -579,14 +576,14 @@ const en: Dict = {
   'login.demoNote':
     'Demo / mock authentication only — credentials are stored locally in your browser. Real backend auth, password hashing, and SİMA verification land later.',
   'login.alreadySignedIn': 'You are already signed in as {role}.',
-  'login.goToDashboard': 'Go to my dashboard',
+  'login.goToDashboard': 'Go to dashboard',
 
   // ─── Access denied / role gate
   'roleGate.checking': 'Checking your session...',
   'roleGate.denied.title': 'Access denied',
   'roleGate.denied.body':
     'This dashboard is for {requiredRole} accounts only. You are signed in as {currentRole}.',
-  'roleGate.denied.goToMine': 'Go to my dashboard',
+  'roleGate.denied.goToMine': 'Go to dashboard',
   'roleGate.denied.logout': 'Log out',
   'roleGate.redirecting': 'Redirecting to log in...',
 }
@@ -631,7 +628,7 @@ const az: Dict = {
   'nav.cta.launchDemo': 'Demonu başlat',
   'nav.cta.login': 'Daxil ol',
   'nav.cta.logout': 'Çıxış et',
-  'nav.user.myDashboard': 'Mənim panelim',
+  'nav.user.myDashboard': 'İdarə paneli',
   'nav.user.signedInAs': 'Daxil olub:',
   'nav.lang.label': 'Dil',
   'nav.lang.short': 'Dil',
@@ -679,8 +676,7 @@ const az: Dict = {
   'programStatus.closed': 'Bağlı',
 
   'programCard.featured': 'Seçilmiş',
-  'programCard.rewards': 'Mükafat',
-  'programCard.recognition': 'Tanınma',
+  'programCard.rewards': 'Demo mükafat',
   'programCard.assets': 'Aktivlər',
   'programCard.updated': 'Yeniləndi',
   'programCard.viewProgram': 'Proqrama bax',
@@ -839,19 +835,17 @@ const az: Dict = {
   'program.quickStats': 'Qısa statistika',
   'program.quickStats.inScope': 'Əhatə daxili aktivlər',
   'program.quickStats.researchers': 'Tədqiqatçılar',
-  'program.quickStats.maxReward': 'Maksimum mükafat',
+  'program.quickStats.maxReward': 'Maks. demo mükafat',
   'program.safeHarbor.title': 'Təhlükəsiz liman',
   'program.safeHarbor.body':
     'Bu proqram qaydalara əməl edən və məsuliyyətlə test aparan Azərbaycanlı tədqiqatçılar üçün təhlükəsiz liman təmin edir.',
   'program.scope.in': 'Əhatə daxilində',
   'program.scope.out': 'Əhatə xaricində',
   'program.rewards.severity': 'Ciddiyyət',
-  'program.rewards.range': 'Mükafat aralığı',
+  'program.rewards.range': 'Mükafat aralığı (AZN)',
   'program.rewards.sla': 'Cavab SLA',
-  'program.rewards.recognitionOnlyTitle':
-    'Yalnız tanınma proqramı',
-  'program.rewards.recognitionOnlyBody':
-    'Bu proqram etibarlı tapıntılar üçün ictimai tanınma təklif edir — pul mükafatı yoxdur. Rəsmi proqram dərc olunduqdan sonra mükafat səviyyələri əlavə edilə bilər.',
+  'program.rewards.demoNote':
+    'Demo / planlaşdırılan mükafat aralığı — dəyərlər rəsmi icazəli proqramın ödəyə biləcəyi məbləği nümayiş etdirir. Real bounty öhdəliyi deyil.',
   'program.authNotice.title': 'Rəsmi icazə gözləyir',
   'program.authNotice.body':
     'Bu, {org} təmsil edən hakaton demo proqram kartıdır. Bu versiyada {org} heç bir sisteminin real testi icazəli deyil. Real test üçün təşkilatın yazılı rəsmi icazəsi tələb olunur.',
@@ -1035,7 +1029,7 @@ const az: Dict = {
     'Azərbaycan vətəndaşları üçün SİMA doğrulaması — planlaşdırılır. Bu versiya demodur, real doğrulama aparmır.',
   'dashboard.researcher.saved.title': 'Saxlanılmış proqramlar',
   'dashboard.researcher.recommended.title': 'Sənin üçün tövsiyə',
-  'dashboard.researcher.maxLabel': 'maks ${amount}',
+  'dashboard.researcher.maxLabel': 'maks {amount} AZN',
 
   'dashboard.org.viewBadge': 'Təşkilat paneli',
   'dashboard.org.title': 'Təhlükəsizlik paneli',
@@ -1176,14 +1170,14 @@ const az: Dict = {
   'login.demoNote':
     'Yalnız demo / mock doğrulama — məlumatlar brauzerində lokal saxlanılır. Real backend doğrulaması, şifrə hashı və SİMA doğrulaması sonra gələcək.',
   'login.alreadySignedIn': '{role} kimi artıq daxil olmusan.',
-  'login.goToDashboard': 'Panelimə keç',
+  'login.goToDashboard': 'İdarə panelinə keç',
 
   // ─── Access denied / role gate
   'roleGate.checking': 'Sessiyan yoxlanılır...',
   'roleGate.denied.title': 'Giriş qadağandır',
   'roleGate.denied.body':
     'Bu panel yalnız {requiredRole} hesabları üçündür. Sən {currentRole} kimi daxil olmusan.',
-  'roleGate.denied.goToMine': 'Öz panelimə keç',
+  'roleGate.denied.goToMine': 'İdarə panelinə keç',
   'roleGate.denied.logout': 'Çıxış et',
   'roleGate.redirecting': 'Daxil olma səhifəsinə yönləndirilirsən...',
 }
