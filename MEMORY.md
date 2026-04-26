@@ -39,46 +39,19 @@ for now and will be layered on later.
   `setTimeout` and shows a fake report ID. Nothing is persisted.
 - "Verification Coming Soon" is shown in the nav and on the researcher
   dashboard as a SİMA placeholder.
-- Dark theme is hard‑forced in `app/layout.tsx` (`<html className="dark">`).
-  `next-themes` is imported via `components/theme-provider.tsx` but not wired up.
+- Dark theme is hard‑forced in `app/layout.tsx` (`<html className="dark …">`).
+  `next-themes` is imported via `components/theme-provider.tsx` but not wired
+  up — kept for the day a light mode lands.
+- Geist + Geist Mono webfonts are now wired through `next/font` and exposed
+  to Tailwind v4 via `--font-geist-sans` / `--font-geist-mono` referenced
+  from `@theme inline` in `app/globals.css`.
 - `next.config.mjs` has `typescript.ignoreBuildErrors: true` and
   `images.unoptimized: true` — typical hackathon escape hatches.
 
-### Known issues found during initial review (2026‑04‑26)
+### Known issues
 
-These are pre‑existing in the initial commits, not introduced by Claude:
-
-1. **`app/leaderboard/page.tsx` is broken at runtime.** It imports
-   `topResearchers` from `@/lib/mock-data` which does not exist (the actual
-   export is `researchers`), and references fields that don't exist on the
-   `Researcher` type (`username`, `avatar_url`, `bugs_found`,
-   `total_earnings`). Page will throw `TypeError: Cannot read properties of
-   undefined (reading 'slice')`. Build doesn't catch it because
-   `ignoreBuildErrors` is on.
-2. **Double Navigation/Footer on `/about` and `/leaderboard`.** Both pages
-   render `<Navigation />` and `<Footer />` themselves, but `app/layout.tsx`
-   already wraps every page with both. Result: two stacked navs and footers,
-   plus extra `pt-24` padding (layout's `<main>` already has `pt-16`).
-3. **Recharts colors don't render correctly.** Dashboards use
-   `hsl(var(--primary))` etc., but the design tokens in `app/globals.css` are
-   `oklch(...)` values. `hsl(oklch(...))` is invalid — chart bars/areas/tooltip
-   backgrounds fall back to defaults. Use `var(--primary)` directly (or
-   `oklch(var(--primary))`).
-4. **About page narrative contradicts the product.** Claims "founded in 2019,"
-   "$75M+ bounties paid," "100+ countries," with generic Western leadership team
-   — incompatible with the Azerbaijan‑focused, hackathon‑prototype framing
-   used everywhere else. Needs to be re‑aligned.
-5. **`styles/globals.css` is dead code.** Not imported by anyone. It's a
-   leftover default shadcn light/dark theme. Safe to delete.
-6. **Geist webfont is not actually applied.** `app/layout.tsx` calls
-   `Geist({ subsets: ['latin'] })` but assigns the result to `_geist` (unused).
-   Without applying `geist.variable` / `geist.className` to `<html>` or
-   `<body>`, the webfont isn't loaded — the page falls back to the system sans.
-7. **Two toast systems present.** Both `sonner` and the legacy radix‑based
-   `useToast` (`hooks/use-toast.ts` + `components/ui/toast.tsx` +
-   `toaster.tsx`) are installed. Pick one (sonner is simpler) and remove the
-   other.
-8. **`package.json#name` is `"my-project"`.** Should be `"hackthebug"`.
+None at the moment. The eight pre‑existing defects identified during the
+2026‑04‑26 initial review have all been resolved (see "Last Actions" below).
 
 ## Tech Stack
 
@@ -95,7 +68,9 @@ These are pre‑existing in the initial commits, not introduced by Claude:
 - **Charts:** `recharts` (used in both dashboards).
 - **Forms:** `react-hook-form` + `@hookform/resolvers` + `zod` (installed; not
   yet used — the report submission modal hand‑rolls its own state).
-- **Notifications:** `sonner` + legacy `useToast` (duplicate, see issue 7).
+- **Notifications:** none wired up. `sonner` package retained in
+  `package.json` for future use; the previous duplicate toast surface has
+  been removed.
 - **Theming:** `next-themes` installed but unused; dark mode is hard‑coded.
 - **Analytics:** `@vercel/analytics` (only mounted in production).
 - **Package manager:** both `package-lock.json` and `pnpm-lock.yaml` exist —
@@ -106,12 +81,13 @@ These are pre‑existing in the initial commits, not introduced by Claude:
 ```
 hackthebug-tool/
 ├── app/                          # Next.js App Router
-│   ├── layout.tsx                # Root layout — forces dark, mounts Nav + Footer
+│   ├── layout.tsx                # Root layout — forces dark, wires Geist via next/font, mounts Nav + Footer
 │   ├── globals.css               # Active design tokens (oklch dark theme + glow utils)
 │   ├── page.tsx                  # Landing page (hero, stats, how‑it‑works, features,
 │   │                             #   featured programs, value prop, roadmap, CTA)
-│   ├── about/page.tsx            # About page (currently misaligned, see issues)
-│   ├── leaderboard/page.tsx      # Leaderboard (currently BROKEN, see issue 1)
+│   ├── about/page.tsx            # About: hero + stats (from platformStats) + mission +
+│   │                             #   values + 2025‑2026 roadmap + AZCON team roles + CTA
+│   ├── leaderboard/page.tsx      # Leaderboard: hero + filters + podium + table + stats + CTA
 │   ├── programs/
 │   │   ├── page.tsx              # Programs directory: search/filter/sort/grid+list
 │   │   └── [slug]/page.tsx       # Program detail: tabs (overview/scope/rewards/
@@ -131,20 +107,21 @@ hackthebug-tool/
 │   ├── stat-card.tsx             # Animated KPI card with optional trend
 │   ├── report-submission-modal.tsx # 3‑step report submission dialog (mock submit)
 │   ├── theme-provider.tsx        # next-themes wrapper (currently unused)
-│   └── ui/                       # shadcn/ui primitives (full kit)
+│   └── ui/                       # shadcn/ui primitives (full kit, minus the deleted
+│                                 #   toast/sonner/use-mobile dupes)
 ├── lib/
 │   ├── types.ts                  # Domain types: Program, Researcher, Report, etc.
 │   ├── mock-data.ts              # All mock data + supporting lookup arrays
 │   └── utils.ts                  # `cn()` helper
 ├── hooks/
-│   ├── use-mobile.ts             # md breakpoint hook
-│   └── use-toast.ts              # Legacy radix toast (duplicate with sonner)
-├── styles/globals.css            # DEAD — leftover default shadcn theme, not imported
+│   └── use-mobile.ts             # md breakpoint hook (the canonical location)
 ├── components.json               # shadcn config (style: new-york, base: neutral)
 ├── next.config.mjs               # ignoreBuildErrors + images.unoptimized
 ├── tsconfig.json                 # strict TS, "@/*" → ./*
 ├── postcss.config.mjs            # Tailwind v4 plugin only
-├── package.json                  # name still "my-project"
+├── package.json                  # name: "hackthebug"
+├── MEMORY.md                     # this file
+├── CLAUDE.md                     # working instructions for Claude in this repo
 └── README.md                     # one‑liner
 ```
 
@@ -155,10 +132,10 @@ hackthebug-tool/
 | `/`                              | Landing: hero + dashboard mock + platform stats + how it works + features + featured programs + value prop + roadmap + CTA. | Working  |
 | `/programs`                      | Directory: search by name/org/tag, filter by industry/type/status, sort, grid/list toggle.          | Working  |
 | `/programs/[slug]`               | Program detail with tabs: Overview / Scope / Rewards / Rules / Updates / Hall of Fame; "Submit Report" opens modal; "Similar Programs" footer. | Working  |
-| `/leaderboard`                   | Top researchers podium + full table + summary stats.                                                | **Broken at runtime** (see issue 1) and renders duplicate Nav/Footer (see issue 2). |
-| `/about`                         | Hero + stats + mission + values + timeline + team + CTA.                                            | Renders, but content is off‑narrative + duplicate Nav/Footer (issues 2 & 4). |
-| `/dashboard/researcher`          | Researcher KPI dashboard with charts, recent reports, achievements, SIMA banner, saved + recommended programs. | Working (chart fills broken — issue 3). |
-| `/dashboard/organization`        | Org KPI dashboard with trend, severity, pipeline, recent reports, top assets, activity feed, top hackers. | Working (chart fills broken — issue 3). |
+| `/leaderboard`                   | Hero + filters + top‑3 podium + full rankings table + summary stats + CTA. Reads from `researchers`. | Working  |
+| `/about`                         | Hero + stats (driven by `platformStats`) + mission + values + 2025‑2026 roadmap + AZCON team roles + CTA. | Working  |
+| `/dashboard/researcher`          | Researcher KPI dashboard with charts, recent reports, achievements, SIMA banner, saved + recommended programs. | Working  |
+| `/dashboard/organization`        | Org KPI dashboard with trend, severity, pipeline, recent reports, top assets, activity feed, top hackers. | Working  |
 
 ## Existing Components
 
@@ -236,10 +213,11 @@ enterprise security console. Avoids cyberpunk/Matrix/gaming clichés.
 
 ### Typography
 
-`Geist` and `Geist Mono` are declared as `--font-sans` / `--font-mono`. Note:
-the `next/font` loader is **not** wired into `<html>` so the webfont isn't
-actually being downloaded; system sans renders. Fixing this is on the polish
-list.
+`Geist` and `Geist Mono` are loaded by `next/font` in `app/layout.tsx` and
+exposed to `<html>` via the `--font-geist-sans` / `--font-geist-mono` CSS
+variables. Tailwind v4's `@theme inline` in `app/globals.css` references
+those variables for `--font-sans` / `--font-mono`, so the `font-sans` and
+`font-mono` utilities resolve to the actual Geist webfont.
 
 ## Important Product Rules
 
@@ -295,6 +273,44 @@ To be implemented after the hackathon, in roughly this order:
 
 ## Last Actions
 
+### 2026‑04‑26 — Cleanup pass: resolved all eight pre‑existing issues
+
+- **What:** (1) Rewrote `app/leaderboard/page.tsx` against the actual
+  `Researcher` shape — fixes the runtime crash. (2) Removed the duplicate
+  `<Navigation>` / `<Footer>` + `min-h-screen / pt-24` shell from `/about`
+  and `/leaderboard` so the layout's wrappers are the only ones. (3)
+  Realigned `app/about/page.tsx` to the Azerbaijan / hackathon‑prototype
+  framing — hero copy, stats now driven by `platformStats`, timeline is the
+  Q4‑2025 → Q4‑2026 roadmap, team replaced with an "AZCON Hackathon — team
+  Holberton" Roles grid (ENG / DES / SEC / PRD). (4) Replaced
+  `hsl(var(--TOKEN))` with `var(--TOKEN)` and used
+  `color-mix(in oklch, var(--TOKEN) 20%, transparent)` for alpha in both
+  dashboards so the oklch tokens render. (5) Wired Geist via
+  `next/font` with `variable: '--font-geist-sans'` /
+  `'--font-geist-mono'`, applied both to `<html>`, and pointed `@theme
+  inline` at those vars in `app/globals.css`. (6) Deleted the entire dead
+  toast surface (`hooks/use-toast.ts`, `components/ui/use-toast.ts`,
+  `components/ui/toast.tsx`, `components/ui/toaster.tsx`,
+  `components/ui/sonner.tsx`) and the duplicate
+  `components/ui/use-mobile.tsx` — sidebar still uses `hooks/use-mobile.ts`.
+  (7) Deleted `styles/globals.css` and the now‑empty `styles/` directory.
+  (8) Renamed `package.json#name` from `my-project` to `hackthebug`.
+- **Why:** All eight defects were pre‑existing in the initial commits and
+  documented under "Known issues" by the prior ingestion entry. The
+  leaderboard one was a hard runtime crash; the rest were polish or
+  correctness items blocking a confident hackathon demo.
+- **Files touched:** modified `app/leaderboard/page.tsx`,
+  `app/about/page.tsx`, `app/dashboard/researcher/page.tsx`,
+  `app/dashboard/organization/page.tsx`, `app/layout.tsx`,
+  `app/globals.css`, `package.json`, `MEMORY.md`. Deleted
+  `hooks/use-toast.ts`, `components/ui/use-toast.ts`,
+  `components/ui/toast.tsx`, `components/ui/toaster.tsx`,
+  `components/ui/sonner.tsx`, `components/ui/use-mobile.tsx`,
+  `styles/globals.css`, and the `styles/` directory.
+- **Next step:** verify in the browser per the plan's Verification section,
+  then move on to the new "Next Recommended Actions" item 1 (tighter
+  empty/loading states) or take user direction.
+
 ### 2026‑04‑26 — Initial project ingestion
 
 - **What:** Read every relevant file in the repo (configs, all routes, all
@@ -316,37 +332,19 @@ To be implemented after the hackathon, in roughly this order:
 
 In priority order. Each item is intentionally small and reversible.
 
-1. **Fix the broken leaderboard page (issue 1).** Switch the import to
-   `researchers`, map fields to the actual `Researcher` type
-   (`name`/`handle`/`reportsAccepted`/`totalRewards`/`reputation`/`country`/
-   `countryCode`), and ensure the avatar fallback uses `name`. ~30 min.
-2. **Remove duplicate Navigation/Footer from `/about` and `/leaderboard`
-   (issue 2).** Drop the imports, drop the wrapping `<div className="min-h-
-   screen">…<main>…</main>…</div>` and keep just the page sections. Adjust top
-   padding to match other pages (no `pt-24`). ~15 min.
-3. **Realign About page narrative (issue 4).** Rewrite hero / stats / timeline
-   / team to reflect: hackathon prototype, Azerbaijan focus, plausible
-   regional team, pre‑launch numbers consistent with `platformStats`. Keep the
-   visual structure. ~45 min.
-4. **Fix recharts colors (issue 3).** Replace `hsl(var(--primary))` etc. with
-   `var(--primary)` (or `oklch(var(--primary))`) in both dashboards. Verify
-   bars/areas/tooltip backgrounds render correctly. ~20 min.
-5. **Wire Geist webfont properly (issue 6).** Apply `geist.variable` to
-   `<html>` (or `geist.className` to `<body>`) so the next/font CSS actually
-   ships. Remove the underscore prefix once used. ~10 min.
-6. **Decide on a single toast system (issue 7).** Pick `sonner` (simpler,
-   already imported), delete `hooks/use-toast.ts`, `components/ui/toast.tsx`,
-   and `components/ui/toaster.tsx` if nothing depends on them. ~15 min.
-7. **Delete dead `styles/globals.css` (issue 5).** Confirm via grep that
-   nothing imports it, then remove. ~2 min.
-8. **Rename `package.json#name`** from `my-project` to `hackthebug` (issue 8).
-   ~1 min.
-9. **Tighten the empty/loading states.** Programs directory has a clear empty
+1. **Tighten the empty/loading states.** Programs directory has a clear empty
    state already; add similar treatment to dashboards if any list ends up
-   empty after future filtering.
-10. **Add a global "Demo data" disclaimer banner (optional).** A thin
-    dismissible top strip that's transparent about the demo status, so judges
-    see it once and we can drop the inline "Demo Data" pills inside content.
-
-After items 1–4 the demo will look meaningfully more polished and trustworthy.
-Items 5–10 are progressive polish.
+   empty after future filtering. Add skeleton placeholders for charts on
+   first paint.
+2. **Add a global "Demo data" disclaimer banner (optional).** A thin
+   dismissible top strip that's transparent about the demo status, so judges
+   see it once and we can drop the inline "Demo Data" pills inside content.
+3. **Tighten the report submission modal copy.** Several labels are still
+   placeholder‑grade. Could use a quick copy pass.
+4. **Build out the Hall of Fame section per program.** Currently shows top‑3
+   only; the program detail page could surface more researchers and link out
+   to per‑researcher profile pages (which don't exist yet — would need a new
+   route).
+5. **Add a small `/api/health` placeholder route** so future backend wiring
+   has an obvious entry point. (Frontend‑only constraint still applies — the
+   route returns a static JSON.)

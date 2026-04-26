@@ -5,8 +5,8 @@ import { Navigation } from '@/components/navigation'
 import { Footer } from '@/components/footer'
 import './globals.css'
 
-const _geist = Geist({ subsets: ["latin"] });
-const _geistMono = Geist_Mono({ subsets: ["latin"] });
+const geistSans = Geist({ subsets: ['latin'], variable: '--font-geist-sans' })
+const geistMono = Geist_Mono({ subsets: ['latin'], variable: '--font-geist-mono' })
 
 export const metadata: Metadata = {
   title: 'HackTheBug - Bug Bounty Platform',
@@ -37,7 +37,10 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en" className="dark bg-background">
+    <html
+      lang="en"
+      className={`dark bg-background ${geistSans.variable} ${geistMono.variable}`}
+    >
       <body className="font-sans antialiased min-h-screen flex flex-col">
         <Navigation />
         <main className="flex-1 pt-16">

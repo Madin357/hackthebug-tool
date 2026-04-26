@@ -162,26 +162,26 @@ export default function OrganizationDashboardPage() {
                   <YAxis className="text-xs fill-muted-foreground" />
                   <Tooltip
                     contentStyle={{
-                      backgroundColor: 'hsl(var(--card))',
-                      border: '1px solid hsl(var(--border))',
+                      backgroundColor: 'var(--card)',
+                      border: '1px solid var(--border)',
                       borderRadius: '8px',
                     }}
-                    labelStyle={{ color: 'hsl(var(--foreground))' }}
+                    labelStyle={{ color: 'var(--foreground)' }}
                   />
                   <Area
                     type="monotone"
                     dataKey="reports"
                     stackId="1"
-                    stroke="hsl(var(--primary))"
-                    fill="hsl(var(--primary) / 0.2)"
+                    stroke="var(--primary)"
+                    fill="color-mix(in oklch, var(--primary) 20%, transparent)"
                     name="Reports"
                   />
                   <Area
                     type="monotone"
                     dataKey="resolved"
                     stackId="2"
-                    stroke="hsl(var(--chart-3))"
-                    fill="hsl(var(--chart-3) / 0.2)"
+                    stroke="var(--chart-3)"
+                    fill="color-mix(in oklch, var(--chart-3) 20%, transparent)"
                     name="Resolved"
                   />
                 </AreaChart>
@@ -216,8 +216,8 @@ export default function OrganizationDashboardPage() {
                   </Pie>
                   <Tooltip
                     contentStyle={{
-                      backgroundColor: 'hsl(var(--card))',
-                      border: '1px solid hsl(var(--border))',
+                      backgroundColor: 'var(--card)',
+                      border: '1px solid var(--border)',
                       borderRadius: '8px',
                     }}
                   />
@@ -262,8 +262,8 @@ export default function OrganizationDashboardPage() {
                   />
                   <Tooltip
                     contentStyle={{
-                      backgroundColor: 'hsl(var(--card))',
-                      border: '1px solid hsl(var(--border))',
+                      backgroundColor: 'var(--card)',
+                      border: '1px solid var(--border)',
                       borderRadius: '8px',
                     }}
                   />
