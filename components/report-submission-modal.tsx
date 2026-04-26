@@ -32,6 +32,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { weaknessCategories } from '@/lib/mock-data'
+import { useT } from '@/lib/i18n/locale-provider'
 import { cn } from '@/lib/utils'
 
 interface ReportSubmissionModalProps {
@@ -41,27 +42,15 @@ interface ReportSubmissionModalProps {
   programAssets: string[]
 }
 
-const severityOptions = [
-  { value: 'critical', label: 'Critical', description: 'Complete system compromise, data breach' },
-  { value: 'high', label: 'High', description: 'Significant security impact' },
-  { value: 'medium', label: 'Medium', description: 'Moderate security concern' },
-  { value: 'low', label: 'Low', description: 'Minor security issue' },
-  { value: 'informational', label: 'Informational', description: 'Security observation' },
-]
-
-const steps = [
-  { id: 1, title: 'Basic Info', description: 'Vulnerability details' },
-  { id: 2, title: 'Technical Details', description: 'Steps & proof' },
-  { id: 3, title: 'Impact & Review', description: 'Final review' },
-]
-
-const reportingTips = [
-  'Include clear, reproducible steps',
-  'Provide screenshots or videos as proof',
-  'Describe the actual vs expected behavior',
-  'Explain the security impact',
-  'Suggest a remediation if possible',
-]
+const severityCodes = ['critical', 'high', 'medium', 'low', 'informational'] as const
+const stepIds = [1, 2, 3] as const
+const tipKeys = [
+  'report.tips.t1',
+  'report.tips.t2',
+  'report.tips.t3',
+  'report.tips.t4',
+  'report.tips.t5',
+] as const
 
 export function ReportSubmissionModal({
   open,
@@ -69,11 +58,11 @@ export function ReportSubmissionModal({
   programName,
   programAssets,
 }: ReportSubmissionModalProps) {
+  const t = useT()
   const [currentStep, setCurrentStep] = useState(1)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isSubmitted, setIsSubmitted] = useState(false)
 
-  // Form state
   const [formData, setFormData] = useState({
     title: '',
     asset: '',
@@ -96,7 +85,6 @@ export function ReportSubmissionModal({
 
   const handleSubmit = async () => {
     setIsSubmitting(true)
-    // Simulate API call
     await new Promise((resolve) => setTimeout(resolve, 2000))
     setIsSubmitting(false)
     setIsSubmitted(true)
@@ -127,6 +115,24 @@ export function ReportSubmissionModal({
   const canProceedStep2 = formData.summary && formData.stepsToReproduce
   const canSubmit = canProceedStep2 && formData.impact && formData.agreeToRules
 
+  const stepMeta = stepIds.map((id) => ({
+    id,
+    title: t(
+      id === 1
+        ? 'report.steps.basic.title'
+        : id === 2
+          ? 'report.steps.tech.title'
+          : 'report.steps.impact.title',
+    ),
+    description: t(
+      id === 1
+        ? 'report.steps.basic.desc'
+        : id === 2
+          ? 'report.steps.tech.desc'
+          : 'report.steps.impact.desc',
+    ),
+  }))
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden p-0">
@@ -139,18 +145,26 @@ export function ReportSubmissionModal({
             <div className="h-16 w-16 rounded-full bg-success/20 flex items-center justify-center mx-auto mb-4">
               <CheckCircle className="h-8 w-8 text-success" />
             </div>
-            <h2 className="text-2xl font-bold text-foreground mb-2">Report Submitted!</h2>
+            <h2 className="text-2xl font-bold text-foreground mb-2">
+              {t('report.success.title')}
+            </h2>
             <p className="text-muted-foreground mb-6 max-w-md mx-auto">
-              Thank you for your submission. This is a demo, so no actual report was created.
-              In production, you would receive a confirmation email and tracking ID.
+              {t('report.success.body')}
             </p>
             <div className="bg-secondary/50 rounded-lg p-4 mb-6 max-w-sm mx-auto">
-              <p className="text-sm text-muted-foreground">Demo Report ID</p>
-              <p className="font-mono text-foreground">HTB-2026-{Math.random().toString(36).substring(2, 8).toUpperCase()}</p>
+              <p className="text-sm text-muted-foreground">
+                {t('report.success.idLabel')}
+              </p>
+              <p className="font-mono text-foreground">
+                HTB-2026-
+                {Math.random().toString(36).substring(2, 8).toUpperCase()}
+              </p>
             </div>
-            <Badge variant="outline" className="mb-6">Hackathon Demo</Badge>
+            <Badge variant="outline" className="mb-6">
+              {t('common.hackathonDemo')}
+            </Badge>
             <div>
-              <Button onClick={handleClose}>Close</Button>
+              <Button onClick={handleClose}>{t('common.close')}</Button>
             </div>
           </motion.div>
         ) : (
@@ -158,16 +172,18 @@ export function ReportSubmissionModal({
             {/* Main Form */}
             <div className="flex-1 flex flex-col overflow-hidden">
               <DialogHeader className="p-6 pb-4 border-b border-border">
-                <DialogTitle className="text-xl">Submit Vulnerability Report</DialogTitle>
+                <DialogTitle className="text-xl">
+                  {t('report.title')}
+                </DialogTitle>
                 <DialogDescription>
-                  Report a security vulnerability to {programName}
+                  {t('report.description', { program: programName })}
                 </DialogDescription>
               </DialogHeader>
 
               {/* Steps Indicator */}
               <div className="px-6 py-4 border-b border-border bg-secondary/30">
                 <div className="flex items-center justify-between max-w-md">
-                  {steps.map((step, index) => (
+                  {stepMeta.map((step, index) => (
                     <div key={step.id} className="flex items-center">
                       <div className="flex items-center">
                         <div
@@ -176,8 +192,8 @@ export function ReportSubmissionModal({
                             currentStep === step.id
                               ? 'bg-primary text-primary-foreground'
                               : currentStep > step.id
-                              ? 'bg-success text-success-foreground'
-                              : 'bg-secondary text-muted-foreground'
+                                ? 'bg-success text-success-foreground'
+                                : 'bg-secondary text-muted-foreground',
                           )}
                         >
                           {currentStep > step.id ? (
@@ -187,15 +203,19 @@ export function ReportSubmissionModal({
                           )}
                         </div>
                         <div className="ml-2 hidden sm:block">
-                          <p className="text-xs font-medium text-foreground">{step.title}</p>
-                          <p className="text-xs text-muted-foreground">{step.description}</p>
+                          <p className="text-xs font-medium text-foreground">
+                            {step.title}
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            {step.description}
+                          </p>
                         </div>
                       </div>
-                      {index < steps.length - 1 && (
+                      {index < stepMeta.length - 1 && (
                         <div
                           className={cn(
                             'h-0.5 w-8 mx-2 sm:w-12',
-                            currentStep > step.id ? 'bg-success' : 'bg-border'
+                            currentStep > step.id ? 'bg-success' : 'bg-border',
                           )}
                         />
                       )}
@@ -207,7 +227,6 @@ export function ReportSubmissionModal({
               {/* Form Content */}
               <div className="flex-1 overflow-y-auto p-6">
                 <AnimatePresence mode="wait">
-                  {/* Step 1: Basic Info */}
                   {currentStep === 1 && (
                     <motion.div
                       key="step1"
@@ -217,23 +236,33 @@ export function ReportSubmissionModal({
                       className="space-y-6"
                     >
                       <div className="space-y-2">
-                        <Label htmlFor="title">Vulnerability Title *</Label>
+                        <Label htmlFor="title">
+                          {t('report.fields.title')} *
+                        </Label>
                         <Input
                           id="title"
-                          placeholder="e.g., SQL Injection in Login API"
+                          placeholder={t('report.fields.title.placeholder')}
                           value={formData.title}
-                          onChange={(e) => updateFormData('title', e.target.value)}
+                          onChange={(e) =>
+                            updateFormData('title', e.target.value)
+                          }
                         />
                       </div>
 
                       <div className="space-y-2">
-                        <Label htmlFor="asset">Affected Asset / Target *</Label>
+                        <Label htmlFor="asset">
+                          {t('report.fields.asset')} *
+                        </Label>
                         <Select
                           value={formData.asset}
-                          onValueChange={(value) => updateFormData('asset', value)}
+                          onValueChange={(value) =>
+                            updateFormData('asset', value)
+                          }
                         >
                           <SelectTrigger>
-                            <SelectValue placeholder="Select an asset" />
+                            <SelectValue
+                              placeholder={t('report.fields.asset.placeholder')}
+                            />
                           </SelectTrigger>
                           <SelectContent>
                             {programAssets.map((asset) => (
@@ -246,35 +275,47 @@ export function ReportSubmissionModal({
                       </div>
 
                       <div className="space-y-2">
-                        <Label>Severity *</Label>
+                        <Label>{t('report.fields.severity')} *</Label>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                          {severityOptions.map((option) => (
+                          {severityCodes.map((code) => (
                             <button
-                              key={option.value}
+                              key={code}
                               type="button"
-                              onClick={() => updateFormData('severity', option.value)}
+                              onClick={() => updateFormData('severity', code)}
                               className={cn(
                                 'p-3 rounded-lg border text-left transition-colors',
-                                formData.severity === option.value
+                                formData.severity === code
                                   ? 'border-primary bg-primary/10'
-                                  : 'border-border hover:border-primary/50'
+                                  : 'border-border hover:border-primary/50',
                               )}
                             >
-                              <p className="font-medium text-foreground text-sm">{option.label}</p>
-                              <p className="text-xs text-muted-foreground">{option.description}</p>
+                              <p className="font-medium text-foreground text-sm">
+                                {t(`report.severity.${code}.label`)}
+                              </p>
+                              <p className="text-xs text-muted-foreground">
+                                {t(`report.severity.${code}.desc`)}
+                              </p>
                             </button>
                           ))}
                         </div>
                       </div>
 
                       <div className="space-y-2">
-                        <Label htmlFor="weakness">Weakness Type / Category *</Label>
+                        <Label htmlFor="weakness">
+                          {t('report.fields.weakness')} *
+                        </Label>
                         <Select
                           value={formData.weaknessType}
-                          onValueChange={(value) => updateFormData('weaknessType', value)}
+                          onValueChange={(value) =>
+                            updateFormData('weaknessType', value)
+                          }
                         >
                           <SelectTrigger>
-                            <SelectValue placeholder="Select weakness type" />
+                            <SelectValue
+                              placeholder={t(
+                                'report.fields.weakness.placeholder',
+                              )}
+                            />
                           </SelectTrigger>
                           <SelectContent>
                             {weaknessCategories.map((category) => (
@@ -288,7 +329,6 @@ export function ReportSubmissionModal({
                     </motion.div>
                   )}
 
-                  {/* Step 2: Technical Details */}
                   {currentStep === 2 && (
                     <motion.div
                       key="step2"
@@ -298,57 +338,79 @@ export function ReportSubmissionModal({
                       className="space-y-6"
                     >
                       <div className="space-y-2">
-                        <Label htmlFor="summary">Summary *</Label>
+                        <Label htmlFor="summary">
+                          {t('report.fields.summary')} *
+                        </Label>
                         <Textarea
                           id="summary"
-                          placeholder="Provide a brief summary of the vulnerability..."
+                          placeholder={t('report.fields.summary.placeholder')}
                           rows={3}
                           value={formData.summary}
-                          onChange={(e) => updateFormData('summary', e.target.value)}
+                          onChange={(e) =>
+                            updateFormData('summary', e.target.value)
+                          }
                         />
                       </div>
 
                       <div className="space-y-2">
-                        <Label htmlFor="steps">Steps to Reproduce *</Label>
+                        <Label htmlFor="steps">
+                          {t('report.fields.steps')} *
+                        </Label>
                         <Textarea
                           id="steps"
-                          placeholder="1. Navigate to...&#10;2. Enter the following payload...&#10;3. Observe that..."
+                          placeholder={t('report.fields.steps.placeholder')}
                           rows={5}
                           value={formData.stepsToReproduce}
-                          onChange={(e) => updateFormData('stepsToReproduce', e.target.value)}
+                          onChange={(e) =>
+                            updateFormData('stepsToReproduce', e.target.value)
+                          }
                         />
                       </div>
 
                       <div className="space-y-2">
-                        <Label htmlFor="poc">Proof of Concept</Label>
+                        <Label htmlFor="poc">{t('report.fields.poc')}</Label>
                         <Textarea
                           id="poc"
-                          placeholder="Include code snippets, payloads, or technical details..."
+                          placeholder={t('report.fields.poc.placeholder')}
                           rows={4}
                           className="font-mono text-sm"
                           value={formData.proofOfConcept}
-                          onChange={(e) => updateFormData('proofOfConcept', e.target.value)}
+                          onChange={(e) =>
+                            updateFormData('proofOfConcept', e.target.value)
+                          }
                         />
                       </div>
 
                       <div className="space-y-2">
-                        <Label>Attachments</Label>
+                        <Label>{t('report.fields.attachments')}</Label>
                         <div className="border-2 border-dashed border-border rounded-lg p-6 text-center hover:border-primary/50 transition-colors cursor-pointer">
                           <Upload className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
                           <p className="text-sm text-muted-foreground">
-                            Drop files here or click to upload
+                            {t('report.fields.attachments.dropzone')}
                           </p>
                           <p className="text-xs text-muted-foreground mt-1">
-                            PNG, JPG, MP4, PDF up to 10MB
+                            {t('report.fields.attachments.types')}
                           </p>
-                          <p className="text-xs text-primary mt-2">(Demo: Upload simulated)</p>
+                          <p className="text-xs text-primary mt-2">
+                            {t('report.fields.attachments.demo')}
+                          </p>
                         </div>
                         {attachments.length > 0 && (
                           <div className="flex flex-wrap gap-2 mt-2">
                             {attachments.map((file, index) => (
-                              <Badge key={index} variant="secondary" className="gap-1">
+                              <Badge
+                                key={index}
+                                variant="secondary"
+                                className="gap-1"
+                              >
                                 {file}
-                                <button onClick={() => setAttachments(attachments.filter((_, i) => i !== index))}>
+                                <button
+                                  onClick={() =>
+                                    setAttachments(
+                                      attachments.filter((_, i) => i !== index),
+                                    )
+                                  }
+                                >
                                   <X className="h-3 w-3" />
                                 </button>
                               </Badge>
@@ -359,7 +421,6 @@ export function ReportSubmissionModal({
                     </motion.div>
                   )}
 
-                  {/* Step 3: Impact & Review */}
                   {currentStep === 3 && (
                     <motion.div
                       key="step3"
@@ -369,34 +430,46 @@ export function ReportSubmissionModal({
                       className="space-y-6"
                     >
                       <div className="space-y-2">
-                        <Label htmlFor="impact">Security Impact *</Label>
+                        <Label htmlFor="impact">
+                          {t('report.fields.impact')} *
+                        </Label>
                         <Textarea
                           id="impact"
-                          placeholder="Describe the potential security impact and affected users/data..."
+                          placeholder={t('report.fields.impact.placeholder')}
                           rows={4}
                           value={formData.impact}
-                          onChange={(e) => updateFormData('impact', e.target.value)}
+                          onChange={(e) =>
+                            updateFormData('impact', e.target.value)
+                          }
                         />
                       </div>
 
                       <div className="space-y-2">
-                        <Label htmlFor="remediation">Suggested Remediation</Label>
+                        <Label htmlFor="remediation">
+                          {t('report.fields.remediation')}
+                        </Label>
                         <Textarea
                           id="remediation"
-                          placeholder="Suggest how this vulnerability could be fixed..."
+                          placeholder={t(
+                            'report.fields.remediation.placeholder',
+                          )}
                           rows={3}
                           value={formData.remediation}
-                          onChange={(e) => updateFormData('remediation', e.target.value)}
+                          onChange={(e) =>
+                            updateFormData('remediation', e.target.value)
+                          }
                         />
                       </div>
 
                       <div className="space-y-2">
-                        <Label htmlFor="cvss">CVSS Score (Optional)</Label>
+                        <Label htmlFor="cvss">{t('report.fields.cvss')}</Label>
                         <Input
                           id="cvss"
-                          placeholder="e.g., 8.5"
+                          placeholder={t('report.fields.cvss.placeholder')}
                           value={formData.cvssScore}
-                          onChange={(e) => updateFormData('cvssScore', e.target.value)}
+                          onChange={(e) =>
+                            updateFormData('cvssScore', e.target.value)
+                          }
                           className="max-w-32"
                         />
                       </div>
@@ -405,24 +478,42 @@ export function ReportSubmissionModal({
                       <div className="rounded-lg border border-border bg-secondary/30 p-4">
                         <h4 className="font-medium text-foreground mb-3 flex items-center gap-2">
                           <FileText className="h-4 w-4" />
-                          Report Summary
+                          {t('report.summary.title')}
                         </h4>
                         <div className="grid grid-cols-2 gap-3 text-sm">
                           <div>
-                            <p className="text-muted-foreground">Title</p>
-                            <p className="text-foreground">{formData.title || '-'}</p>
+                            <p className="text-muted-foreground">
+                              {t('report.summary.titleField')}
+                            </p>
+                            <p className="text-foreground">
+                              {formData.title || '-'}
+                            </p>
                           </div>
                           <div>
-                            <p className="text-muted-foreground">Asset</p>
-                            <p className="text-foreground">{formData.asset || '-'}</p>
+                            <p className="text-muted-foreground">
+                              {t('report.summary.assetField')}
+                            </p>
+                            <p className="text-foreground">
+                              {formData.asset || '-'}
+                            </p>
                           </div>
                           <div>
-                            <p className="text-muted-foreground">Severity</p>
-                            <p className="text-foreground capitalize">{formData.severity || '-'}</p>
+                            <p className="text-muted-foreground">
+                              {t('report.summary.severityField')}
+                            </p>
+                            <p className="text-foreground">
+                              {formData.severity
+                                ? t(`severity.${formData.severity}`)
+                                : '-'}
+                            </p>
                           </div>
                           <div>
-                            <p className="text-muted-foreground">Weakness</p>
-                            <p className="text-foreground">{formData.weaknessType || '-'}</p>
+                            <p className="text-muted-foreground">
+                              {t('report.summary.weaknessField')}
+                            </p>
+                            <p className="text-foreground">
+                              {formData.weaknessType || '-'}
+                            </p>
                           </div>
                         </div>
                       </div>
@@ -437,20 +528,22 @@ export function ReportSubmissionModal({
                           }
                         />
                         <div className="space-y-1">
-                          <Label htmlFor="agree" className="text-sm font-medium cursor-pointer">
-                            I confirm this report follows the program rules *
+                          <Label
+                            htmlFor="agree"
+                            className="text-sm font-medium cursor-pointer"
+                          >
+                            {t('report.agree.label')} *
                           </Label>
                           <p className="text-xs text-muted-foreground">
-                            I have tested responsibly, followed the scope guidelines, and have not
-                            accessed unauthorized data.
+                            {t('report.agree.body')}
                           </p>
                         </div>
                       </div>
 
-                      <div className="flex items-center gap-2 p-3 rounded-lg bg-warning/10 border border-warning/30">
-                        <Info className="h-4 w-4 text-warning shrink-0" />
+                      <div className="flex items-start gap-2 p-3 rounded-lg bg-warning/10 border border-warning/30">
+                        <Info className="h-4 w-4 text-warning shrink-0 mt-0.5" />
                         <p className="text-xs text-muted-foreground">
-                          This is a demo submission. No actual report will be created.
+                          {t('report.demo.notice')}
                         </p>
                       </div>
                     </motion.div>
@@ -459,17 +552,17 @@ export function ReportSubmissionModal({
               </div>
 
               {/* Footer Actions */}
-              <div className="p-6 pt-4 border-t border-border flex items-center justify-between">
+              <div className="p-6 pt-4 border-t border-border flex items-center justify-between gap-2">
                 <Button
                   variant="outline"
                   onClick={() => setCurrentStep(Math.max(1, currentStep - 1))}
                   disabled={currentStep === 1}
                 >
-                  Previous
+                  {t('common.previous')}
                 </Button>
                 <div className="flex gap-2">
                   <Button variant="ghost" onClick={handleClose}>
-                    Cancel
+                    {t('common.cancel')}
                   </Button>
                   {currentStep < 3 ? (
                     <Button
@@ -479,11 +572,16 @@ export function ReportSubmissionModal({
                         (currentStep === 2 && !canProceedStep2)
                       }
                     >
-                      Next
+                      {t('common.next')}
                     </Button>
                   ) : (
-                    <Button onClick={handleSubmit} disabled={!canSubmit || isSubmitting}>
-                      {isSubmitting ? 'Submitting...' : 'Submit Report'}
+                    <Button
+                      onClick={handleSubmit}
+                      disabled={!canSubmit || isSubmitting}
+                    >
+                      {isSubmitting
+                        ? t('report.actions.submitting')
+                        : t('report.actions.submit')}
                     </Button>
                   )}
                 </div>
@@ -495,13 +593,15 @@ export function ReportSubmissionModal({
               <div className="sticky top-0">
                 <div className="flex items-center gap-2 mb-4">
                   <Lightbulb className="h-4 w-4 text-warning" />
-                  <h3 className="font-medium text-foreground">Reporting Tips</h3>
+                  <h3 className="font-medium text-foreground">
+                    {t('report.tips.title')}
+                  </h3>
                 </div>
                 <ul className="space-y-3">
-                  {reportingTips.map((tip, index) => (
-                    <li key={index} className="flex items-start gap-2 text-sm">
+                  {tipKeys.map((key) => (
+                    <li key={key} className="flex items-start gap-2 text-sm">
                       <CheckCircle className="h-4 w-4 text-success shrink-0 mt-0.5" />
-                      <span className="text-muted-foreground">{tip}</span>
+                      <span className="text-muted-foreground">{t(key)}</span>
                     </li>
                   ))}
                 </ul>
@@ -510,16 +610,18 @@ export function ReportSubmissionModal({
                   <div className="flex items-start gap-2">
                     <AlertTriangle className="h-4 w-4 text-primary shrink-0 mt-0.5" />
                     <div>
-                      <p className="text-sm font-medium text-foreground">Before submitting</p>
+                      <p className="text-sm font-medium text-foreground">
+                        {t('report.before.title')}
+                      </p>
                       <p className="text-xs text-muted-foreground mt-1">
-                        Ensure your report is complete and follows the program&apos;s scope guidelines.
+                        {t('report.before.body')}
                       </p>
                     </div>
                   </div>
                 </div>
 
                 <Badge variant="outline" className="mt-6">
-                  Demo Mode
+                  {t('common.demoMode')}
                 </Badge>
               </div>
             </div>

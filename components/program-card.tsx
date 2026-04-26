@@ -6,6 +6,7 @@ import { Building2, Clock, DollarSign, Target, ArrowRight } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
+import { useLocale } from '@/lib/i18n/locale-provider'
 import type { Program } from '@/lib/types'
 
 interface ProgramCardProps {
@@ -20,13 +21,9 @@ const statusColors = {
   closed: 'bg-destructive/20 text-destructive border-destructive/30',
 }
 
-const typeLabels = {
-  'bug-bounty': 'Bug Bounty',
-  'vdp': 'VDP',
-  'private-preview': 'Private Preview',
-}
-
 export function ProgramCard({ program, index = 0 }: ProgramCardProps) {
+  const { locale, t } = useLocale()
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -45,11 +42,16 @@ export function ProgramCard({ program, index = 0 }: ProgramCardProps) {
               <h3 className="font-semibold text-foreground group-hover:text-primary transition-colors">
                 {program.name}
               </h3>
-              <p className="text-sm text-muted-foreground">{program.organization}</p>
+              <p className="text-sm text-muted-foreground">
+                {program.organization}
+              </p>
             </div>
           </div>
-          <Badge variant="outline" className={cn('shrink-0', statusColors[program.status])}>
-            {program.status.charAt(0).toUpperCase() + program.status.slice(1)}
+          <Badge
+            variant="outline"
+            className={cn('shrink-0', statusColors[program.status])}
+          >
+            {t(`programStatus.${program.status}`)}
           </Badge>
         </div>
 
@@ -61,7 +63,7 @@ export function ProgramCard({ program, index = 0 }: ProgramCardProps) {
         {/* Tags */}
         <div className="mt-4 flex flex-wrap gap-2">
           <Badge variant="secondary" className="text-xs">
-            {typeLabels[program.type]}
+            {t(`programType.${program.type}`)}
           </Badge>
           <Badge variant="secondary" className="text-xs">
             {program.industry}
@@ -78,25 +80,37 @@ export function ProgramCard({ program, index = 0 }: ProgramCardProps) {
           <div className="flex items-center gap-2">
             <DollarSign className="h-4 w-4 text-muted-foreground" />
             <div>
-              <p className="text-xs text-muted-foreground">Rewards</p>
+              <p className="text-xs text-muted-foreground">
+                {t('programCard.rewards')}
+              </p>
               <p className="text-sm font-medium text-foreground">
-                ${program.rewardRange.min} - ${program.rewardRange.max.toLocaleString()}
+                ${program.rewardRange.min} - $
+                {program.rewardRange.max.toLocaleString()}
               </p>
             </div>
           </div>
           <div className="flex items-center gap-2">
             <Target className="h-4 w-4 text-muted-foreground" />
             <div>
-              <p className="text-xs text-muted-foreground">Assets</p>
-              <p className="text-sm font-medium text-foreground">{program.assetsCount}</p>
+              <p className="text-xs text-muted-foreground">
+                {t('programCard.assets')}
+              </p>
+              <p className="text-sm font-medium text-foreground">
+                {program.assetsCount}
+              </p>
             </div>
           </div>
           <div className="flex items-center gap-2">
             <Clock className="h-4 w-4 text-muted-foreground" />
             <div>
-              <p className="text-xs text-muted-foreground">Updated</p>
+              <p className="text-xs text-muted-foreground">
+                {t('programCard.updated')}
+              </p>
               <p className="text-sm font-medium text-foreground">
-                {new Date(program.lastUpdated).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                {new Date(program.lastUpdated).toLocaleDateString(
+                  locale === 'az' ? 'az-AZ' : 'en-US',
+                  { month: 'short', day: 'numeric' },
+                )}
               </p>
             </div>
           </div>
@@ -104,9 +118,13 @@ export function ProgramCard({ program, index = 0 }: ProgramCardProps) {
 
         {/* CTA */}
         <div className="mt-6">
-          <Button asChild variant="outline" className="w-full group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
+          <Button
+            asChild
+            variant="outline"
+            className="w-full group-hover:bg-primary group-hover:text-primary-foreground transition-colors"
+          >
             <Link href={`/programs/${program.slug}`}>
-              View Program
+              {t('programCard.viewProgram')}
               <ArrowRight className="ml-2 h-4 w-4" />
             </Link>
           </Button>
@@ -117,7 +135,7 @@ export function ProgramCard({ program, index = 0 }: ProgramCardProps) {
       {program.featured && (
         <div className="absolute top-0 right-0">
           <div className="bg-primary text-primary-foreground text-xs font-medium px-3 py-1 rounded-bl-lg">
-            Featured
+            {t('programCard.featured')}
           </div>
         </div>
       )}

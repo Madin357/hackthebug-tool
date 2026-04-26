@@ -15,31 +15,31 @@ import {
 } from '@/components/ui/select'
 import { SectionHeading } from '@/components/section-heading'
 import { ProgramCard } from '@/components/program-card'
+import { useT } from '@/lib/i18n/locale-provider'
 import { programs, industries } from '@/lib/mock-data'
 import type { ProgramStatus, ProgramType } from '@/lib/types'
 
-const programTypes = [
-  { value: 'all', label: 'All Types' },
-  { value: 'bug-bounty', label: 'Bug Bounty' },
-  { value: 'vdp', label: 'VDP' },
-  { value: 'private-preview', label: 'Private Preview' },
+const programTypeCodes: Array<'all' | ProgramType> = [
+  'all',
+  'bug-bounty',
+  'vdp',
+  'private-preview',
 ]
-
-const programStatuses = [
-  { value: 'all', label: 'All Statuses' },
-  { value: 'active', label: 'Active' },
-  { value: 'upcoming', label: 'Upcoming' },
-  { value: 'paused', label: 'Paused' },
+const programStatusCodes: Array<'all' | ProgramStatus> = [
+  'all',
+  'active',
+  'upcoming',
+  'paused',
 ]
-
 const sortOptions = [
-  { value: 'newest', label: 'Newest' },
-  { value: 'rewards-high', label: 'Highest Rewards' },
-  { value: 'rewards-low', label: 'Lowest Rewards' },
-  { value: 'assets', label: 'Most Assets' },
-]
+  { value: 'newest', key: 'programs.sort.newest' },
+  { value: 'rewards-high', key: 'programs.sort.rewardsHigh' },
+  { value: 'rewards-low', key: 'programs.sort.rewardsLow' },
+  { value: 'assets', key: 'programs.sort.assets' },
+] as const
 
 export default function ProgramsPage() {
+  const t = useT()
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedIndustry, setSelectedIndustry] = useState('all')
   const [selectedType, setSelectedType] = useState('all')
@@ -51,7 +51,6 @@ export default function ProgramsPage() {
   const filteredPrograms = useMemo(() => {
     let result = [...programs]
 
-    // Search filter
     if (searchQuery) {
       const query = searchQuery.toLowerCase()
       result = result.filter(
@@ -59,29 +58,31 @@ export default function ProgramsPage() {
           p.name.toLowerCase().includes(query) ||
           p.organization.toLowerCase().includes(query) ||
           p.description.toLowerCase().includes(query) ||
-          p.tags.some((t) => t.toLowerCase().includes(query))
+          p.tags.some((tag) => tag.toLowerCase().includes(query)),
       )
     }
 
-    // Industry filter
     if (selectedIndustry !== 'all') {
       result = result.filter((p) => p.industry === selectedIndustry)
     }
 
-    // Type filter
     if (selectedType !== 'all') {
       result = result.filter((p) => p.type === (selectedType as ProgramType))
     }
 
-    // Status filter
     if (selectedStatus !== 'all') {
-      result = result.filter((p) => p.status === (selectedStatus as ProgramStatus))
+      result = result.filter(
+        (p) => p.status === (selectedStatus as ProgramStatus),
+      )
     }
 
-    // Sorting
     switch (sortBy) {
       case 'newest':
-        result.sort((a, b) => new Date(b.lastUpdated).getTime() - new Date(a.lastUpdated).getTime())
+        result.sort(
+          (a, b) =>
+            new Date(b.lastUpdated).getTime() -
+            new Date(a.lastUpdated).getTime(),
+        )
         break
       case 'rewards-high':
         result.sort((a, b) => b.rewardRange.max - a.rewardRange.max)
@@ -111,38 +112,42 @@ export default function ProgramsPage() {
     setSortBy('newest')
   }
 
+  const labelForType = (code: 'all' | ProgramType) =>
+    code === 'all' ? t('programs.filter.allTypes') : t(`programType.${code}`)
+  const labelForStatus = (code: 'all' | ProgramStatus) =>
+    code === 'all'
+      ? t('programs.filter.allStatuses')
+      : t(`programStatus.${code}`)
+
   return (
     <div className="py-8 sm:py-12">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        {/* Header */}
         <SectionHeading
-          title="Bug Bounty Programs"
-          subtitle="Explore active programs from organizations across Azerbaijan and the region. Find your next target and start hunting."
-          badge="Programs Directory"
+          title={t('programs.title')}
+          subtitle={t('programs.subtitle')}
+          badge={t('programs.badge')}
         />
 
-        {/* Search and Filters Bar */}
+        {/* Search and Filters */}
         <div className="mb-8 space-y-4">
           <div className="flex flex-col sm:flex-row gap-4">
-            {/* Search */}
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
-                placeholder="Search programs, organizations, or tags..."
+                placeholder={t('programs.search.placeholder')}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="pl-10"
               />
             </div>
 
-            {/* Filter Toggle (Mobile) */}
             <Button
               variant="outline"
               className="sm:hidden"
               onClick={() => setShowFilters(!showFilters)}
             >
               <SlidersHorizontal className="h-4 w-4 mr-2" />
-              Filters
+              {t('programs.filter.mobileToggle')}
               {activeFiltersCount > 0 && (
                 <Badge variant="secondary" className="ml-2">
                   {activeFiltersCount}
@@ -152,12 +157,17 @@ export default function ProgramsPage() {
 
             {/* Desktop Filters */}
             <div className="hidden sm:flex items-center gap-2">
-              <Select value={selectedIndustry} onValueChange={setSelectedIndustry}>
-                <SelectTrigger className="w-40">
-                  <SelectValue placeholder="Industry" />
+              <Select
+                value={selectedIndustry}
+                onValueChange={setSelectedIndustry}
+              >
+                <SelectTrigger className="w-44">
+                  <SelectValue placeholder={t('programs.filter.industry')} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All Industries</SelectItem>
+                  <SelectItem value="all">
+                    {t('programs.filter.allIndustries')}
+                  </SelectItem>
                   {industries.map((industry) => (
                     <SelectItem key={industry} value={industry}>
                       {industry}
@@ -167,59 +177,64 @@ export default function ProgramsPage() {
               </Select>
 
               <Select value={selectedType} onValueChange={setSelectedType}>
-                <SelectTrigger className="w-36">
-                  <SelectValue placeholder="Type" />
+                <SelectTrigger className="w-40">
+                  <SelectValue placeholder={t('programs.filter.type')} />
                 </SelectTrigger>
                 <SelectContent>
-                  {programTypes.map((type) => (
-                    <SelectItem key={type.value} value={type.value}>
-                      {type.label}
+                  {programTypeCodes.map((code) => (
+                    <SelectItem key={code} value={code}>
+                      {labelForType(code)}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
 
               <Select value={selectedStatus} onValueChange={setSelectedStatus}>
-                <SelectTrigger className="w-32">
-                  <SelectValue placeholder="Status" />
+                <SelectTrigger className="w-36">
+                  <SelectValue placeholder={t('programs.filter.status')} />
                 </SelectTrigger>
                 <SelectContent>
-                  {programStatuses.map((status) => (
-                    <SelectItem key={status.value} value={status.value}>
-                      {status.label}
+                  {programStatusCodes.map((code) => (
+                    <SelectItem key={code} value={code}>
+                      {labelForStatus(code)}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
 
               <Select value={sortBy} onValueChange={setSortBy}>
-                <SelectTrigger className="w-40">
-                  <SelectValue placeholder="Sort by" />
+                <SelectTrigger className="w-44">
+                  <SelectValue placeholder={t('programs.filter.sort')} />
                 </SelectTrigger>
                 <SelectContent>
                   {sortOptions.map((option) => (
                     <SelectItem key={option.value} value={option.value}>
-                      {option.label}
+                      {t(option.key)}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
 
-              {/* View Mode Toggle */}
               <div className="flex items-center border border-border rounded-lg p-1">
                 <button
                   onClick={() => setViewMode('grid')}
                   className={`p-2 rounded ${
-                    viewMode === 'grid' ? 'bg-secondary text-foreground' : 'text-muted-foreground'
+                    viewMode === 'grid'
+                      ? 'bg-secondary text-foreground'
+                      : 'text-muted-foreground'
                   }`}
+                  aria-label="Grid view"
                 >
                   <Grid3X3 className="h-4 w-4" />
                 </button>
                 <button
                   onClick={() => setViewMode('list')}
                   className={`p-2 rounded ${
-                    viewMode === 'list' ? 'bg-secondary text-foreground' : 'text-muted-foreground'
+                    viewMode === 'list'
+                      ? 'bg-secondary text-foreground'
+                      : 'text-muted-foreground'
                   }`}
+                  aria-label="List view"
                 >
                   <List className="h-4 w-4" />
                 </button>
@@ -235,12 +250,17 @@ export default function ProgramsPage() {
               exit={{ opacity: 0, height: 0 }}
               className="sm:hidden grid grid-cols-2 gap-3 p-4 rounded-lg border border-border bg-card"
             >
-              <Select value={selectedIndustry} onValueChange={setSelectedIndustry}>
+              <Select
+                value={selectedIndustry}
+                onValueChange={setSelectedIndustry}
+              >
                 <SelectTrigger>
-                  <SelectValue placeholder="Industry" />
+                  <SelectValue placeholder={t('programs.filter.industry')} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All Industries</SelectItem>
+                  <SelectItem value="all">
+                    {t('programs.filter.allIndustries')}
+                  </SelectItem>
                   {industries.map((industry) => (
                     <SelectItem key={industry} value={industry}>
                       {industry}
@@ -251,12 +271,12 @@ export default function ProgramsPage() {
 
               <Select value={selectedType} onValueChange={setSelectedType}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Type" />
+                  <SelectValue placeholder={t('programs.filter.type')} />
                 </SelectTrigger>
                 <SelectContent>
-                  {programTypes.map((type) => (
-                    <SelectItem key={type.value} value={type.value}>
-                      {type.label}
+                  {programTypeCodes.map((code) => (
+                    <SelectItem key={code} value={code}>
+                      {labelForType(code)}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -264,12 +284,12 @@ export default function ProgramsPage() {
 
               <Select value={selectedStatus} onValueChange={setSelectedStatus}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Status" />
+                  <SelectValue placeholder={t('programs.filter.status')} />
                 </SelectTrigger>
                 <SelectContent>
-                  {programStatuses.map((status) => (
-                    <SelectItem key={status.value} value={status.value}>
-                      {status.label}
+                  {programStatusCodes.map((code) => (
+                    <SelectItem key={code} value={code}>
+                      {labelForStatus(code)}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -277,12 +297,12 @@ export default function ProgramsPage() {
 
               <Select value={sortBy} onValueChange={setSortBy}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Sort by" />
+                  <SelectValue placeholder={t('programs.filter.sort')} />
                 </SelectTrigger>
                 <SelectContent>
                   {sortOptions.map((option) => (
                     <SelectItem key={option.value} value={option.value}>
-                      {option.label}
+                      {t(option.key)}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -293,10 +313,12 @@ export default function ProgramsPage() {
           {/* Active Filters */}
           {(activeFiltersCount > 0 || searchQuery) && (
             <div className="flex flex-wrap items-center gap-2">
-              <span className="text-sm text-muted-foreground">Active filters:</span>
+              <span className="text-sm text-muted-foreground">
+                {t('programs.activeFilters')}
+              </span>
               {searchQuery && (
                 <Badge variant="secondary" className="gap-1">
-                  Search: {searchQuery}
+                  {t('programs.searchTag', { q: searchQuery })}
                   <button onClick={() => setSearchQuery('')}>
                     <X className="h-3 w-3" />
                   </button>
@@ -312,7 +334,7 @@ export default function ProgramsPage() {
               )}
               {selectedType !== 'all' && (
                 <Badge variant="secondary" className="gap-1">
-                  {programTypes.find((t) => t.value === selectedType)?.label}
+                  {labelForType(selectedType as ProgramType)}
                   <button onClick={() => setSelectedType('all')}>
                     <X className="h-3 w-3" />
                   </button>
@@ -320,14 +342,14 @@ export default function ProgramsPage() {
               )}
               {selectedStatus !== 'all' && (
                 <Badge variant="secondary" className="gap-1">
-                  {programStatuses.find((s) => s.value === selectedStatus)?.label}
+                  {labelForStatus(selectedStatus as ProgramStatus)}
                   <button onClick={() => setSelectedStatus('all')}>
                     <X className="h-3 w-3" />
                   </button>
                 </Badge>
               )}
               <Button variant="ghost" size="sm" onClick={clearFilters}>
-                Clear all
+                {t('programs.clearAll')}
               </Button>
             </div>
           )}
@@ -336,11 +358,15 @@ export default function ProgramsPage() {
         {/* Results Count */}
         <div className="mb-6 flex items-center justify-between">
           <p className="text-sm text-muted-foreground">
-            Showing <span className="font-medium text-foreground">{filteredPrograms.length}</span>{' '}
-            {filteredPrograms.length === 1 ? 'program' : 'programs'}
+            {t(
+              filteredPrograms.length === 1
+                ? 'programs.results.one'
+                : 'programs.results.other',
+              { count: filteredPrograms.length },
+            )}
           </p>
           <Badge variant="outline" className="text-xs">
-            Demo Data
+            {t('common.demoData')}
           </Badge>
         </div>
 
@@ -354,7 +380,11 @@ export default function ProgramsPage() {
             }
           >
             {filteredPrograms.map((program, index) => (
-              <ProgramCard key={program.id} program={program} index={index} />
+              <ProgramCard
+                key={program.id}
+                program={program}
+                index={index}
+              />
             ))}
           </div>
         ) : (
@@ -362,12 +392,14 @@ export default function ProgramsPage() {
             <div className="inline-flex items-center justify-center h-16 w-16 rounded-full bg-secondary mb-4">
               <Search className="h-8 w-8 text-muted-foreground" />
             </div>
-            <h3 className="text-lg font-semibold text-foreground mb-2">No programs found</h3>
+            <h3 className="text-lg font-semibold text-foreground mb-2">
+              {t('programs.empty.title')}
+            </h3>
             <p className="text-muted-foreground mb-4">
-              Try adjusting your filters or search query.
+              {t('programs.empty.body')}
             </p>
             <Button variant="outline" onClick={clearFilters}>
-              Clear all filters
+              {t('programs.empty.clear')}
             </Button>
           </div>
         )}

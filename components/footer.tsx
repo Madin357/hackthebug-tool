@@ -1,26 +1,31 @@
+'use client'
+
 import Link from 'next/link'
 import { Bug, Github, Linkedin, Twitter } from 'lucide-react'
+import { useT } from '@/lib/i18n/locale-provider'
 
-const footerLinks = {
-  platform: [
-    { href: '/programs', label: 'Programs' },
-    { href: '/leaderboard', label: 'Leaderboard' },
-    { href: '/dashboard/researcher', label: 'Researcher Dashboard' },
-    { href: '/dashboard/organization', label: 'Organization Dashboard' },
-  ],
-  resources: [
-    { href: '/about', label: 'About' },
-    { href: '/about#faq', label: 'FAQ' },
-    { href: '/about#how-it-works', label: 'How It Works' },
-  ],
-  legal: [
-    { href: '#', label: 'Privacy Policy' },
-    { href: '#', label: 'Terms of Service' },
-    { href: '#', label: 'Safe Harbor' },
-  ],
-}
+const platformLinks = [
+  { href: '/programs', key: 'nav.programs' },
+  { href: '/leaderboard', key: 'nav.leaderboard' },
+  { href: '/dashboard/researcher', key: 'footer.dashboardResearcher' },
+  { href: '/dashboard/organization', key: 'footer.dashboardOrganization' },
+]
+
+const resourceLinks = [
+  { href: '/about', key: 'footer.about' },
+  { href: '/about#faq', key: 'footer.faq' },
+  { href: '/about#how-it-works', key: 'footer.howItWorks' },
+]
+
+const legalLinks = [
+  { href: '#', key: 'footer.privacy' },
+  { href: '#', key: 'footer.terms' },
+  { href: '#', key: 'footer.safeHarbor' },
+]
 
 export function Footer() {
+  const t = useT()
+
   return (
     <footer className="border-t border-border bg-card/50">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-12">
@@ -36,16 +41,28 @@ export function Footer() {
               </span>
             </Link>
             <p className="mt-4 text-sm text-muted-foreground leading-relaxed">
-              Responsible security testing for modern digital platforms. Connecting organizations with ethical hackers in Azerbaijan and beyond.
+              {t('footer.tagline')}
+            </p>
+            <p className="mt-4 text-xs text-muted-foreground border border-border rounded-md px-3 py-2 inline-block">
+              {t('disclaimer.azCitizensOnly')}
             </p>
             <div className="flex items-center gap-4 mt-6">
-              <a href="#" className="text-muted-foreground hover:text-foreground transition-colors">
+              <a
+                href="#"
+                className="text-muted-foreground hover:text-foreground transition-colors"
+              >
                 <Twitter className="h-5 w-5" />
               </a>
-              <a href="#" className="text-muted-foreground hover:text-foreground transition-colors">
+              <a
+                href="#"
+                className="text-muted-foreground hover:text-foreground transition-colors"
+              >
                 <Linkedin className="h-5 w-5" />
               </a>
-              <a href="#" className="text-muted-foreground hover:text-foreground transition-colors">
+              <a
+                href="#"
+                className="text-muted-foreground hover:text-foreground transition-colors"
+              >
                 <Github className="h-5 w-5" />
               </a>
             </div>
@@ -53,15 +70,17 @@ export function Footer() {
 
           {/* Platform Links */}
           <div>
-            <h3 className="text-sm font-semibold text-foreground mb-4">Platform</h3>
+            <h3 className="text-sm font-semibold text-foreground mb-4">
+              {t('footer.platform')}
+            </h3>
             <ul className="space-y-3">
-              {footerLinks.platform.map((link) => (
+              {platformLinks.map((link) => (
                 <li key={link.href}>
                   <Link
                     href={link.href}
                     className="text-sm text-muted-foreground hover:text-foreground transition-colors"
                   >
-                    {link.label}
+                    {t(link.key)}
                   </Link>
                 </li>
               ))}
@@ -70,15 +89,17 @@ export function Footer() {
 
           {/* Resources Links */}
           <div>
-            <h3 className="text-sm font-semibold text-foreground mb-4">Resources</h3>
+            <h3 className="text-sm font-semibold text-foreground mb-4">
+              {t('footer.resources')}
+            </h3>
             <ul className="space-y-3">
-              {footerLinks.resources.map((link) => (
+              {resourceLinks.map((link) => (
                 <li key={link.href}>
                   <Link
                     href={link.href}
                     className="text-sm text-muted-foreground hover:text-foreground transition-colors"
                   >
-                    {link.label}
+                    {t(link.key)}
                   </Link>
                 </li>
               ))}
@@ -87,15 +108,17 @@ export function Footer() {
 
           {/* Legal Links */}
           <div>
-            <h3 className="text-sm font-semibold text-foreground mb-4">Legal</h3>
+            <h3 className="text-sm font-semibold text-foreground mb-4">
+              {t('footer.legal')}
+            </h3>
             <ul className="space-y-3">
-              {footerLinks.legal.map((link) => (
-                <li key={link.href}>
+              {legalLinks.map((link) => (
+                <li key={link.key}>
                   <Link
                     href={link.href}
                     className="text-sm text-muted-foreground hover:text-foreground transition-colors"
                   >
-                    {link.label}
+                    {t(link.key)}
                   </Link>
                 </li>
               ))}
@@ -106,14 +129,14 @@ export function Footer() {
         {/* Bottom Bar */}
         <div className="border-t border-border mt-12 pt-8 flex flex-col sm:flex-row justify-between items-center gap-4">
           <p className="text-sm text-muted-foreground">
-            &copy; 2026 HackTheBug. All rights reserved.
+            {t('footer.copyright')}
           </p>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap justify-center">
             <span className="text-xs text-muted-foreground bg-secondary px-3 py-1 rounded-full">
-              Hackathon Demo
+              {t('common.hackathonDemo')}
             </span>
             <span className="text-xs text-muted-foreground">
-              Fictional programs and sample data
+              {t('common.fictionalDataNote')}
             </span>
           </div>
         </div>

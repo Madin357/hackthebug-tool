@@ -7,18 +7,21 @@
 
 ## Product Summary
 
-**Hack The Bug** is a modern cybersecurity platform concept for Azerbaijan‑focused
-digital products and organizations. It connects:
+**Hack The Bug** is a modern cybersecurity platform concept built **exclusively
+for the Republic of Azerbaijan**. It connects:
 
-- **Organizations** (banks, telecoms, government portals, fintech, e‑commerce,
-  cloud providers, etc.) that want to publish vulnerability disclosure (VDP) or
-  bug bounty programs.
-- **Ethical hackers / security researchers** who can responsibly test in‑scope
-  assets and submit vulnerability reports, earn rewards, build reputation, and
-  climb a public leaderboard.
+- **Azerbaijani organizations** (banks, telecoms, government portals, fintech,
+  e‑commerce, cloud providers, etc.) that want to publish vulnerability
+  disclosure (VDP) or bug bounty programs.
+- **Verified Azerbaijani citizens** acting as ethical hackers / security
+  researchers who can responsibly test in‑scope assets and submit vulnerability
+  reports, earn rewards, build reputation, and climb a national leaderboard.
 
-Positioning: a *trusted, regional* cybersecurity SaaS — premium and enterprise‑
-ready, suitable for banks and government, **not** a gaming/cyberpunk hacker site.
+Positioning: a *trusted, national* cybersecurity SaaS for Azerbaijan — premium
+and enterprise‑ready, suitable for banks and government, **not** a
+gaming/cyberpunk hacker site, **not** a global platform. Identity verification
+through **SİMA** is planned for launch and is **not active in the current
+build** — every visible "submit", "register", "login" remains a demo.
 
 ## Current Goal
 
@@ -34,19 +37,33 @@ for now and will be layered on later.
 
 - Frontend‑only Next.js app. **No backend, no database, no real auth, no real
   registration, no real SİMA / identity verification, no real payments.**
-- All data is mocked locally in `lib/mock-data.ts`.
+- All data is mocked locally in `lib/mock-data.ts`. All 10 researchers are
+  AZ‑based (country: Azerbaijan, countryCode: AZ).
 - Submitting a report opens a multi‑step modal that simulates submission with a
   `setTimeout` and shows a fake report ID. Nothing is persisted.
-- "Verification Coming Soon" is shown in the nav and on the researcher
-  dashboard as a SİMA placeholder.
+- "Verification Coming Soon" / "SİMA — coming soon" / "AZ citizens only ·
+  Verification soon" appear in the nav, hero, dashboards, report modal, and
+  about page as planned/demo language. **Verification is never described as
+  active.**
+- **Internationalization is now wired up.** `lib/i18n/dictionary.ts` holds
+  flat‑key EN + AZ entries; `lib/i18n/locale-provider.tsx` exposes
+  `LocaleProvider`, `useLocale`, and `useT`. The provider is mounted in
+  `app/layout.tsx`. Default locale is **AZ**. The user's choice is persisted
+  in `localStorage` under `htb-locale`. The `<html lang>` attribute is updated
+  in an effect when the locale changes. The provider rehydrates from
+  `localStorage` after mount, so SSG renders at the default locale.
+  `<html suppressHydrationWarning>` covers the post‑mount text swap.
+- The EN/AZ toggle lives in the navigation header (desktop + mobile drawer)
+  via `components/locale-switcher.tsx`.
 - Dark theme is hard‑forced in `app/layout.tsx` (`<html className="dark …">`).
   `next-themes` is imported via `components/theme-provider.tsx` but not wired
   up — kept for the day a light mode lands.
-- Geist + Geist Mono webfonts are now wired through `next/font` and exposed
-  to Tailwind v4 via `--font-geist-sans` / `--font-geist-mono` referenced
-  from `@theme inline` in `app/globals.css`.
+- Geist + Geist Mono webfonts are wired through `next/font` and exposed to
+  Tailwind v4 via `--font-geist-sans` / `--font-geist-mono` referenced from
+  `@theme inline` in `app/globals.css`.
 - `next.config.mjs` has `typescript.ignoreBuildErrors: true` and
-  `images.unoptimized: true` — typical hackathon escape hatches.
+  `images.unoptimized: true` — typical hackathon escape hatches. (Plain `tsc
+  --noEmit` runs clean as of the latest pass.)
 
 ### Known issues
 
@@ -71,6 +88,10 @@ None at the moment. The eight pre‑existing defects identified during the
 - **Notifications:** none wired up. `sonner` package retained in
   `package.json` for future use; the previous duplicate toast surface has
   been removed.
+- **Internationalization:** local, dependency‑free system in `lib/i18n/`
+  (`dictionary.ts` with flat‑key EN/AZ + `locale-provider.tsx` with
+  `LocaleProvider`/`useLocale`/`useT`). Default locale `'az'`, persisted via
+  `localStorage` (`htb-locale`). EN/AZ toggle in `components/locale-switcher.tsx`.
 - **Theming:** `next-themes` installed but unused; dark mode is hard‑coded.
 - **Analytics:** `@vercel/analytics` (only mounted in production).
 - **Package manager:** both `package-lock.json` and `pnpm-lock.yaml` exist —
@@ -98,21 +119,25 @@ hackthebug-tool/
 │       └── organization/page.tsx # Org view: stats, trend chart, severity, pipeline,
 │                                 #   recent reports, top assets, activity, top hackers
 ├── components/
-│   ├── navigation.tsx            # Sticky glass header + responsive mobile menu
-│   ├── footer.tsx                # 4‑column footer with brand + links
+│   ├── navigation.tsx            # Sticky glass header + LocaleSwitcher + responsive mobile menu
+│   ├── footer.tsx                # 4‑column footer with brand + links + AZ‑only badge
+│   ├── locale-switcher.tsx       # EN/AZ toggle (used in nav)
 │   ├── program-card.tsx          # Reusable program card (used on home + directory)
 │   ├── section-heading.tsx       # Reusable badge + h2 + subtitle block
-│   ├── severity-badge.tsx        # Critical / High / Medium / Low / Info pill
-│   ├── status-badge.tsx          # draft / pending / triaged / resolved / etc. pill
+│   ├── severity-badge.tsx        # Critical / High / Medium / Low / Info pill (uses useT)
+│   ├── status-badge.tsx          # draft / pending / triaged / resolved / etc. pill (uses useT)
 │   ├── stat-card.tsx             # Animated KPI card with optional trend
-│   ├── report-submission-modal.tsx # 3‑step report submission dialog (mock submit)
+│   ├── report-submission-modal.tsx # 3‑step report submission dialog (mock submit, fully translated)
 │   ├── theme-provider.tsx        # next-themes wrapper (currently unused)
 │   └── ui/                       # shadcn/ui primitives (full kit, minus the deleted
 │                                 #   toast/sonner/use-mobile dupes)
 ├── lib/
 │   ├── types.ts                  # Domain types: Program, Researcher, Report, etc.
-│   ├── mock-data.ts              # All mock data + supporting lookup arrays
-│   └── utils.ts                  # `cn()` helper
+│   ├── mock-data.ts              # All mock data + supporting lookup arrays (researchers all AZ)
+│   ├── utils.ts                  # `cn()` helper
+│   └── i18n/
+│       ├── dictionary.ts         # Flat‑key EN + AZ dictionary, translate() helper, Locale type
+│       └── locale-provider.tsx   # LocaleProvider + useLocale + useT hooks (localStorage backed)
 ├── hooks/
 │   └── use-mobile.ts             # md breakpoint hook (the canonical location)
 ├── components.json               # shadcn config (style: new-york, base: neutral)
@@ -141,8 +166,9 @@ hackthebug-tool/
 
 | Component                        | Purpose                                                                                  |
 | -------------------------------- | ---------------------------------------------------------------------------------------- |
-| `Navigation`                     | Sticky glass top bar, brand mark, primary nav (Home/Programs/Leaderboard/About), Dashboard dropdown, "Verification Coming Soon" pill, "Launch Demo" CTA, animated mobile drawer. |
-| `Footer`                         | 4‑column footer: brand + social, Platform links, Resources links, Legal links, "Hackathon Demo" tag. |
+| `Navigation`                     | Sticky glass top bar, brand mark, primary nav (Home/Programs/Leaderboard/About), Dashboard dropdown, "AZ citizens only · Verification soon" pill, EN/AZ `LocaleSwitcher`, "Launch Demo" CTA, animated mobile drawer. |
+| `Footer`                         | 4‑column footer: brand + AZ‑citizens‑only badge + social, Platform links, Resources links, Legal links, "Hackathon Demo" tag. |
+| `LocaleSwitcher`                 | EN/AZ toggle group; toggles `useLocale().setLocale`, persists to `localStorage` (`htb-locale`). Used in Navigation desktop bar + mobile drawer. |
 | `ProgramCard`                    | Animated card showing org icon, name, status, type/industry/tags, rewards range, asset count, last updated, "View Program" CTA, featured ribbon. Used on home and `/programs`. |
 | `SectionHeading`                 | Optional badge + h2 + subtitle, optionally centered, with fade‑in‑on‑view animation.     |
 | `SeverityBadge`                  | Pill with colored dot for critical/high/medium/low/informational.                        |
@@ -160,7 +186,7 @@ All mock data lives in `lib/mock-data.ts`, typed against `lib/types.ts`.
 | ------------------------------- | --------------------- | ---------------------------------------------------------------------- |
 | `platformStats`                 | `PlatformStats`       | 24 active programs, 312 verified researchers, 1,847 reports, <24h triage, $127.5K paid, 18 orgs. |
 | `programs`                      | `Program[]`           | 6 fictional Azerbaijan/region‑themed programs: CaspianBank, BakuCommerce, GovPortal X, AzCloud One, SilkRoute Pay, Karabug Telecom. Each has scope, rewards table, rules, updates timeline, hall of fame, response SLAs. |
-| `researchers`                   | `Researcher[]`        | 10 fictional researchers (handles, country/code, points, reputation, badges, total rewards). Top 4 are AZ‑based. |
+| `researchers`                   | `Researcher[]`        | 10 fictional researchers (handles, country/code, points, reputation, badges, total rewards). **All 10 are AZ‑based** since AZ‑citizens‑only positioning shipped. |
 | `reports`                       | `Report[]`            | 7 sample vulnerability reports across the programs.                    |
 | `researcherDashboardStats`      | `DashboardStats`      | KPIs for the researcher view (assumes "you" are CyberNomad, rank #1).  |
 | `orgDashboardStats`             | `OrgDashboardStats`   | KPIs for the org view (assumes "you" are CaspianBank).                 |
@@ -223,6 +249,19 @@ those variables for `--font-sans` / `--font-mono`, so the `font-sans` and
 
 These are hard rules for this hackathon iteration:
 
+- **Hack The Bug is for citizens of the Republic of Azerbaijan only.** Copy
+  must reflect this. Do not write phrases like "global community", "100+
+  countries", "worldwide researchers", or anything that suggests a
+  multi‑country audience. Researchers in mock data are all AZ.
+- **Verification is planned, not active.** Always describe SİMA / identity
+  verification with "coming soon", "planned", "demo only", "currently a
+  demo", etc. Never write copy that implies verification is live or that
+  any current account is verified for real.
+- **All visible UI text goes through the i18n dictionary.** Add new keys to
+  `lib/i18n/dictionary.ts` (both `en` and `az` blocks), then read them via
+  `useT()`. Don't hard‑code English (or Azerbaijani) strings in pages or
+  components. Mock data values (program names, organization names, industry
+  names, weakness types) stay as data and are not translated.
 - **Do not add a real backend.** No API routes, no server actions that hit
   real services. Anything "submit"/"save" stays mocked.
 - **Do not add real auth.** No NextAuth, Clerk, Supabase Auth, etc. UI flows
@@ -269,9 +308,49 @@ To be implemented after the hackathon, in roughly this order:
   platform admin / triage reviewer.
 - **Public hall of fame & profile pages** — per researcher and per program.
 - **Disclosure timeline & coordinated disclosure tooling.**
-- **Localization (Azerbaijani / English / Russian).**
+- **Russian as a third locale.** EN + AZ already shipped via the local i18n
+  system; adding `ru` is a matter of adding entries to `lib/i18n/dictionary.ts`
+  and the `LOCALES` array.
 
 ## Last Actions
+
+### 2026‑04‑26 — i18n (EN/AZ) + Azerbaijani‑citizens‑only positioning
+
+- **What:** Built a dependency‑free i18n system (`lib/i18n/dictionary.ts` with
+  flat‑key EN + AZ entries; `lib/i18n/locale-provider.tsx` exposing
+  `LocaleProvider`, `useLocale`, `useT`). Mounted the provider in
+  `app/layout.tsx` with default locale `'az'`, persisted to `localStorage`
+  under `htb-locale`, and synced `<html lang>` via effect. Added an EN/AZ
+  toggle (`components/locale-switcher.tsx`) to the navigation desktop bar
+  and mobile drawer. Routed every visible UI string in the navigation,
+  footer, badges, program card, report submission modal, and all 7 pages
+  (home, programs list, program detail, leaderboard, about, both
+  dashboards) through the dictionary. Re‑wrote the product narrative across
+  every page to make Azerbaijani‑citizens‑only positioning explicit, and
+  added planned/demo language wherever SİMA / verification appears. Updated
+  the 5 non‑AZ researchers in `lib/mock-data.ts` so all 10 are now AZ‑based.
+- **Why:** The user asked for full EN/AZ language support and a clear
+  AZ‑citizens‑only product stance. Both required a small i18n layer plus a
+  copy pass across every page; the mock data change was needed so the
+  leaderboard and dashboards don't contradict the new positioning. SİMA
+  language was tightened so nothing reads as "verification is live".
+- **Files touched:** added `lib/i18n/dictionary.ts`,
+  `lib/i18n/locale-provider.tsx`, `components/locale-switcher.tsx`. Modified
+  `app/layout.tsx`, `app/page.tsx`, `app/programs/page.tsx`,
+  `app/programs/[slug]/page.tsx`, `app/leaderboard/page.tsx`,
+  `app/about/page.tsx`, `app/dashboard/researcher/page.tsx`,
+  `app/dashboard/organization/page.tsx`, `components/navigation.tsx`,
+  `components/footer.tsx`, `components/severity-badge.tsx`,
+  `components/status-badge.tsx`, `components/program-card.tsx`,
+  `components/report-submission-modal.tsx`, `lib/mock-data.ts`,
+  `MEMORY.md`, `CLAUDE.md`.
+- **Verification:** `pnpm build` succeeds (8/8 routes prerender). `pnpm exec
+  tsc --noEmit` runs clean (0 errors). Browser verification of the toggle
+  itself, RTL/Latin‑extended characters in headers, and any text overflow
+  on small screens still needs a manual `pnpm dev` pass.
+- **Next step:** spot‑check the demo in a browser at desktop and ≤640px;
+  consider adding `ru` (Russian) when needed — only requires a new dict
+  block and a `LOCALES` extension.
 
 ### 2026‑04‑26 — Cleanup pass: resolved all eight pre‑existing issues
 

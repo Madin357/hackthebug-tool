@@ -16,119 +16,115 @@ import {
   Palette,
   Bug,
   Compass,
+  Flag,
 } from 'lucide-react'
 import { SectionHeading } from '@/components/section-heading'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import { useT } from '@/lib/i18n/locale-provider'
 import { platformStats } from '@/lib/mock-data'
 
 const values = [
   {
     icon: Shield,
-    title: 'Security First',
-    description:
-      'We believe in proactive security. Finding vulnerabilities before malicious actors do is the foundation of a safer regional digital ecosystem.',
+    titleKey: 'about.values.security.title',
+    bodyKey: 'about.values.security.body',
   },
   {
     icon: HeartHandshake,
-    title: 'Ethical Hacking',
-    description:
-      'We promote responsible disclosure and ethical hacking practices. Every researcher on the platform agrees to a strict code of conduct.',
+    titleKey: 'about.values.ethics.title',
+    bodyKey: 'about.values.ethics.body',
   },
   {
     icon: Users,
-    title: 'Community Driven',
-    description:
-      'The platform is built to grow alongside an emerging community of regional security researchers — researchers who understand local context and compliance.',
+    titleKey: 'about.values.community.title',
+    bodyKey: 'about.values.community.body',
   },
   {
     icon: Award,
-    title: 'Fair Recognition',
-    description:
-      'Researchers should be fairly compensated for their findings. Transparent reward tiers and a public hall of fame are core, not optional.',
+    titleKey: 'about.values.recognition.title',
+    bodyKey: 'about.values.recognition.body',
   },
-]
-
-const stats = [
-  { value: platformStats.activePrograms.toString(), label: 'Active Programs' },
-  {
-    value: platformStats.verifiedResearchers.toString(),
-    label: 'Verified Researchers',
-  },
-  {
-    value: platformStats.reportsSubmitted.toLocaleString(),
-    label: 'Reports Submitted',
-  },
-  {
-    value: `${platformStats.organizationsJoined}`,
-    label: 'Partner Organizations',
-  },
-]
+] as const
 
 const roles = [
   {
     abbr: 'ENG',
-    title: 'Engineering',
-    description: 'Frontend, design system, and the path to a real backend.',
+    titleKey: 'about.team.eng.title',
+    bodyKey: 'about.team.eng.body',
     icon: Code2,
   },
   {
     abbr: 'DES',
-    title: 'Design',
-    description: 'Premium dark cybersecurity SaaS visual language and UX flows.',
+    titleKey: 'about.team.des.title',
+    bodyKey: 'about.team.des.body',
     icon: Palette,
   },
   {
     abbr: 'SEC',
-    title: 'Security Research',
-    description:
-      'Domain expertise — scope design, severity tiers, and disclosure workflows.',
+    titleKey: 'about.team.sec.title',
+    bodyKey: 'about.team.sec.body',
     icon: Bug,
   },
   {
     abbr: 'PRD',
-    title: 'Product',
-    description:
-      'Roadmap from prototype to launch — SİMA, organizations, researchers.',
+    titleKey: 'about.team.prd.title',
+    bodyKey: 'about.team.prd.body',
     icon: Compass,
   },
-]
+] as const
 
 const timeline = [
   {
     year: 'Q4 2025',
-    title: 'Concept',
-    description:
-      'Identified the gap: Azerbaijan-focused digital products and organizations had no localized, trusted home for responsible disclosure and bug bounty programs.',
+    titleKey: 'about.roadmap.q4_2025.title',
+    bodyKey: 'about.roadmap.q4_2025.body',
   },
   {
     year: 'Q1 2026',
-    title: 'Design & Prototype',
-    description:
-      'Built the design system, mock data set, and core flows — landing, programs directory, program detail, dashboards, and report submission.',
+    titleKey: 'about.roadmap.q1_2026.title',
+    bodyKey: 'about.roadmap.q1_2026.body',
   },
   {
     year: 'Q2 2026',
-    title: 'AZCON Hackathon',
-    description:
-      'Frontend demo presented at the AZCON Hackathon. Currently here.',
+    titleKey: 'about.roadmap.q2_2026.title',
+    bodyKey: 'about.roadmap.q2_2026.body',
   },
   {
     year: 'Q3 2026',
-    title: 'Identity Verification & Private Beta',
-    description:
-      'Wire up SİMA verification for researchers and organizations. Onboard a small set of regional partners for closed testing.',
+    titleKey: 'about.roadmap.q3_2026.title',
+    bodyKey: 'about.roadmap.q3_2026.body',
   },
   {
     year: 'Q4 2026',
-    title: 'Backend, API & Public Launch',
-    description:
-      'Real database, API, notification system, and triage workflows. Open the platform to the first organizations and verified researchers.',
+    titleKey: 'about.roadmap.q4_2026.title',
+    bodyKey: 'about.roadmap.q4_2026.body',
   },
-]
+] as const
 
 export default function AboutPage() {
+  const t = useT()
+
+  const stats = [
+    {
+      value: platformStats.activePrograms.toString(),
+      labelKey: 'about.stats.label.activePrograms',
+    },
+    {
+      value: platformStats.verifiedResearchers.toString(),
+      labelKey: 'about.stats.label.verifiedResearchers',
+    },
+    {
+      value: platformStats.reportsSubmitted.toLocaleString(),
+      labelKey: 'about.stats.label.reportsSubmitted',
+    },
+    {
+      value: platformStats.organizationsJoined.toString(),
+      labelKey: 'about.stats.label.partnerOrgs',
+    },
+  ]
+
   return (
     <div className="py-8 sm:py-12">
       {/* Hero */}
@@ -140,30 +136,40 @@ export default function AboutPage() {
             animate={{ opacity: 1, y: 0 }}
             className="text-center max-w-4xl mx-auto"
           >
-            <Badge variant="outline" className="mb-6 border-primary/30 text-primary">
-              Hackathon Prototype
-            </Badge>
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-foreground mb-6">
-              A trusted bug bounty platform for{' '}
-              <span className="gradient-text">Azerbaijan&apos;s digital future</span>
+            <div className="flex flex-wrap items-center justify-center gap-2 mb-6">
+              <Badge variant="outline" className="border-primary/30 text-primary">
+                {t('about.badge.prototype')}
+              </Badge>
+              <Badge variant="outline" className="border-accent/30 text-accent">
+                <Flag className="mr-1 h-3 w-3" />
+                {t('disclaimer.azCitizensOnly')}
+              </Badge>
+            </div>
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-foreground mb-6 text-balance">
+              {t('about.hero.title.lead')}{' '}
+              <span className="gradient-text">
+                {t('about.hero.title.highlight')}
+              </span>
             </h1>
-            <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
-              HackTheBug connects Azerbaijani organizations — banks, telecoms,
-              government portals, fintech — with security researchers who can test
-              responsibly and report vulnerabilities through a single, regional
-              platform.
+            <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto text-pretty">
+              {t('about.hero.subtitle')}
             </p>
             <div className="flex flex-wrap items-center justify-center gap-4">
               <Button size="lg" asChild className="glow-cyan">
                 <Link href="/programs">
-                  Explore Programs
+                  {t('about.hero.cta.explore')}
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Link>
               </Button>
               <Button size="lg" variant="outline" asChild>
-                <Link href="/dashboard/researcher">Researcher Dashboard</Link>
+                <Link href="/dashboard/researcher">
+                  {t('about.hero.cta.dashboard')}
+                </Link>
               </Button>
             </div>
+            <p className="mt-6 text-sm text-muted-foreground max-w-2xl mx-auto">
+              {t('disclaimer.azCitizensLong')}
+            </p>
           </motion.div>
         </div>
       </section>
@@ -173,7 +179,7 @@ export default function AboutPage() {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
           {stats.map((stat, index) => (
             <motion.div
-              key={stat.label}
+              key={stat.labelKey}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.1 }}
@@ -183,14 +189,14 @@ export default function AboutPage() {
                   <p className="text-3xl md:text-4xl font-bold text-primary mb-2">
                     {stat.value}
                   </p>
-                  <p className="text-muted-foreground">{stat.label}</p>
+                  <p className="text-muted-foreground">{t(stat.labelKey)}</p>
                 </CardContent>
               </Card>
             </motion.div>
           ))}
         </div>
         <p className="text-center text-xs text-muted-foreground mt-6">
-          Demo data for illustration purposes
+          {t('common.demoBanner')}
         </p>
       </section>
 
@@ -203,55 +209,26 @@ export default function AboutPage() {
             viewport={{ once: true }}
           >
             <SectionHeading
-              title="Our Mission"
-              subtitle="Make responsible disclosure the default for Azerbaijan's digital infrastructure — and reward the people doing the work."
-              badge="Mission"
+              title={t('about.mission.title')}
+              subtitle={t('about.mission.subtitle')}
+              badge={t('about.mission.badge')}
             />
             <div className="space-y-4 mt-8">
-              <div className="flex items-start gap-4">
-                <div className="flex-shrink-0 w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center">
-                  <CheckCircle2 className="h-5 w-5 text-primary" />
+              {[1, 2, 3].map((n) => (
+                <div key={n} className="flex items-start gap-4">
+                  <div className="flex-shrink-0 w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center">
+                    <CheckCircle2 className="h-5 w-5 text-primary" />
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-foreground mb-1">
+                      {t(`about.mission.b${n}.title`)}
+                    </h4>
+                    <p className="text-muted-foreground">
+                      {t(`about.mission.b${n}.body`)}
+                    </p>
+                  </div>
                 </div>
-                <div>
-                  <h4 className="font-semibold text-foreground mb-1">
-                    Bring researchers and organizations into one room
-                  </h4>
-                  <p className="text-muted-foreground">
-                    Today, regional security findings happen ad-hoc — by email, by
-                    direct message, or not at all. HackTheBug is the structured
-                    place to coordinate.
-                  </p>
-                </div>
-              </div>
-              <div className="flex items-start gap-4">
-                <div className="flex-shrink-0 w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center">
-                  <CheckCircle2 className="h-5 w-5 text-primary" />
-                </div>
-                <div>
-                  <h4 className="font-semibold text-foreground mb-1">
-                    Verify researcher identity through SİMA
-                  </h4>
-                  <p className="text-muted-foreground">
-                    Trust matters in security disclosure. Once integration ships,
-                    verified researchers will unlock access to private programs and
-                    higher-trust workflows.
-                  </p>
-                </div>
-              </div>
-              <div className="flex items-start gap-4">
-                <div className="flex-shrink-0 w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center">
-                  <CheckCircle2 className="h-5 w-5 text-primary" />
-                </div>
-                <div>
-                  <h4 className="font-semibold text-foreground mb-1">
-                    Reward fairly, recognize publicly
-                  </h4>
-                  <p className="text-muted-foreground">
-                    Transparent reward tiers per severity, and a public hall of
-                    fame so researchers build a portable reputation.
-                  </p>
-                </div>
-              </div>
+              ))}
             </div>
           </motion.div>
 
@@ -266,11 +243,10 @@ export default function AboutPage() {
                 <CardContent className="p-6">
                   <Building2 className="h-10 w-10 text-primary mb-4" />
                   <h4 className="font-semibold text-foreground mb-2">
-                    For Organizations
+                    {t('about.mission.forOrgs.title')}
                   </h4>
                   <p className="text-sm text-muted-foreground">
-                    Publish a program, set scope and rewards, triage incoming
-                    reports with clear SLAs.
+                    {t('about.mission.forOrgs.body')}
                   </p>
                 </CardContent>
               </Card>
@@ -278,11 +254,10 @@ export default function AboutPage() {
                 <CardContent className="p-6">
                   <Code2 className="h-10 w-10 text-accent mb-4" />
                   <h4 className="font-semibold text-foreground mb-2">
-                    For Researchers
+                    {t('about.mission.forResearchers.title')}
                   </h4>
                   <p className="text-sm text-muted-foreground">
-                    Find programs, test responsibly under safe-harbor terms, build
-                    a public reputation.
+                    {t('about.mission.forResearchers.body')}
                   </p>
                 </CardContent>
               </Card>
@@ -290,12 +265,10 @@ export default function AboutPage() {
                 <CardContent className="p-6">
                   <Globe className="h-10 w-10 text-primary mb-4" />
                   <h4 className="font-semibold text-foreground mb-2">
-                    Regional Focus
+                    {t('about.mission.regional.title')}
                   </h4>
                   <p className="text-sm text-muted-foreground">
-                    Built for Azerbaijani context first — language, identity
-                    verification, and partner organizations across banking,
-                    telecom, government, and cloud.
+                    {t('about.mission.regional.body')}
                   </p>
                 </CardContent>
               </Card>
@@ -308,15 +281,15 @@ export default function AboutPage() {
       <section className="bg-card/30 border-y border-border py-16">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <SectionHeading
-            title="Our Values"
-            subtitle="The principles that guide every product decision."
-            badge="Values"
+            title={t('about.values.title')}
+            subtitle={t('about.values.subtitle')}
+            badge={t('about.values.badge')}
             centered
           />
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 mt-12">
             {values.map((value, index) => (
               <motion.div
-                key={value.title}
+                key={value.titleKey}
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
@@ -328,10 +301,10 @@ export default function AboutPage() {
                       <value.icon className="h-6 w-6 text-primary" />
                     </div>
                     <h3 className="text-lg font-semibold text-foreground mb-2">
-                      {value.title}
+                      {t(value.titleKey)}
                     </h3>
                     <p className="text-muted-foreground text-sm">
-                      {value.description}
+                      {t(value.bodyKey)}
                     </p>
                   </CardContent>
                 </Card>
@@ -344,9 +317,9 @@ export default function AboutPage() {
       {/* Timeline */}
       <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-16">
         <SectionHeading
-          title="Roadmap"
-          subtitle="From a hackathon prototype to a launched, trusted regional platform."
-          badge="Roadmap"
+          title={t('about.roadmap.title')}
+          subtitle={t('about.roadmap.subtitle')}
+          badge={t('about.roadmap.badge')}
           centered
         />
         <div className="mt-12 max-w-3xl mx-auto">
@@ -365,7 +338,6 @@ export default function AboutPage() {
                 }`}
               >
                 <div className="absolute left-4 md:left-1/2 w-3 h-3 bg-primary rounded-full -translate-x-1.5 md:-translate-x-1.5 mt-1.5" />
-
                 <div
                   className={`flex-1 pl-12 md:pl-0 ${
                     index % 2 === 0 ? 'md:pr-12 md:text-right' : 'md:pl-12'
@@ -375,10 +347,10 @@ export default function AboutPage() {
                     {item.year}
                   </span>
                   <h3 className="text-lg font-semibold text-foreground mb-1">
-                    {item.title}
+                    {t(item.titleKey)}
                   </h3>
                   <p className="text-muted-foreground text-sm">
-                    {item.description}
+                    {t(item.bodyKey)}
                   </p>
                 </div>
                 <div className="hidden md:block flex-1" />
@@ -388,19 +360,19 @@ export default function AboutPage() {
         </div>
       </section>
 
-      {/* Team — hackathon framing */}
+      {/* Team */}
       <section className="bg-card/30 border-y border-border py-16">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <SectionHeading
-            title="Built for AZCON Hackathon"
-            subtitle="A focused team covering the four disciplines a security platform needs from day one."
-            badge="Team Holberton"
+            title={t('about.team.title')}
+            subtitle={t('about.team.subtitle')}
+            badge={t('about.team.badge')}
             centered
           />
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 mt-12">
             {roles.map((role, index) => (
               <motion.div
-                key={role.title}
+                key={role.titleKey}
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
@@ -415,10 +387,10 @@ export default function AboutPage() {
                       {role.abbr}
                     </p>
                     <h3 className="text-lg font-semibold text-foreground mb-2">
-                      {role.title}
+                      {t(role.titleKey)}
                     </h3>
                     <p className="text-muted-foreground text-sm">
-                      {role.description}
+                      {t(role.bodyKey)}
                     </p>
                   </CardContent>
                 </Card>
@@ -434,24 +406,27 @@ export default function AboutPage() {
           <CardContent className="p-8 md:p-12 text-center relative">
             <Lock className="h-16 w-16 text-primary mx-auto mb-6" />
             <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-4">
-              Want to see how it would work?
+              {t('about.cta.title')}
             </h2>
             <p className="text-muted-foreground mb-8 max-w-2xl mx-auto">
-              The demo walks both sides of the platform — researchers browsing
-              programs and organizations triaging reports. Real backend, real
-              auth, and SİMA verification land in later milestones.
+              {t('about.cta.body')}
             </p>
             <div className="flex flex-wrap items-center justify-center gap-4">
               <Button size="lg" asChild className="glow-cyan">
                 <Link href="/programs">
-                  Browse Programs
+                  {t('about.cta.browse')}
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Link>
               </Button>
               <Button size="lg" variant="outline" asChild>
-                <Link href="/dashboard/organization">Organization Dashboard</Link>
+                <Link href="/dashboard/organization">
+                  {t('about.cta.orgDashboard')}
+                </Link>
               </Button>
             </div>
+            <p className="mt-6 text-xs text-muted-foreground">
+              {t('disclaimer.notLiveYet')}
+            </p>
           </CardContent>
         </Card>
       </section>

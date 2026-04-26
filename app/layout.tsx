@@ -3,6 +3,8 @@ import { Geist, Geist_Mono } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/next'
 import { Navigation } from '@/components/navigation'
 import { Footer } from '@/components/footer'
+import { LocaleProvider } from '@/lib/i18n/locale-provider'
+import { DEFAULT_LOCALE } from '@/lib/i18n/dictionary'
 import './globals.css'
 
 const geistSans = Geist({ subsets: ['latin'], variable: '--font-geist-sans' })
@@ -38,16 +40,17 @@ export default function RootLayout({
 }>) {
   return (
     <html
-      lang="en"
+      lang={DEFAULT_LOCALE}
       className={`dark bg-background ${geistSans.variable} ${geistMono.variable}`}
+      suppressHydrationWarning
     >
       <body className="font-sans antialiased min-h-screen flex flex-col">
-        <Navigation />
-        <main className="flex-1 pt-16">
-          {children}
-        </main>
-        <Footer />
-        {process.env.NODE_ENV === 'production' && <Analytics />}
+        <LocaleProvider>
+          <Navigation />
+          <main className="flex-1 pt-16">{children}</main>
+          <Footer />
+          {process.env.NODE_ENV === 'production' && <Analytics />}
+        </LocaleProvider>
       </body>
     </html>
   )

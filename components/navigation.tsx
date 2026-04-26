@@ -12,23 +12,26 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import { LocaleSwitcher } from '@/components/locale-switcher'
+import { useT } from '@/lib/i18n/locale-provider'
 import { cn } from '@/lib/utils'
 
 const navItems = [
-  { href: '/', label: 'Home' },
-  { href: '/programs', label: 'Programs' },
-  { href: '/leaderboard', label: 'Leaderboard' },
-  { href: '/about', label: 'About' },
+  { href: '/', key: 'nav.home' },
+  { href: '/programs', key: 'nav.programs' },
+  { href: '/leaderboard', key: 'nav.leaderboard' },
+  { href: '/about', key: 'nav.about' },
 ]
 
 const dashboardItems = [
-  { href: '/dashboard/researcher', label: 'Researcher View' },
-  { href: '/dashboard/organization', label: 'Organization View' },
+  { href: '/dashboard/researcher', key: 'nav.dashboard.researcher' },
+  { href: '/dashboard/organization', key: 'nav.dashboard.organization' },
 ]
 
 export function Navigation() {
   const pathname = usePathname()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const t = useT()
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 glass">
@@ -54,13 +57,13 @@ export function Navigation() {
                   'px-4 py-2 text-sm font-medium rounded-lg transition-colors',
                   pathname === item.href
                     ? 'text-primary bg-primary/10'
-                    : 'text-muted-foreground hover:text-foreground hover:bg-secondary'
+                    : 'text-muted-foreground hover:text-foreground hover:bg-secondary',
                 )}
               >
-                {item.label}
+                {t(item.key)}
               </Link>
             ))}
-            
+
             {/* Dashboard Dropdown */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -69,18 +72,18 @@ export function Navigation() {
                     'flex items-center gap-1 px-4 py-2 text-sm font-medium rounded-lg transition-colors',
                     pathname.startsWith('/dashboard')
                       ? 'text-primary bg-primary/10'
-                      : 'text-muted-foreground hover:text-foreground hover:bg-secondary'
+                      : 'text-muted-foreground hover:text-foreground hover:bg-secondary',
                   )}
                 >
-                  Dashboard
+                  {t('nav.dashboard')}
                   <ChevronDown className="h-4 w-4" />
                 </button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-48">
+              <DropdownMenuContent align="end" className="w-56">
                 {dashboardItems.map((item) => (
                   <DropdownMenuItem key={item.href} asChild>
                     <Link href={item.href} className="w-full">
-                      {item.label}
+                      {t(item.key)}
                     </Link>
                   </DropdownMenuItem>
                 ))}
@@ -90,11 +93,12 @@ export function Navigation() {
 
           {/* Right Side Actions */}
           <div className="hidden md:flex items-center gap-3">
-            <span className="text-xs text-muted-foreground border border-border rounded-full px-3 py-1">
-              Verification Coming Soon
+            <span className="hidden lg:inline text-xs text-muted-foreground border border-border rounded-full px-3 py-1">
+              {t('nav.verificationPill')}
             </span>
+            <LocaleSwitcher />
             <Button asChild>
-              <Link href="/programs">Launch Demo</Link>
+              <Link href="/programs">{t('nav.cta.launchDemo')}</Link>
             </Button>
           </div>
 
@@ -102,8 +106,13 @@ export function Navigation() {
           <button
             className="md:hidden p-2 text-muted-foreground hover:text-foreground"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            aria-label="Toggle menu"
           >
-            {mobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+            {mobileMenuOpen ? (
+              <X className="h-6 w-6" />
+            ) : (
+              <Menu className="h-6 w-6" />
+            )}
           </button>
         </div>
       </nav>
@@ -127,15 +136,15 @@ export function Navigation() {
                     'block px-4 py-3 text-sm font-medium rounded-lg transition-colors',
                     pathname === item.href
                       ? 'text-primary bg-primary/10'
-                      : 'text-muted-foreground hover:text-foreground hover:bg-secondary'
+                      : 'text-muted-foreground hover:text-foreground hover:bg-secondary',
                   )}
                 >
-                  {item.label}
+                  {t(item.key)}
                 </Link>
               ))}
               <div className="border-t border-border pt-2 mt-2">
                 <p className="px-4 py-2 text-xs text-muted-foreground font-medium uppercase tracking-wider">
-                  Dashboard
+                  {t('nav.dashboard')}
                 </p>
                 {dashboardItems.map((item) => (
                   <Link
@@ -146,16 +155,20 @@ export function Navigation() {
                       'block px-4 py-3 text-sm font-medium rounded-lg transition-colors',
                       pathname === item.href
                         ? 'text-primary bg-primary/10'
-                        : 'text-muted-foreground hover:text-foreground hover:bg-secondary'
+                        : 'text-muted-foreground hover:text-foreground hover:bg-secondary',
                     )}
                   >
-                    {item.label}
+                    {t(item.key)}
                   </Link>
                 ))}
               </div>
-              <div className="pt-4">
+              <div className="pt-4 space-y-3">
+                <p className="text-xs text-center text-muted-foreground border border-border rounded-full px-3 py-1.5">
+                  {t('nav.verificationPill')}
+                </p>
+                <LocaleSwitcher variant="block" />
                 <Button asChild className="w-full">
-                  <Link href="/programs">Launch Demo</Link>
+                  <Link href="/programs">{t('nav.cta.launchDemo')}</Link>
                 </Button>
               </div>
             </div>

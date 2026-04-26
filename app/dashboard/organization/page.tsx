@@ -31,7 +31,13 @@ import {
 } from 'recharts'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card'
 import {
   Table,
   TableBody,
@@ -43,6 +49,7 @@ import {
 import { StatCard } from '@/components/stat-card'
 import { SeverityBadge } from '@/components/severity-badge'
 import { StatusBadge } from '@/components/status-badge'
+import { useLocale } from '@/lib/i18n/locale-provider'
 import {
   orgDashboardStats,
   reports,
@@ -53,12 +60,20 @@ import {
   researchers,
 } from '@/lib/mock-data'
 
-const pipelineData = [
-  { stage: 'New', count: 8, fill: 'var(--chart-1)' },
-  { stage: 'Triaging', count: 6, fill: 'var(--chart-2)' },
-  { stage: 'Validating', count: 4, fill: 'var(--chart-3)' },
-  { stage: 'Fixing', count: 12, fill: 'var(--chart-4)' },
-  { stage: 'Resolved', count: 24, fill: 'var(--chart-5)' },
+const pipelineKeys = [
+  { key: 'dashboard.org.pipeline.new', count: 8, fill: 'var(--chart-1)' },
+  { key: 'dashboard.org.pipeline.triaging', count: 6, fill: 'var(--chart-2)' },
+  {
+    key: 'dashboard.org.pipeline.validating',
+    count: 4,
+    fill: 'var(--chart-3)',
+  },
+  { key: 'dashboard.org.pipeline.fixing', count: 12, fill: 'var(--chart-4)' },
+  {
+    key: 'dashboard.org.pipeline.resolved',
+    count: 24,
+    fill: 'var(--chart-5)',
+  },
 ]
 
 const activityIcons = {
@@ -67,9 +82,18 @@ const activityIcons = {
   new: FileText,
   resolved: CheckCircle,
   update: Shield,
-}
+} as const
 
 export default function OrganizationDashboardPage() {
+  const { locale, t } = useLocale()
+  const dateLocale = locale === 'az' ? 'az-AZ' : 'en-US'
+
+  const pipelineData = pipelineKeys.map((p) => ({
+    stage: t(p.key),
+    count: p.count,
+    fill: p.fill,
+  }))
+
   return (
     <div className="py-8 sm:py-12">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -81,61 +105,75 @@ export default function OrganizationDashboardPage() {
         >
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
-              <div className="flex items-center gap-2 mb-2">
-                <Badge variant="outline" className="text-xs">Demo View</Badge>
-                <Badge variant="secondary" className="text-xs">Organization Dashboard</Badge>
+              <div className="flex flex-wrap items-center gap-2 mb-2">
+                <Badge variant="outline" className="text-xs">
+                  {t('dashboard.demoBadge')}
+                </Badge>
+                <Badge variant="secondary" className="text-xs">
+                  {t('dashboard.org.viewBadge')}
+                </Badge>
+                <Badge
+                  variant="outline"
+                  className="text-xs border-accent/30 text-accent"
+                >
+                  {t('disclaimer.azCitizensOnly')}
+                </Badge>
               </div>
-              <h1 className="text-3xl font-bold text-foreground">Security Dashboard</h1>
+              <h1 className="text-3xl font-bold text-foreground">
+                {t('dashboard.org.title')}
+              </h1>
               <p className="text-muted-foreground mt-1">
-                Monitor your bug bounty program performance and incoming reports.
+                {t('dashboard.org.subtitle')}
               </p>
             </div>
             <div className="flex items-center gap-3">
               <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-secondary border border-border">
                 <Building2 className="h-4 w-4 text-primary" />
-                <span className="text-sm font-medium text-foreground">CaspianBank</span>
+                <span className="text-sm font-medium text-foreground">
+                  CaspianBank
+                </span>
               </div>
-              <Button>View Program</Button>
+              <Button>{t('dashboard.org.viewProgram')}</Button>
             </div>
           </div>
         </motion.div>
 
-        {/* Stats Grid */}
+        {/* Stats */}
         <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4 mb-8">
           <StatCard
-            title="Total Reports"
+            title={t('dashboard.org.stats.totalReports')}
             value={orgDashboardStats.totalReports}
             icon={FileText}
             trend={{ value: 12, isPositive: true }}
             delay={0}
           />
           <StatCard
-            title="Open Reports"
+            title={t('dashboard.org.stats.openReports')}
             value={orgDashboardStats.openReports}
             icon={Clock}
             delay={0.1}
           />
           <StatCard
-            title="Avg. Triage Time"
+            title={t('dashboard.org.stats.avgTriage')}
             value={orgDashboardStats.avgTriageTime}
             icon={TrendingUp}
             trend={{ value: 15, isPositive: true }}
             delay={0.2}
           />
           <StatCard
-            title="Critical Findings"
+            title={t('dashboard.org.stats.critical')}
             value={orgDashboardStats.criticalFindings}
             icon={AlertTriangle}
             delay={0.3}
           />
           <StatCard
-            title="Rewards Paid"
+            title={t('dashboard.org.stats.rewardsPaid')}
             value={`$${(orgDashboardStats.rewardsPaid / 1000).toFixed(1)}K`}
             icon={DollarSign}
             delay={0.4}
           />
           <StatCard
-            title="Resolved This Month"
+            title={t('dashboard.org.stats.resolved')}
             value={orgDashboardStats.resolvedThisMonth}
             icon={CheckCircle}
             trend={{ value: 8, isPositive: true }}
@@ -145,20 +183,27 @@ export default function OrganizationDashboardPage() {
 
         {/* Charts Row */}
         <div className="grid lg:grid-cols-3 gap-6 mb-8">
-          {/* Reports Timeline */}
           <Card className="lg:col-span-2">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <TrendingUp className="h-5 w-5 text-primary" />
-                Reports & Resolution Trend
+                {t('dashboard.org.trend.title')}
               </CardTitle>
-              <CardDescription>Incoming reports vs resolved over time</CardDescription>
+              <CardDescription>
+                {t('dashboard.org.trend.subtitle')}
+              </CardDescription>
             </CardHeader>
             <CardContent>
               <ResponsiveContainer width="100%" height={250}>
                 <AreaChart data={reportsTimeline}>
-                  <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
-                  <XAxis dataKey="month" className="text-xs fill-muted-foreground" />
+                  <CartesianGrid
+                    strokeDasharray="3 3"
+                    className="stroke-border"
+                  />
+                  <XAxis
+                    dataKey="month"
+                    className="text-xs fill-muted-foreground"
+                  />
                   <YAxis className="text-xs fill-muted-foreground" />
                   <Tooltip
                     contentStyle={{
@@ -189,14 +234,15 @@ export default function OrganizationDashboardPage() {
             </CardContent>
           </Card>
 
-          {/* Severity Distribution */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Target className="h-5 w-5 text-primary" />
-                Severity Distribution
+                {t('dashboard.org.severity.title')}
               </CardTitle>
-              <CardDescription>Breakdown by vulnerability severity</CardDescription>
+              <CardDescription>
+                {t('dashboard.org.severity.subtitle')}
+              </CardDescription>
             </CardHeader>
             <CardContent>
               <ResponsiveContainer width="100%" height={200}>
@@ -225,7 +271,10 @@ export default function OrganizationDashboardPage() {
               </ResponsiveContainer>
               <div className="flex flex-wrap justify-center gap-3 mt-4">
                 {severityDistribution.map((item) => (
-                  <div key={item.name} className="flex items-center gap-1.5 text-xs">
+                  <div
+                    key={item.name}
+                    className="flex items-center gap-1.5 text-xs"
+                  >
                     <div
                       className="h-2 w-2 rounded-full"
                       style={{ backgroundColor: item.fill }}
@@ -240,24 +289,31 @@ export default function OrganizationDashboardPage() {
 
         {/* Pipeline & Recent Reports */}
         <div className="grid lg:grid-cols-3 gap-6 mb-8">
-          {/* Reports Pipeline */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Activity className="h-5 w-5 text-primary" />
-                Reports Pipeline
+                {t('dashboard.org.pipeline.title')}
               </CardTitle>
-              <CardDescription>Current status of all reports</CardDescription>
+              <CardDescription>
+                {t('dashboard.org.pipeline.subtitle')}
+              </CardDescription>
             </CardHeader>
             <CardContent>
               <ResponsiveContainer width="100%" height={200}>
                 <BarChart data={pipelineData} layout="vertical">
-                  <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
-                  <XAxis type="number" className="text-xs fill-muted-foreground" />
+                  <CartesianGrid
+                    strokeDasharray="3 3"
+                    className="stroke-border"
+                  />
+                  <XAxis
+                    type="number"
+                    className="text-xs fill-muted-foreground"
+                  />
                   <YAxis
                     type="category"
                     dataKey="stage"
-                    width={80}
+                    width={90}
                     className="text-xs fill-muted-foreground"
                   />
                   <Tooltip
@@ -277,19 +333,20 @@ export default function OrganizationDashboardPage() {
             </CardContent>
           </Card>
 
-          {/* Recent Reports */}
           <Card className="lg:col-span-2">
             <CardHeader>
               <div className="flex items-center justify-between">
                 <div>
                   <CardTitle className="flex items-center gap-2">
                     <FileText className="h-5 w-5 text-primary" />
-                    Recent Reports
+                    {t('dashboard.org.recent.title')}
                   </CardTitle>
-                  <CardDescription>Latest incoming vulnerability reports</CardDescription>
+                  <CardDescription>
+                    {t('dashboard.org.recent.subtitle')}
+                  </CardDescription>
                 </div>
                 <Button variant="outline" size="sm">
-                  View All
+                  {t('common.viewAll')}
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
               </div>
@@ -298,10 +355,18 @@ export default function OrganizationDashboardPage() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Report</TableHead>
-                    <TableHead>Severity</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Submitted</TableHead>
+                    <TableHead>
+                      {t('dashboard.org.recent.col.report')}
+                    </TableHead>
+                    <TableHead>
+                      {t('dashboard.org.recent.col.severity')}
+                    </TableHead>
+                    <TableHead>
+                      {t('dashboard.org.recent.col.status')}
+                    </TableHead>
+                    <TableHead>
+                      {t('dashboard.org.recent.col.submitted')}
+                    </TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -312,7 +377,9 @@ export default function OrganizationDashboardPage() {
                           <p className="font-medium text-foreground line-clamp-1">
                             {report.title}
                           </p>
-                          <p className="text-xs text-muted-foreground">{report.asset}</p>
+                          <p className="text-xs text-muted-foreground">
+                            {report.asset}
+                          </p>
                         </div>
                       </TableCell>
                       <TableCell>
@@ -322,10 +389,10 @@ export default function OrganizationDashboardPage() {
                         <StatusBadge status={report.status} />
                       </TableCell>
                       <TableCell className="text-muted-foreground text-sm">
-                        {new Date(report.submittedDate).toLocaleDateString('en-US', {
-                          month: 'short',
-                          day: 'numeric',
-                        })}
+                        {new Date(report.submittedDate).toLocaleDateString(
+                          dateLocale,
+                          { month: 'short', day: 'numeric' },
+                        )}
                       </TableCell>
                     </TableRow>
                   ))}
@@ -337,14 +404,15 @@ export default function OrganizationDashboardPage() {
 
         {/* Bottom Row */}
         <div className="grid lg:grid-cols-3 gap-6">
-          {/* Top Attacked Assets */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Target className="h-5 w-5 text-primary" />
-                Top Targeted Assets
+                {t('dashboard.org.assets.title')}
               </CardTitle>
-              <CardDescription>Most reported assets in your scope</CardDescription>
+              <CardDescription>
+                {t('dashboard.org.assets.subtitle')}
+              </CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
@@ -361,12 +429,19 @@ export default function OrganizationDashboardPage() {
                         <p className="text-sm font-medium text-foreground truncate max-w-[140px]">
                           {asset.asset}
                         </p>
-                        <SeverityBadge severity={asset.severity} className="mt-1" />
+                        <SeverityBadge
+                          severity={asset.severity}
+                          className="mt-1"
+                        />
                       </div>
                     </div>
                     <div className="text-right">
-                      <p className="text-lg font-bold text-foreground">{asset.reports}</p>
-                      <p className="text-xs text-muted-foreground">reports</p>
+                      <p className="text-lg font-bold text-foreground">
+                        {asset.reports}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        {t('dashboard.org.assets.reports')}
+                      </p>
                     </div>
                   </div>
                 ))}
@@ -374,30 +449,38 @@ export default function OrganizationDashboardPage() {
             </CardContent>
           </Card>
 
-          {/* Recent Activity */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Activity className="h-5 w-5 text-primary" />
-                Recent Activity
+                {t('dashboard.org.activity.title')}
               </CardTitle>
-              <CardDescription>Latest actions on your program</CardDescription>
+              <CardDescription>
+                {t('dashboard.org.activity.subtitle')}
+              </CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
                 {recentActivity.map((activity) => {
-                  const Icon = activityIcons[activity.type as keyof typeof activityIcons] || Activity
+                  const Icon =
+                    activityIcons[
+                      activity.type as keyof typeof activityIcons
+                    ] || Activity
                   return (
                     <div key={activity.id} className="flex items-start gap-3">
                       <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
                         <Icon className="h-4 w-4 text-primary" />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm text-foreground">{activity.action}</p>
+                        <p className="text-sm text-foreground">
+                          {activity.action}
+                        </p>
                         <p className="text-xs text-muted-foreground truncate">
                           {activity.target}
                         </p>
-                        <p className="text-xs text-muted-foreground mt-1">{activity.time}</p>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          {activity.time}
+                        </p>
                       </div>
                     </div>
                   )
@@ -406,14 +489,15 @@ export default function OrganizationDashboardPage() {
             </CardContent>
           </Card>
 
-          {/* Top Researchers */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Users className="h-5 w-5 text-warning" />
-                Top Researchers This Month
+                {t('dashboard.org.topResearchers.title')}
               </CardTitle>
-              <CardDescription>Most active researchers on your program</CardDescription>
+              <CardDescription>
+                {t('dashboard.org.topResearchers.subtitle')}
+              </CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
@@ -421,7 +505,9 @@ export default function OrganizationDashboardPage() {
                   <div
                     key={researcher.id}
                     className={`flex items-center justify-between p-3 rounded-lg ${
-                      index === 0 ? 'bg-warning/10 border border-warning/30' : 'bg-secondary/50'
+                      index === 0
+                        ? 'bg-warning/10 border border-warning/30'
+                        : 'bg-secondary/50'
                     }`}
                   >
                     <div className="flex items-center gap-3">
@@ -435,9 +521,13 @@ export default function OrganizationDashboardPage() {
                         {index + 1}
                       </div>
                       <div>
-                        <p className="text-sm font-medium text-foreground">{researcher.name}</p>
+                        <p className="text-sm font-medium text-foreground">
+                          {researcher.name}
+                        </p>
                         <p className="text-xs text-muted-foreground">
-                          {researcher.reportsAccepted} reports
+                          {t('dashboard.org.topResearchers.reports', {
+                            count: researcher.reportsAccepted,
+                          })}
                         </p>
                       </div>
                     </div>
@@ -458,13 +548,12 @@ export default function OrganizationDashboardPage() {
               <AlertTriangle className="h-8 w-8 text-muted-foreground" />
             </div>
             <h3 className="text-lg font-semibold text-foreground mb-2">
-              No Critical Alerts
+              {t('dashboard.org.empty.title')}
             </h3>
             <p className="text-muted-foreground mb-4 max-w-sm mx-auto">
-              You have no critical vulnerabilities requiring immediate attention.
-              This section would show urgent alerts in production.
+              {t('dashboard.org.empty.body')}
             </p>
-            <Badge variant="outline">Demo - Empty State Example</Badge>
+            <Badge variant="outline">{t('dashboard.org.empty.badge')}</Badge>
           </CardContent>
         </Card>
       </div>

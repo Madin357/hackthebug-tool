@@ -9,18 +9,39 @@
 ## 1. Project context (one paragraph)
 
 This repo is **Hack The Bug**, a frontend‑only Next.js demo of a bug bounty /
-responsible disclosure platform aimed at Azerbaijan‑focused organizations. The
-goal of the current iteration is a polished, premium hackathon demo — not a
-production app. There is no backend, no database, no real auth, no real
-payments, no real identity verification. Everything is mocked locally in
-`lib/mock-data.ts`. See `MEMORY.md` for the full picture, the known issues
-list, and the recommended improvement order.
+responsible disclosure platform built **exclusively for citizens of the
+Republic of Azerbaijan**. The goal of the current iteration is a polished,
+premium hackathon demo — not a production app. There is no backend, no
+database, no real auth, no real payments, **no real SİMA / identity
+verification (it is planned, not active)**. Everything is mocked locally in
+`lib/mock-data.ts`. The UI is bilingual (English + Azerbaijani) via a small
+local dictionary in `lib/i18n/`; the user toggles language from the navigation
+bar and the choice is stored in `localStorage`. See `MEMORY.md` for the full
+picture, the known issues list, and the recommended improvement order.
 
 ## 2. Coding rules
 
 - **Edit existing files; don't create new ones unless required.** If a piece
   of UI already exists (e.g., a card, badge, modal), extend it rather than
   forking a parallel version.
+- **All visible UI text must go through the i18n dictionary.**
+  - Add new keys to BOTH the `en` and `az` blocks in
+    `lib/i18n/dictionary.ts`. Use a flat dot‑separated key namespace
+    (`area.section.thing`).
+  - Read keys via `useT()` from `lib/i18n/locale-provider.tsx`:
+    `const t = useT(); return <h1>{t('home.hero.title.line1')}</h1>`.
+  - Components that consume `useT()` must be `'use client'`.
+  - For interpolation, the dict supports `{var}` placeholders and `t()`
+    accepts a vars object: `t('report.description', { program: name })`.
+  - For locale‑aware date formatting, use `useLocale()` to get `locale`,
+    then pass `locale === 'az' ? 'az-AZ' : 'en-US'` to
+    `toLocaleDateString`.
+  - **Do not** hard‑code English (or Azerbaijani) strings in pages or
+    components. The only exceptions are: brand name `HackTheBug`, mock
+    data values (program names, organization names, industry names,
+    weakness types, country names, tag values), and developer‑facing
+    strings (aria labels for icon‑only buttons are fine to translate when
+    needed).
 - **Type everything that crosses a component boundary.** Add new fields to
   `lib/types.ts` first, then back them with mock entries in `lib/mock-data.ts`,
   then consume in components.
@@ -46,9 +67,29 @@ list, and the recommended improvement order.
 
 ## 3. Design rules
 
-The product narrative is "trusted regional cybersecurity SaaS for banks,
-telecoms, government, and enterprise." Every visual decision should be
-defensible against that bar.
+The product narrative is "trusted **national** cybersecurity SaaS for
+**Azerbaijani** banks, telecoms, government, fintech, and enterprise — open
+exclusively to citizens of the Republic of Azerbaijan." Every visual
+decision and every line of copy should be defensible against that bar.
+
+### Audience and language rules (non‑negotiable)
+
+- **Hack The Bug is for Azerbaijani citizens only.** Do not write copy that
+  implies a global audience, multi‑country presence, "100+ countries",
+  "international community", "worldwide researchers", etc. Use national
+  framing — "Azerbaijani organizations", "Azerbaijani citizens",
+  "national leaderboard", "regional digital ecosystem".
+- **Verification is planned, not active.** Always describe SİMA / identity
+  verification with "coming soon", "planned", "demo only", "currently a
+  demo", "will be required at launch". Never write copy that says
+  verification is live, that researchers on the platform are already
+  verified for real, or that any submission counts as a real disclosure.
+  All "submit", "register", "login" actions stay decorative.
+- **Use only fictional organizations and fictional users.** Don't introduce
+  real Azerbaijani companies, government bodies, or named individuals.
+  Existing fictional names (CaspianBank, BakuCommerce, GovPortal X,
+  AzCloud One, SilkRoute Pay, Karabug Telecom; CyberNomad, BugSlayer_AZ,
+  etc.) are the canonical set.
 
 - **Dark theme only** — `app/globals.css` is the source of truth. The light
   block in that file exists only because Tailwind expects `:root` defaults; the
@@ -94,8 +135,11 @@ them, don't sketch them in code, don't add stub files for them.
   affordance).
 - ❌ External analytics/tracking beyond `@vercel/analytics` (already
   prod‑gated).
-- ❌ Internationalization framework (i18n routing, message bundles) — the
-  demo is English only for now.
+- ❌ Internationalization frameworks (`next-intl`, `i18next`, `react-intl`,
+  i18n routing). EN + AZ are already supported by the local
+  dependency‑free system in `lib/i18n/`. To add a third locale (e.g., `ru`)
+  add a new dictionary block in `dictionary.ts` and extend `LOCALES` —
+  don't pull in a library.
 - ❌ Backend secrets / env vars in `.env*` files.
 
 What you *can* do safely: add new mock data, new pages, new components, new
@@ -200,7 +244,14 @@ Before you call a task done:
 - [ ] Did the change stay focused on one topic?
 - [ ] Did you read the affected file(s) before editing?
 - [ ] Are there other callers/pages that need the same edit?
+- [ ] **Is every new visible string going through `useT()` with keys defined
+      in BOTH `en` and `az` blocks of `lib/i18n/dictionary.ts`?**
+- [ ] **Does any new copy avoid global/multi‑country framing? Does any
+      mention of verification clearly say it's planned/coming‑soon/demo
+      and never live?**
 - [ ] Did you verify in the browser (or explicitly note that you couldn't)?
+      In particular, does AZ text not break layout at `≤640px` width on the
+      affected route?
 - [ ] Did you update `MEMORY.md > Last Actions` (and any other section that
       changed: pages / components / mock data / tech stack / known issues)?
 - [ ] Did you avoid adding any of the items in section 4 (backend, auth,
