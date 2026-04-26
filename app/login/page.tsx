@@ -12,9 +12,6 @@ import { Badge } from '@/components/ui/badge'
 import { Card, CardContent } from '@/components/ui/card'
 import { useT } from '@/lib/i18n/locale-provider'
 import { useAuth, dashboardPathForRole } from '@/lib/auth/auth-provider'
-import { demoCredentials } from '@/lib/auth/mock-users'
-import { cn } from '@/lib/utils'
-import type { UserRole } from '@/lib/types'
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
@@ -61,14 +58,6 @@ function LoginContent() {
       router.replace(target)
     }
   }, [status, session, nextParam, router])
-
-  const fillDemo = (role: UserRole) => {
-    const cred =
-      role === 'researcher' ? demoCredentials.researcher : demoCredentials.organization
-    setEmail(cred.email)
-    setPassword(cred.password)
-    setErrorKey(null)
-  }
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -132,14 +121,13 @@ function LoginContent() {
         <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-accent/10 rounded-full blur-3xl" />
       </div>
 
-      <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
-        <div className="grid gap-8 lg:grid-cols-[1fr_1fr] items-start">
-          {/* Form */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="rounded-2xl border border-border bg-card/80 backdrop-blur p-6 sm:p-8"
-          >
+      <div className="mx-auto max-w-md px-4 sm:px-6 lg:px-8">
+        {/* Form */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="rounded-2xl border border-border bg-card/80 backdrop-blur p-6 sm:p-8"
+        >
             <Link href="/" className="inline-flex items-center gap-2 mb-6">
               <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 border border-primary/20">
                 <Bug className="h-5 w-5 text-primary" />
@@ -218,104 +206,8 @@ function LoginContent() {
               <Info className="h-4 w-4 text-warning shrink-0 mt-0.5" />
               <span>{t('login.demoNote')}</span>
             </div>
-          </motion.div>
-
-          {/* Demo credentials */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-            className="space-y-4"
-          >
-            <div>
-              <h2 className="text-sm font-semibold text-foreground mb-1">
-                {t('login.demo.title')}
-              </h2>
-              <p className="text-xs text-muted-foreground">
-                {t('login.demo.subtitle')}
-              </p>
-            </div>
-
-            <DemoCard
-              role="researcher"
-              roleLabel={t('login.demo.researcher.role')}
-              body={t('login.demo.researcher.body')}
-              email={demoCredentials.researcher.email}
-              password={demoCredentials.researcher.password}
-              cta={t('login.demo.useThis')}
-              onUse={() => fillDemo('researcher')}
-            />
-            <DemoCard
-              role="organization"
-              roleLabel={t('login.demo.organization.role')}
-              body={t('login.demo.organization.body')}
-              email={demoCredentials.organization.email}
-              password={demoCredentials.organization.password}
-              cta={t('login.demo.useThis')}
-              onUse={() => fillDemo('organization')}
-            />
-          </motion.div>
-        </div>
+        </motion.div>
       </div>
     </div>
-  )
-}
-
-interface DemoCardProps {
-  role: UserRole
-  roleLabel: string
-  body: string
-  email: string
-  password: string
-  cta: string
-  onUse: () => void
-}
-
-function DemoCard({
-  role,
-  roleLabel,
-  body,
-  email,
-  password,
-  cta,
-  onUse,
-}: DemoCardProps) {
-  return (
-    <button
-      type="button"
-      onClick={onUse}
-      className={cn(
-        'w-full text-left rounded-xl border border-border bg-card p-5 transition-colors',
-        'hover:border-primary/50 hover:bg-card/80',
-        role === 'researcher'
-          ? 'focus-visible:ring-2 focus-visible:ring-primary'
-          : 'focus-visible:ring-2 focus-visible:ring-accent',
-      )}
-    >
-      <div className="flex items-center justify-between mb-3">
-        <Badge
-          variant="outline"
-          className={cn(
-            role === 'researcher'
-              ? 'border-primary/30 text-primary'
-              : 'border-accent/30 text-accent',
-          )}
-        >
-          {roleLabel}
-        </Badge>
-        <span className="text-xs text-muted-foreground">{cta} →</span>
-      </div>
-      <p className="text-sm text-muted-foreground mb-4">{body}</p>
-      <dl className="space-y-1 text-xs font-mono">
-        <div className="flex gap-2">
-          <dt className="text-muted-foreground w-20 shrink-0">email</dt>
-          <dd className="text-foreground break-all">{email}</dd>
-        </div>
-        <div className="flex gap-2">
-          <dt className="text-muted-foreground w-20 shrink-0">password</dt>
-          <dd className="text-foreground">{password}</dd>
-        </div>
-      </dl>
-    </button>
   )
 }

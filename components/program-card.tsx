@@ -85,8 +85,9 @@ export function ProgramCard({ program, index = 0 }: ProgramCardProps) {
                 {t('programCard.rewards')}
               </p>
               <p className="text-sm font-medium text-foreground">
-                ${program.rewardRange.min} - $
-                {program.rewardRange.max.toLocaleString()}
+                {program.recognitionOnly
+                  ? t('programCard.recognition')
+                  : `$${program.rewardRange.min} - $${program.rewardRange.max.toLocaleString()}`}
               </p>
             </div>
           </div>

@@ -140,9 +140,6 @@ export function Navigation() {
 
           {/* Right Side Actions */}
           <div className="hidden md:flex items-center gap-3">
-            <span className="hidden lg:inline text-xs text-muted-foreground border border-border rounded-full px-3 py-1">
-              {t('nav.verificationPill')}
-            </span>
             <LocaleSwitcher />
             {isAuthed ? (
               <UserMenu
@@ -219,9 +216,6 @@ export function Navigation() {
                 ))}
               </div>
               <div className="pt-4 space-y-3">
-                <p className="text-xs text-center text-muted-foreground border border-border rounded-full px-3 py-1.5">
-                  {t('nav.verificationPill')}
-                </p>
                 <LocaleSwitcher variant="block" />
                 {isAuthed ? (
                   <div className="space-y-2">

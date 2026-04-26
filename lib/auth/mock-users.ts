@@ -13,21 +13,12 @@
  * client purely so the demo flow is testable. See DATABASE_PLAN.md.
  */
 
-import type { Organization, User } from '@/lib/types'
+import type { User } from '@/lib/types'
 
 interface MockCredential {
   user: User
   password: string
 }
-
-export const mockOrganizations: Organization[] = [
-  {
-    id: 'org-caspianbank',
-    slug: 'caspianbank',
-    name: 'CaspianBank',
-    industry: 'Financial Services',
-  },
-]
 
 export const mockCredentials: MockCredential[] = [
   {
@@ -45,8 +36,10 @@ export const mockCredentials: MockCredential[] = [
       id: 'usr-organization-1',
       email: 'org@hackthebug.demo',
       role: 'organization',
-      displayName: 'CaspianBank Security Team',
-      organizationId: 'org-caspianbank',
+      displayName: 'AZAL',
+      // Matches `organizations[0]` in `lib/mock-data.ts` — the canonical
+      // organization records live there, not here.
+      organizationId: 'org-azal',
     },
     password: 'org123',
   },

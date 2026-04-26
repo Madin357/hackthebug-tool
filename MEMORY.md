@@ -41,7 +41,7 @@ for now and will be layered on later.
   in `lib/auth/mock-users.ts`: `researcher@hackthebug.demo / researcher123`
   (linked to researcher `id: '1'` = CyberNomad) and
   `org@hackthebug.demo / org123` (linked to organization
-  `id: 'org-caspianbank'` = CaspianBank). Sessions are stored in
+  `id: 'org-azal'` = Azərbaycan Hava Yolları). Sessions are stored in
   `localStorage` under `htb-session` and exposed via `useAuth()` from
   `lib/auth/auth-provider.tsx`. `RoleGate` (`components/role-gate.tsx`) wraps
   each dashboard via a tiny route‑segment `layout.tsx` and handles
@@ -49,13 +49,24 @@ for now and will be layered on later.
   boundary** — see security notes in `DATABASE_PLAN.md` and the
   file‑level docstrings in `lib/auth/*`.
 - All data is mocked locally in `lib/mock-data.ts`. All 10 researchers are
-  AZ‑based (country: Azerbaijan, countryCode: AZ).
+  AZ‑based (country: Azerbaijan, countryCode: AZ). The 13 program / 13
+  organization records correspond to AZCON Holding entities (AZAL, ADY,
+  ASCO, Bakı Metropoliteni, BakuBus, Bakı Gəmiqayırma Zavodu, Azərkosmos,
+  Aztelekom, AzInTelecom, Azərpoçt, Bakı Taksi Xidməti, Teleradio, Milli
+  Süni İntellekt Mərkəzi). **Live testing of any of these is NOT
+  authorized in this build** — every program is shown as a demo card,
+  scopes are labelled "Pending official authorization", and rewards are
+  recognition‑only.
 - Submitting a report opens a multi‑step modal that simulates submission with a
   `setTimeout` and shows a fake report ID. Nothing is persisted.
-- "Verification Coming Soon" / "SİMA — coming soon" / "AZ citizens only ·
-  Verification soon" appear in the nav, hero, dashboards, report modal, and
-  about page as planned/demo language. **Verification is never described as
-  active.**
+- "SİMA — coming soon" / "Identity verification is planned" / "Demo
+  authentication" appear on the home hero, about page, login page,
+  researcher dashboard, organization dashboard, and report submission
+  modal as planned/demo language. **Verification is never described as
+  active.** The previous global header pill ("AZ citizens only ·
+  Verification soon") has been removed — the AZ‑only positioning is
+  carried by the home hero, about page, footer, login demo notes, and
+  the dashboard verification card instead.
 - **Internationalization is now wired up.** `lib/i18n/dictionary.ts` holds
   flat‑key EN + AZ entries; `lib/i18n/locale-provider.tsx` exposes
   `LocaleProvider`, `useLocale`, and `useT`. The provider is mounted in
@@ -213,22 +224,20 @@ All mock data lives in `lib/mock-data.ts`, typed against `lib/types.ts`.
 
 | Export                          | Type                  | Purpose                                                                |
 | ------------------------------- | --------------------- | ---------------------------------------------------------------------- |
-| `platformStats`                 | `PlatformStats`       | 24 active programs, 312 verified researchers, 1,847 reports, <24h triage, $127.5K paid, 18 orgs. |
-| `programs`                      | `Program[]`           | 6 fictional Azerbaijan/region‑themed programs: CaspianBank, BakuCommerce, GovPortal X, AzCloud One, SilkRoute Pay, Karabug Telecom. Each has scope, rewards table, rules, updates timeline, hall of fame, response SLAs. |
+| `platformStats`                 | `PlatformStats`       | 13 active programs, 312 verified researchers, 1,847 reports, <24h triage, $127.5K paid, 13 orgs (matches the AZCON list). |
+| `programs`                      | `Program[]`           | **Exactly 13 demo program cards**, one per AZCON Holding organization (see list above). Each is `recognitionOnly: true`, scoped to category names like "Official Website", "Customer Portal", "Public API" with description "Pending official authorization". No fake demo domains, no fabricated reward amounts. |
+| `organizations`                 | `Organization[]`      | **Exactly 13** AZCON Holding organization records (`id`, `slug`, `name`, `industry`). Canonical source — `lib/auth/mock-users.ts` references `org-azal` from this list for the demo organization user. |
 | `researchers`                   | `Researcher[]`        | 10 fictional researchers (handles, country/code, points, reputation, badges, total rewards). **All 10 are AZ‑based** since AZ‑citizens‑only positioning shipped. |
-| `reports`                       | `Report[]`            | 7 sample vulnerability reports across the programs.                    |
+| `reports`                       | `Report[]`            | 7 sample vulnerability reports referencing the AZCON programs. Asset names use scope category labels ("Customer Portal", "Public API", etc.) — no fake demo domains. |
 | `researcherDashboardStats`      | `DashboardStats`      | KPIs for the researcher view (assumes "you" are CyberNomad, rank #1).  |
 | `orgDashboardStats`             | `OrgDashboardStats`   | KPIs for the org view (assumes "you" are CaspianBank).                 |
 | `severityDistribution`          | `ChartDataPoint[]`    | Counts by severity for pie chart.                                      |
 | `reportsTimeline`               | `TimelineDataPoint[]` | 6‑month reports vs resolved (org dashboard).                           |
 | `researcherReportsTimeline`     | `TimelineDataPoint[]` | 6‑month researcher submission counts.                                  |
-| `topAttackedAssets`             | array                 | Top 5 most‑reported assets with reports + severity.                    |
-| `recentActivity`                | array                 | Recent activity feed for the org dashboard.                            |
+| `topAttackedAssets`             | array                 | Top 5 most‑reported AZCON program assets (e.g., "AZAL Public API") with severity.  |
+| `recentActivity`                | array                 | Recent activity feed for the org dashboard, AZCON-themed.              |
 | `weaknessCategories`            | `string[]`            | OWASP/CWE‑style options for the report submission modal.               |
-| `industries`                    | `string[]`            | Industry filter options for the programs directory.                    |
-
-There is **no** `topResearchers` export despite the leaderboard importing it
-(see issue 1).
+| `industries`                    | `string[]`            | 13 AZCON-aligned categories (Airline / Aviation, Railway / Transport, Maritime / Shipping, Metro / Public Transport, Bus Transport, Shipbuilding, Space / Satellite, Telecommunications, Cloud / Digital Infrastructure, Postal / Logistics, Taxi / Mobility, Broadcasting / TV / Radio, Artificial Intelligence / National AI). |
 
 ## Design Direction
 
@@ -282,6 +291,17 @@ These are hard rules for this hackathon iteration:
   must reflect this. Do not write phrases like "global community", "100+
   countries", "worldwide researchers", or anything that suggests a
   multi‑country audience. Researchers in mock data are all AZ.
+- **The 13 AZCON Holding programs are demo cards only — no live testing
+  is authorized.** Programs reference real organizations (AZAL, ADY,
+  ASCO, Bakı Metropoliteni, BakuBus, Bakı Gəmiqayırma Zavodu,
+  Azərkosmos, Aztelekom, AzInTelecom, Azərpoçt, Bakı Taksi Xidməti,
+  Teleradio, Milli Süni İntellekt Mərkəzi). Every program card carries a
+  "Pending official authorization" notice on the program detail page,
+  scope items use generic category names (no fake demo domains like
+  `*.demo`), and rewards are recognition‑only. **Do not** add language
+  that implies the platform has authorization to test these systems, or
+  that any researcher activity here is sanctioned by the listed
+  organization.
 - **Verification is planned, not active.** Always describe SİMA / identity
   verification with "coming soon", "planned", "demo only", "currently a
   demo", etc. Never write copy that implies verification is live or that
@@ -350,6 +370,60 @@ To be implemented after the hackathon, in roughly this order:
   and the `LOCALES` array.
 
 ## Last Actions
+
+### 2026‑04‑26 — AZCON Holding org/program rewrite + header pill removal
+
+- **What:** (1) Replaced the 6 fictional programs (CaspianBank, BakuCommerce,
+  GovPortal X, AzCloud One, SilkRoute Pay, Karabug Telecom) with **exactly
+  13** demo cards mirroring the AZCON Holding portfolio. Each card is
+  `recognitionOnly: true`, carries scope items with generic category names
+  (Official Website, Customer Portal, Mobile Application, Public API, etc.)
+  marked "Pending official authorization", and lists no fabricated demo
+  domains. (2) Added a canonical `organizations: Organization[]` export
+  in `lib/mock-data.ts` covering all 13 entities with `id` / `slug` /
+  `name` / `industry`; removed the duplicate `mockOrganizations` export
+  from `lib/auth/mock-users.ts`. (3) Added `recognitionOnly?: boolean` to
+  the `Program` type — `ProgramCard` and the program detail header now
+  show "Recognition" instead of `$0 - $0`; the Rewards tab now shows a
+  recognition‑only callout (Trophy icon + explanatory copy) instead of an
+  empty‑zeros table. (4) Added a top‑level "Pending official
+  authorization" warning banner above the program detail header card.
+  (5) Updated `reports`, `topAttackedAssets`, `recentActivity`, and
+  `industries` so they reference the new programs and category labels —
+  no fake `.demo` domains anywhere. (6) Switched the demo organization
+  user from `org-caspianbank` to `org-azal` (Azərbaycan Hava Yolları),
+  displayName "AZAL". (7) The org dashboard chip no longer hard‑codes
+  "CaspianBank"; it resolves the org name from
+  `useAuth().session.organizationId` against `organizations`. (8) Removed
+  the `nav.verificationPill` JSX from both the desktop bar and the
+  mobile drawer in `components/navigation.tsx`, and removed the matching
+  EN/AZ keys from the dictionary. The AZ‑citizens‑only / SİMA‑coming‑soon
+  messaging stays in the home hero, about page, footer, login page, and
+  dashboard verification card.
+- **Why:** The user asked to switch the demo from generic fictional orgs
+  to real AZCON Holding entities — but with a hard safety rule that
+  nothing on the platform implies permission to test those organizations'
+  real systems. Recognition‑only framing + "pending authorization" copy
+  + scope categories (not fake domains) keeps the demo honest. The
+  header pill removal cleans up nav real estate without losing the
+  AZ‑only / verification‑coming‑soon concept (which still appears in
+  more contextually appropriate places).
+- **Files touched:** modified `lib/types.ts`, `lib/mock-data.ts`,
+  `lib/auth/mock-users.ts`, `lib/i18n/dictionary.ts`,
+  `components/program-card.tsx`, `components/navigation.tsx`,
+  `app/programs/[slug]/page.tsx`,
+  `app/dashboard/organization/page.tsx`, `MEMORY.md`, `CLAUDE.md`. No
+  files added or removed.
+- **Verification:** see "next step" — the user runs the build manually
+  (npm only).
+- **Next step:** the user should run **`npm run build`** to confirm the
+  rewrite compiles and all 9 routes still prerender. After that, a quick
+  `npm run dev` browser pass to confirm: `/` and `/programs` show 13
+  cards with "Recognition" labels, `/programs/azal` (and any of the new
+  slugs) shows the pending‑authorization banner above the header, the
+  Rewards tab shows the recognition‑only callout, the header pill is
+  gone, and the organization dashboard chip shows "Azərbaycan Hava
+  Yolları" when logged in as the org demo user.
 
 ### 2026‑04‑26 — Fix locale-date hydration mismatch via `<FormattedDate>`
 

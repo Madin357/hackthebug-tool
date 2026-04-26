@@ -93,11 +93,25 @@ decision and every line of copy should be defensible against that bar.
   verification is live, that researchers on the platform are already
   verified for real, or that any submission counts as a real disclosure.
   All "submit", "register", "login" actions stay decorative.
-- **Use only fictional organizations and fictional users.** Don't introduce
-  real Azerbaijani companies, government bodies, or named individuals.
-  Existing fictional names (CaspianBank, BakuCommerce, GovPortal X,
-  AzCloud One, SilkRoute Pay, Karabug Telecom; CyberNomad, BugSlayer_AZ,
-  etc.) are the canonical set.
+- **Real organization programs must not imply permission to test real
+  systems.** The platform now lists 13 demo program cards mirroring
+  AZCON Holding entities (AZAL, ADY, ASCO, Bakı Metropoliteni, BakuBus,
+  Bakı Gəmiqayırma Zavodu, Azərkosmos, Aztelekom, AzInTelecom, Azərpoçt,
+  Bakı Taksi Xidməti, Teleradio, Milli Süni İntellekt Mərkəzi). For each:
+  - Scope items must be generic category names ("Official Website",
+    "Customer Portal", "Mobile Application", "Public API", "Online
+    Payment Flow", "Tracking/Status Service", etc.) marked "Pending
+    official authorization". **Never** invent fake demo domains like
+    `app.organization.demo` or `*.test`.
+  - Rewards must be `recognitionOnly: true` until a real authorized
+    program with explicit reward tiers is published.
+  - Copy must say testing requires explicit official authorization. The
+    program detail page already carries a "Pending official
+    authorization" warning banner — keep it.
+  - Researcher names, handles, and counts in mock data stay fictional.
+- **Fictional researchers stay.** Don't introduce real named
+  individuals. The existing handles (CyberNomad, BugSlayer_AZ, etc.) are
+  the canonical set.
 
 ### Auth and role separation rules (non-negotiable)
 
@@ -240,33 +254,44 @@ entry; trivial typo fixes don't either.
 
 ## 7. How to run / check the project
 
-Package manager: `pnpm` is the intended choice (the lockfile is the larger
-one). `npm` and `bun` should also work.
+**Package manager: `npm` only. Never use `pnpm`.** The user runs all
+commands manually with npm; do not invoke `pnpm` from any tool call, do
+not write `pnpm` in instructions to the user.
 
 ```bash
-pnpm install        # install dependencies
-pnpm dev            # start dev server at http://localhost:3000
-pnpm build          # production build (note: TS errors are silenced)
-pnpm start          # serve the production build
-pnpm lint           # eslint
+npm install        # install dependencies
+npm run dev        # start dev server at http://localhost:3000
+npm run build      # production build (note: TS errors are silenced)
+npm start          # serve the production build
+npm run lint       # eslint
 ```
 
-Manual check pass after a change:
+**Do not start, stop, or restart the dev server from any tool call.** Do
+not run `npm run dev` or `npm start`; do not kill processes the user has
+running. If a check requires the dev server, **tell the user the exact
+command to run manually and let them run it.** This is non‑negotiable.
 
-1. `pnpm dev` and visit at minimum: `/`, `/programs`, `/programs/caspianbank`,
-   `/leaderboard`, `/about`, `/dashboard/researcher`,
-   `/dashboard/organization`. Watch for runtime errors in the browser console.
-2. Resize to mobile width (≤640px) and re‑check the same routes — the mobile
-   menu, programs filter drawer, and dashboard stat grids are the most likely
-   regressions.
-3. Open the report submission modal from `/programs/[slug]`, walk through all
-   3 steps, and confirm the success screen appears.
-4. If you touched a chart, hover the chart to verify the tooltip renders with
-   the dark theme background (not the recharts default).
-5. `pnpm lint` (don't ignore warnings).
+What you *can* run yourself when checks are needed and explicitly
+authorized: `npm run build` and `npx tsc --noEmit`. Both are one‑shot
+and don't take over a port.
 
-If you can't visually verify a UI change in a browser, **say so explicitly in
-your reply** — type checks alone don't validate UI.
+Manual check pass the user can run after a change:
+
+1. `npm run dev` (the user runs this) and visit at minimum: `/`,
+   `/programs`, `/programs/azal`, `/leaderboard`, `/about`,
+   `/dashboard/researcher`, `/dashboard/organization`. Watch for runtime
+   errors in the browser console.
+2. Resize to mobile width (≤640px) and re‑check the same routes — the
+   mobile menu, programs filter drawer, and dashboard stat grids are
+   the most likely regressions.
+3. Open the report submission modal from `/programs/[slug]`, walk
+   through all 3 steps, and confirm the success screen appears.
+4. If you touched a chart, hover the chart to verify the tooltip
+   renders with the dark theme background (not the recharts default).
+5. `npm run lint` (don't ignore warnings).
+
+If you can't visually verify a UI change in a browser, **say so
+explicitly in your reply** — type checks alone don't validate UI.
 
 ## 8. How to document last actions
 

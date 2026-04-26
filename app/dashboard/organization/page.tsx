@@ -51,8 +51,10 @@ import { SeverityBadge } from '@/components/severity-badge'
 import { StatusBadge } from '@/components/status-badge'
 import { FormattedDate } from '@/components/formatted-date'
 import { useT } from '@/lib/i18n/locale-provider'
+import { useAuth } from '@/lib/auth/auth-provider'
 import {
   orgDashboardStats,
+  organizations,
   reports,
   reportsTimeline,
   severityDistribution,
@@ -87,6 +89,11 @@ const activityIcons = {
 
 export default function OrganizationDashboardPage() {
   const t = useT()
+  const { session } = useAuth()
+  const orgName =
+    organizations.find((o) => o.id === session?.organizationId)?.name ??
+    session?.displayName ??
+    '—'
 
   const pipelineData = pipelineKeys.map((p) => ({
     stage: t(p.key),
@@ -127,10 +134,10 @@ export default function OrganizationDashboardPage() {
               </p>
             </div>
             <div className="flex items-center gap-3">
-              <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-secondary border border-border">
-                <Building2 className="h-4 w-4 text-primary" />
-                <span className="text-sm font-medium text-foreground">
-                  CaspianBank
+              <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-secondary border border-border max-w-full">
+                <Building2 className="h-4 w-4 text-primary shrink-0" />
+                <span className="text-sm font-medium text-foreground truncate">
+                  {orgName}
                 </span>
               </div>
               <Button>{t('dashboard.org.viewProgram')}</Button>

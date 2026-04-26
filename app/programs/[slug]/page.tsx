@@ -92,6 +92,21 @@ export default function ProgramDetailPage({
           {t('program.back')}
         </Link>
 
+        {/* Pending official authorization notice */}
+        <div className="mb-6 rounded-xl border border-warning/30 bg-warning/5 p-4">
+          <div className="flex items-start gap-3">
+            <AlertTriangle className="h-5 w-5 text-warning shrink-0 mt-0.5" />
+            <div>
+              <h3 className="text-sm font-semibold text-foreground mb-1">
+                {t('program.authNotice.title')}
+              </h3>
+              <p className="text-sm text-muted-foreground">
+                {t('program.authNotice.body', { org: program.organization })}
+              </p>
+            </div>
+          </div>
+        </div>
+
         {/* Header Card */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -142,8 +157,9 @@ export default function ProgramDetailPage({
                     </span>
                   </div>
                   <p className="font-semibold text-foreground">
-                    ${program.rewardRange.min} - $
-                    {program.rewardRange.max.toLocaleString()}
+                    {program.recognitionOnly
+                      ? t('programCard.recognition')
+                      : `$${program.rewardRange.min} - $${program.rewardRange.max.toLocaleString()}`}
                   </p>
                 </div>
                 <div className="text-center sm:text-left">
@@ -290,7 +306,9 @@ export default function ProgramDetailPage({
                         {t('program.quickStats.maxReward')}
                       </span>
                       <span className="font-medium text-foreground">
-                        ${program.rewardRange.max.toLocaleString()}
+                        {program.recognitionOnly
+                          ? t('programCard.recognition')
+                          : `$${program.rewardRange.max.toLocaleString()}`}
                       </span>
                     </div>
                   </div>
@@ -398,33 +416,46 @@ export default function ProgramDetailPage({
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              className="rounded-xl border border-border bg-card overflow-hidden"
             >
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>{t('program.rewards.severity')}</TableHead>
-                    <TableHead>{t('program.rewards.range')}</TableHead>
-                    <TableHead>{t('program.rewards.sla')}</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {program.rewards.map((tier) => (
-                    <TableRow key={tier.severity}>
-                      <TableCell>
-                        <SeverityBadge severity={tier.severity} />
-                      </TableCell>
-                      <TableCell className="font-medium">
-                        ${tier.minReward.toLocaleString()} - $
-                        {tier.maxReward.toLocaleString()}
-                      </TableCell>
-                      <TableCell className="text-muted-foreground">
-                        {tier.sla}
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+              {program.recognitionOnly ? (
+                <div className="rounded-xl border border-border bg-card p-8 text-center">
+                  <Trophy className="h-10 w-10 text-warning mx-auto mb-4" />
+                  <h3 className="text-lg font-semibold text-foreground mb-2">
+                    {t('program.rewards.recognitionOnlyTitle')}
+                  </h3>
+                  <p className="text-sm text-muted-foreground max-w-xl mx-auto">
+                    {t('program.rewards.recognitionOnlyBody')}
+                  </p>
+                </div>
+              ) : (
+                <div className="rounded-xl border border-border bg-card overflow-hidden">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>{t('program.rewards.severity')}</TableHead>
+                        <TableHead>{t('program.rewards.range')}</TableHead>
+                        <TableHead>{t('program.rewards.sla')}</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {program.rewards.map((tier) => (
+                        <TableRow key={tier.severity}>
+                          <TableCell>
+                            <SeverityBadge severity={tier.severity} />
+                          </TableCell>
+                          <TableCell className="font-medium">
+                            ${tier.minReward.toLocaleString()} - $
+                            {tier.maxReward.toLocaleString()}
+                          </TableCell>
+                          <TableCell className="text-muted-foreground">
+                            {tier.sla}
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              )}
             </motion.div>
           </TabsContent>
 

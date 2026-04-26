@@ -48,7 +48,6 @@ const en: Dict = {
   'nav.cta.logout': 'Log out',
   'nav.user.myDashboard': 'My dashboard',
   'nav.user.signedInAs': 'Signed in as',
-  'nav.verificationPill': 'AZ citizens only · Verification soon',
   'nav.lang.label': 'Language',
   'nav.lang.short': 'Lang',
   'role.researcher': 'Researcher',
@@ -100,6 +99,7 @@ const en: Dict = {
   // ─── Program card
   'programCard.featured': 'Featured',
   'programCard.rewards': 'Rewards',
+  'programCard.recognition': 'Recognition',
   'programCard.assets': 'Assets',
   'programCard.updated': 'Updated',
   'programCard.viewProgram': 'View Program',
@@ -267,6 +267,13 @@ const en: Dict = {
   'program.rewards.severity': 'Severity',
   'program.rewards.range': 'Reward Range',
   'program.rewards.sla': 'Response SLA',
+  'program.rewards.recognitionOnlyTitle':
+    'Recognition-only program',
+  'program.rewards.recognitionOnlyBody':
+    'This program offers public recognition for valid findings — no monetary rewards. Once an official program is published, reward tiers may be added.',
+  'program.authNotice.title': 'Pending official authorization',
+  'program.authNotice.body':
+    'This is a hackathon demo program card representing {org}. No actual testing of any {org} system is authorized in this build. Real testing requires explicit, written authorization from the organization.',
   'program.rules.title': 'Program Rules',
   'program.rules.harbor.title': 'Safe Harbor Statement',
   'program.rules.harbor.body':
@@ -546,15 +553,6 @@ const en: Dict = {
     'I have tested responsibly, followed the scope guidelines, and have not accessed unauthorized data.',
   'report.demo.notice':
     'This is a demo submission. No actual report will be created. Real submission requires SİMA-verified Azerbaijani identity at launch.',
-  'report.tips.title': 'Reporting Tips',
-  'report.tips.t1': 'Include clear, reproducible steps',
-  'report.tips.t2': 'Provide screenshots or videos as proof',
-  'report.tips.t3': 'Describe the actual vs expected behavior',
-  'report.tips.t4': 'Explain the security impact',
-  'report.tips.t5': 'Suggest a remediation if possible',
-  'report.before.title': 'Before submitting',
-  'report.before.body':
-    "Ensure your report is complete and follows the program's scope guidelines.",
   'report.actions.submit': 'Submit Report',
   'report.actions.submitting': 'Submitting...',
   'report.success.title': 'Report Submitted!',
@@ -578,16 +576,6 @@ const en: Dict = {
   'login.error.invalidEmail': 'Please enter a valid email address.',
   'login.error.invalidCredentials':
     'Wrong email or password. Try one of the demo accounts on the right.',
-  'login.demo.title': 'Demo accounts',
-  'login.demo.subtitle':
-    'Click a card to fill the form, then submit.',
-  'login.demo.researcher.role': 'Researcher',
-  'login.demo.researcher.body':
-    'Browses programs, submits reports, sees their own stats and rewards.',
-  'login.demo.organization.role': 'Organization',
-  'login.demo.organization.body':
-    'Triages incoming reports, monitors program performance, manages scope.',
-  'login.demo.useThis': 'Use this account',
   'login.demoNote':
     'Demo / mock authentication only — credentials are stored locally in your browser. Real backend auth, password hashing, and SİMA verification land later.',
   'login.alreadySignedIn': 'You are already signed in as {role}.',
@@ -645,8 +633,6 @@ const az: Dict = {
   'nav.cta.logout': 'Çıxış et',
   'nav.user.myDashboard': 'Mənim panelim',
   'nav.user.signedInAs': 'Daxil olub:',
-  'nav.verificationPill':
-    'Yalnız AZ vətəndaşları · Doğrulama tezliklə',
   'nav.lang.label': 'Dil',
   'nav.lang.short': 'Dil',
   'role.researcher': 'Tədqiqatçı',
@@ -694,6 +680,7 @@ const az: Dict = {
 
   'programCard.featured': 'Seçilmiş',
   'programCard.rewards': 'Mükafat',
+  'programCard.recognition': 'Tanınma',
   'programCard.assets': 'Aktivlər',
   'programCard.updated': 'Yeniləndi',
   'programCard.viewProgram': 'Proqrama bax',
@@ -861,6 +848,13 @@ const az: Dict = {
   'program.rewards.severity': 'Ciddiyyət',
   'program.rewards.range': 'Mükafat aralığı',
   'program.rewards.sla': 'Cavab SLA',
+  'program.rewards.recognitionOnlyTitle':
+    'Yalnız tanınma proqramı',
+  'program.rewards.recognitionOnlyBody':
+    'Bu proqram etibarlı tapıntılar üçün ictimai tanınma təklif edir — pul mükafatı yoxdur. Rəsmi proqram dərc olunduqdan sonra mükafat səviyyələri əlavə edilə bilər.',
+  'program.authNotice.title': 'Rəsmi icazə gözləyir',
+  'program.authNotice.body':
+    'Bu, {org} təmsil edən hakaton demo proqram kartıdır. Bu versiyada {org} heç bir sisteminin real testi icazəli deyil. Real test üçün təşkilatın yazılı rəsmi icazəsi tələb olunur.',
   'program.rules.title': 'Proqram qaydaları',
   'program.rules.harbor.title': 'Təhlükəsiz liman bəyanatı',
   'program.rules.harbor.body':
@@ -1156,18 +1150,6 @@ const az: Dict = {
     'Məsuliyyətlə test apardım, sahə qaydalarına əməl etdim və icazəsiz məlumatlara çıxış əldə etmədim.',
   'report.demo.notice':
     'Bu demo göndərmədir. Real hesabat yaradılmır. Real göndərmə buraxılışda SİMA ilə doğrulanmış Azərbaycan vətəndaşlığı tələb edəcək.',
-  'report.tips.title': 'Hesabat məsləhətləri',
-  'report.tips.t1':
-    'Aydın, təkrar oluna bilən addımlar əlavə et',
-  'report.tips.t2':
-    'Sübut kimi ekran görüntüsü və ya video təqdim et',
-  'report.tips.t3':
-    'Faktiki və gözlənilən davranışı təsvir et',
-  'report.tips.t4': 'Təhlükəsizlik təsirini izah et',
-  'report.tips.t5': 'Mümkünsə həll yolu təklif et',
-  'report.before.title': 'Göndərmədən əvvəl',
-  'report.before.body':
-    'Hesabatın tam olduğunu və proqramın sahə qaydalarına uyğun olduğunu yoxla.',
   'report.actions.submit': 'Hesabat göndər',
   'report.actions.submitting': 'Göndərilir...',
   'report.success.title': 'Hesabat göndərildi!',
@@ -1191,16 +1173,6 @@ const az: Dict = {
   'login.error.invalidEmail': 'Düzgün e-poçt ünvanı daxil et.',
   'login.error.invalidCredentials':
     'E-poçt və ya şifrə yanlışdır. Sağdakı demo hesablarından birini sına.',
-  'login.demo.title': 'Demo hesablar',
-  'login.demo.subtitle':
-    'Formanı doldurmaq üçün karta klikə, sonra göndər.',
-  'login.demo.researcher.role': 'Tədqiqatçı',
-  'login.demo.researcher.body':
-    'Proqramlara baxır, hesabat göndərir, öz statistika və mükafatlarını görür.',
-  'login.demo.organization.role': 'Təşkilat',
-  'login.demo.organization.body':
-    'Gələn hesabatları yoxlayır, proqramın gedişatını izləyir, sahəni idarə edir.',
-  'login.demo.useThis': 'Bu hesabı istifadə et',
   'login.demoNote':
     'Yalnız demo / mock doğrulama — məlumatlar brauzerində lokal saxlanılır. Real backend doğrulaması, şifrə hashı və SİMA doğrulaması sonra gələcək.',
   'login.alreadySignedIn': '{role} kimi artıq daxil olmusan.',
