@@ -216,11 +216,13 @@ hackthebug-tool/
 │   │       ├── programs.ts       # listPrograms, listFeaturedPrograms, getProgramBySlug
 │   │       ├── organizations.ts  # listOrganizations, getOrganizationById
 │   │       ├── profiles.ts       # getProfileById/Email, listResearchers
-│   │       └── reports.ts        # listReportsForResearcher / Organization, getReportById, createReport
+│   │       ├── reports.ts        # listReportsForResearcher / Organization, getReportById, createReport
+│   │       └── dashboard.ts      # getResearcherDashboardStats (KPI tiles aggregator)
 │   └── data/
 │       └── hooks.ts              # usePrograms / useProgram / useFeaturedPrograms /
 │                                 #   useResearchers / useResearcherReports /
-│                                 #   useOrganizationReports / useOrganization
+│                                 #   useOrganizationReports / useOrganization /
+│                                 #   useResearcherDashboardStats
 ├── hooks/
 │   └── use-mobile.ts             # md breakpoint hook (the canonical location)
 ├── components.json               # shadcn config (style: new-york, base: neutral)
@@ -278,8 +280,7 @@ All mock data lives in `lib/mock-data.ts`, typed against `lib/types.ts`.
 | `organizations`                 | `Organization[]`      | **Exactly 13** AZCON Holding organization records (`id`, `slug`, `name`, `industry`). Canonical source — `lib/auth/mock-users.ts` references `org-azal` from this list for the demo organization user. |
 | `researchers`                   | `Researcher[]`        | 10 fictional researchers (handles, country/code, points, reputation, badges, total rewards). **All 10 are AZ‑based** since AZ‑citizens‑only positioning shipped. |
 | `reports`                       | `Report[]`            | 7 sample vulnerability reports referencing the AZCON programs. Asset names use scope category labels ("Customer Portal", "Public API", etc.) — no fake demo domains. |
-| `researcherDashboardStats`      | `DashboardStats`      | KPIs for the researcher view (assumes "you" are CyberNomad, rank #1).  |
-| `orgDashboardStats`             | `OrgDashboardStats`   | KPIs for the org view (assumes "you" are CaspianBank).                 |
+| `orgDashboardStats`             | `OrgDashboardStats`   | KPIs for the org view (assumes "you" are CaspianBank). Researcher KPIs are now derived live from Supabase via `getResearcherDashboardStats`. |
 | `severityDistribution`          | `ChartDataPoint[]`    | Counts by severity for pie chart.                                      |
 | `reportsTimeline`               | `TimelineDataPoint[]` | 6‑month reports vs resolved (org dashboard).                           |
 | `researcherReportsTimeline`     | `TimelineDataPoint[]` | 6‑month researcher submission counts.                                  |
@@ -423,6 +424,61 @@ To be implemented after the hackathon, in roughly this order:
   and the `LOCALES` array.
 
 ## Last Actions
+
+### 2026‑04‑26 — Researcher dashboard stats from Supabase
+
+- **What:** The six KPI tiles at the top of `/dashboard/researcher`
+  (Submitted / Accepted / Pending / Total rewards / Reputation /
+  National rank) no longer come from `researcherDashboardStats`
+  (the static `{58, 42, 3, 28500, 98, 1}` mock). They are now
+  derived per signed-in researcher from Supabase by a new query
+  `getResearcherDashboardStats(client, researcherId)` in
+  `lib/supabase/queries/dashboard.ts`, exposed through a new
+  `useResearcherDashboardStats(researcherId)` hook in
+  `lib/data/hooks.ts`. The query runs three queries in parallel:
+  the researcher's own profile (for `points` + `reputation`),
+  `reports` filtered by `researcher_id` (for `total / accepted /
+  pending / sum(reward_amount)`), and the `profiles` list ordered
+  by `points` desc (for rank via `findIndex`). Statuses used:
+  Accepted = `['resolved', 'rewarded']`; Pending review = `['pending',
+  'triaged']`. Reputation prefers `profiles.reputation`; if it's 0
+  or missing the page falls back to `Math.round(accepted /
+  totalReports * 100)` (and 0 when there are no reports).
+- **UI:** While stats are loading, every value renders as `—`
+  (no misleading static numbers). If the query fails, an inline
+  destructive banner with the error message renders above the
+  grid; the cards continue to show `—`. Card layout, typography,
+  icons, and animation timings are unchanged. EN + AZ keys for
+  the new error title were added to the dictionary.
+- **Removed:** `researcherDashboardStats` constant (from
+  `lib/mock-data.ts`) and the now-unused `DashboardStats` type
+  (from `lib/types.ts`). The org dashboard's `orgDashboardStats`
+  + `OrgDashboardStats` are unchanged — only the researcher tiles
+  flipped to live data.
+- **Why:** The user asked for the researcher dashboard cards to
+  reflect the real Supabase row for the signed-in researcher
+  rather than constants. Calculating from the existing schema
+  (no new columns) keeps the change isolated to the data layer
+  and one page.
+- **Files touched:** added `lib/supabase/queries/dashboard.ts`.
+  Modified `lib/data/hooks.ts`, `lib/types.ts`,
+  `lib/mock-data.ts`, `lib/i18n/dictionary.ts`,
+  `app/dashboard/researcher/page.tsx`, `MEMORY.md`. No files
+  removed.
+- **Verification:** `npm run build` succeeds, all 11 routes
+  prerender. Browser pass to confirm: sign in as
+  `researcher@hackthebug.az` and visit
+  `/dashboard/researcher` — Submitted / Accepted / Pending /
+  Total rewards should match the seeded `reports` rows for that
+  researcher (the 7 demo reports re-linked by the auth-setup
+  SQL); Reputation should show the `profiles.reputation` value
+  (`98` for the seeded CyberNomad); National rank should be
+  `#1` if no other researcher has higher `points`.
+- **Next step:** apply the same treatment to the organization
+  dashboard's `orgDashboardStats` so every dashboard tile is
+  live; consider adding a `useResearcherDashboardStats().refetch`
+  call from `report-submission-modal.tsx` `onSubmitted` so the
+  cards update after a fresh report without a manual reload.
 
 ### 2026‑04‑26 — Real report submission (Supabase persist)
 

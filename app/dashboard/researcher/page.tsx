@@ -18,6 +18,7 @@ import {
   Zap,
   Shield,
   Globe,
+  AlertCircle,
 } from 'lucide-react'
 import {
   BarChart,
@@ -54,9 +55,12 @@ import { StatusBadge } from '@/components/status-badge'
 import { useT } from '@/lib/i18n/locale-provider'
 import { formatAZN } from '@/lib/utils'
 import { useAuth } from '@/lib/auth/auth-provider'
-import { usePrograms, useResearcherReports } from '@/lib/data/hooks'
 import {
-  researcherDashboardStats,
+  usePrograms,
+  useResearcherDashboardStats,
+  useResearcherReports,
+} from '@/lib/data/hooks'
+import {
   researcherReportsTimeline,
   severityDistribution,
 } from '@/lib/mock-data'
@@ -82,6 +86,10 @@ export default function ResearcherDashboardPage() {
 
   const { data: reportsData } = useResearcherReports(researcherId)
   const reports = reportsData ?? []
+
+  const { data: stats, error: statsError } =
+    useResearcherDashboardStats(researcherId)
+  const statPlaceholder = '—'
 
   return (
     <div className="py-8 sm:py-12">
@@ -126,41 +134,56 @@ export default function ResearcherDashboardPage() {
           </div>
         </motion.div>
 
+        {/* Stats error banner */}
+        {statsError && (
+          <div className="mb-4 flex items-start gap-2 rounded-lg border border-destructive/30 bg-destructive/10 p-3">
+            <AlertCircle className="h-4 w-4 text-destructive shrink-0 mt-0.5" />
+            <div className="space-y-1">
+              <p className="text-sm font-medium text-foreground">
+                {t('dashboard.researcher.stats.error.title')}
+              </p>
+              <p className="text-xs text-muted-foreground break-words">
+                {statsError.message}
+              </p>
+            </div>
+          </div>
+        )}
+
         {/* Stats Grid */}
         <div className="grid grid-cols-2 lg:grid-cols-4 xl:grid-cols-6 gap-4 mb-8">
           <StatCard
             title={t('dashboard.researcher.stats.submitted')}
-            value={researcherDashboardStats.totalReports}
+            value={stats ? stats.totalReports : statPlaceholder}
             icon={FileText}
             delay={0}
           />
           <StatCard
             title={t('dashboard.researcher.stats.accepted')}
-            value={researcherDashboardStats.acceptedReports}
+            value={stats ? stats.acceptedReports : statPlaceholder}
             icon={CheckCircle}
             delay={0.1}
           />
           <StatCard
             title={t('dashboard.researcher.stats.pending')}
-            value={researcherDashboardStats.pendingTriage}
+            value={stats ? stats.pendingTriage : statPlaceholder}
             icon={Clock}
             delay={0.2}
           />
           <StatCard
             title={t('dashboard.researcher.stats.rewards')}
-            value={formatAZN(researcherDashboardStats.totalRewards)}
+            value={stats ? formatAZN(stats.totalRewards) : statPlaceholder}
             icon={DollarSign}
             delay={0.3}
           />
           <StatCard
             title={t('dashboard.researcher.stats.reputation')}
-            value={researcherDashboardStats.reputationScore}
+            value={stats ? stats.reputationScore : statPlaceholder}
             icon={Star}
             delay={0.4}
           />
           <StatCard
             title={t('dashboard.researcher.stats.rank')}
-            value={`#${researcherDashboardStats.rank}`}
+            value={stats ? `#${stats.rank}` : statPlaceholder}
             icon={Trophy}
             delay={0.5}
           />

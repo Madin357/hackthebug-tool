@@ -12,8 +12,9 @@
  *     `researcherReportsTimeline` — synthetic chart data for the
  *     dashboard demo
  *   * `topAttackedAssets` / `recentActivity` — synthetic dashboard widgets
- *   * `researcherDashboardStats` / `orgDashboardStats` — illustrative
- *     KPI tiles
+ *   * `orgDashboardStats` — illustrative organization KPI tiles
+ *     (researcher KPIs are now derived from Supabase via
+ *     `getResearcherDashboardStats` + `useResearcherDashboardStats`)
  *
  * Treat everything in this file as demo data. When a chart or widget is
  * ready to be backed by a real query, lift it out of here and into a
@@ -22,7 +23,6 @@
 
 import type {
   ChartDataPoint,
-  DashboardStats,
   OrgDashboardStats,
   PlatformStats,
   TimelineDataPoint,
@@ -35,15 +35,6 @@ export const platformStats: PlatformStats = {
   avgTriageTime: '< 24h',
   rewardsPaid: 127500,
   organizationsJoined: 13,
-}
-
-export const researcherDashboardStats: DashboardStats = {
-  totalReports: 58,
-  acceptedReports: 42,
-  pendingTriage: 3,
-  totalRewards: 28500,
-  reputationScore: 98,
-  rank: 1,
 }
 
 export const orgDashboardStats: OrgDashboardStats = {

@@ -133,15 +133,6 @@ export interface Report {
   weaknessType: string
 }
 
-export interface DashboardStats {
-  totalReports: number
-  acceptedReports: number
-  pendingTriage: number
-  totalRewards: number
-  reputationScore: number
-  rank: number
-}
-
 export interface OrgDashboardStats {
   totalReports: number
   openReports: number

@@ -15,6 +15,10 @@ import {
   listReportsForOrganization,
   listReportsForResearcher,
 } from '@/lib/supabase/queries/reports'
+import {
+  getResearcherDashboardStats,
+  type ResearcherDashboardStats,
+} from '@/lib/supabase/queries/dashboard'
 import type { Program, Report, Researcher } from '@/lib/types'
 
 
@@ -151,5 +155,20 @@ export function useOrganization(
         ? getOrganizationById(client, id)
         : Promise.resolve<Organization | null>(null),
     [id],
+  )
+}
+
+// ─── Dashboards ───────────────────────────────────────────────────────────
+
+export function useResearcherDashboardStats(
+  researcherId: string | null | undefined,
+): AsyncState<ResearcherDashboardStats | null> {
+  const client = useMemo(() => getSupabaseClient(), [])
+  return useAsync(
+    () =>
+      researcherId
+        ? getResearcherDashboardStats(client, researcherId)
+        : Promise.resolve<ResearcherDashboardStats | null>(null),
+    [researcherId],
   )
 }

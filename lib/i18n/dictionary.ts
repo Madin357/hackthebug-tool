@@ -425,6 +425,7 @@ const en: Dict = {
   'dashboard.researcher.stats.rewards': 'Total Rewards',
   'dashboard.researcher.stats.reputation': 'Reputation',
   'dashboard.researcher.stats.rank': 'National Rank',
+  'dashboard.researcher.stats.error.title': 'Could not load your dashboard stats',
   'dashboard.researcher.timeline.title': 'Reports Over Time',
   'dashboard.researcher.timeline.subtitle':
     'Your submission activity over the past 6 months.',
@@ -1144,6 +1145,8 @@ const az: Dict = {
   'dashboard.researcher.stats.rewards': 'Cəmi mükafat',
   'dashboard.researcher.stats.reputation': 'Reputasiya',
   'dashboard.researcher.stats.rank': 'Milli reytinq',
+  'dashboard.researcher.stats.error.title':
+    'Panel statistikası yüklənə bilmədi',
   'dashboard.researcher.timeline.title': 'Zaman üzrə hesabatlar',
   'dashboard.researcher.timeline.subtitle':
     'Son 6 ayda göndərmə fəaliyyətin.',
