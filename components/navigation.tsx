@@ -1,20 +1,32 @@
 'use client'
 
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Bug, Menu, X, ChevronDown } from 'lucide-react'
+import {
+  Bug,
+  Menu,
+  X,
+  ChevronDown,
+  LogOut,
+  LayoutDashboard,
+  UserRound,
+} from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { LocaleSwitcher } from '@/components/locale-switcher'
 import { useT } from '@/lib/i18n/locale-provider'
+import { useAuth, dashboardPathForRole } from '@/lib/auth/auth-provider'
 import { cn } from '@/lib/utils'
+import type { UserRole } from '@/lib/types'
 
 const navItems = [
   { href: '/', key: 'nav.home' },
@@ -23,15 +35,36 @@ const navItems = [
   { href: '/about', key: 'nav.about' },
 ]
 
-const dashboardItems = [
-  { href: '/dashboard/researcher', key: 'nav.dashboard.researcher' },
-  { href: '/dashboard/organization', key: 'nav.dashboard.organization' },
+const dashboardItems: Array<{ href: string; key: string; role: UserRole }> = [
+  {
+    href: '/dashboard/researcher',
+    key: 'nav.dashboard.researcher',
+    role: 'researcher',
+  },
+  {
+    href: '/dashboard/organization',
+    key: 'nav.dashboard.organization',
+    role: 'organization',
+  },
 ]
 
 export function Navigation() {
   const pathname = usePathname()
+  const router = useRouter()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const t = useT()
+  const { status, session, logout } = useAuth()
+
+  const isAuthed = status === 'authenticated' && session
+  const visibleDashboardItems = isAuthed
+    ? dashboardItems.filter((item) => item.role === session.role)
+    : dashboardItems
+
+  const handleLogout = () => {
+    logout()
+    setMobileMenuOpen(false)
+    router.push('/')
+  }
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 glass">
@@ -64,31 +97,45 @@ export function Navigation() {
               </Link>
             ))}
 
-            {/* Dashboard Dropdown */}
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <button
-                  className={cn(
-                    'flex items-center gap-1 px-4 py-2 text-sm font-medium rounded-lg transition-colors',
-                    pathname.startsWith('/dashboard')
-                      ? 'text-primary bg-primary/10'
-                      : 'text-muted-foreground hover:text-foreground hover:bg-secondary',
-                  )}
-                >
-                  {t('nav.dashboard')}
-                  <ChevronDown className="h-4 w-4" />
-                </button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-56">
-                {dashboardItems.map((item) => (
-                  <DropdownMenuItem key={item.href} asChild>
-                    <Link href={item.href} className="w-full">
-                      {t(item.key)}
-                    </Link>
-                  </DropdownMenuItem>
-                ))}
-              </DropdownMenuContent>
-            </DropdownMenu>
+            {/* Dashboard menu — only one option when logged in */}
+            {isAuthed ? (
+              <Link
+                href={dashboardPathForRole(session.role)}
+                className={cn(
+                  'px-4 py-2 text-sm font-medium rounded-lg transition-colors',
+                  pathname.startsWith('/dashboard')
+                    ? 'text-primary bg-primary/10'
+                    : 'text-muted-foreground hover:text-foreground hover:bg-secondary',
+                )}
+              >
+                {t('nav.user.myDashboard')}
+              </Link>
+            ) : (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button
+                    className={cn(
+                      'flex items-center gap-1 px-4 py-2 text-sm font-medium rounded-lg transition-colors',
+                      pathname.startsWith('/dashboard')
+                        ? 'text-primary bg-primary/10'
+                        : 'text-muted-foreground hover:text-foreground hover:bg-secondary',
+                    )}
+                  >
+                    {t('nav.dashboard')}
+                    <ChevronDown className="h-4 w-4" />
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56">
+                  {visibleDashboardItems.map((item) => (
+                    <DropdownMenuItem key={item.href} asChild>
+                      <Link href={item.href} className="w-full">
+                        {t(item.key)}
+                      </Link>
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
           </div>
 
           {/* Right Side Actions */}
@@ -97,9 +144,18 @@ export function Navigation() {
               {t('nav.verificationPill')}
             </span>
             <LocaleSwitcher />
-            <Button asChild>
-              <Link href="/programs">{t('nav.cta.launchDemo')}</Link>
-            </Button>
+            {isAuthed ? (
+              <UserMenu
+                displayName={session.displayName}
+                role={session.role}
+                onLogout={handleLogout}
+                t={t}
+              />
+            ) : (
+              <Button asChild>
+                <Link href="/login">{t('nav.cta.login')}</Link>
+              </Button>
+            )}
           </div>
 
           {/* Mobile Menu Button */}
@@ -146,7 +202,7 @@ export function Navigation() {
                 <p className="px-4 py-2 text-xs text-muted-foreground font-medium uppercase tracking-wider">
                   {t('nav.dashboard')}
                 </p>
-                {dashboardItems.map((item) => (
+                {visibleDashboardItems.map((item) => (
                   <Link
                     key={item.href}
                     href={item.href}
@@ -167,14 +223,109 @@ export function Navigation() {
                   {t('nav.verificationPill')}
                 </p>
                 <LocaleSwitcher variant="block" />
-                <Button asChild className="w-full">
-                  <Link href="/programs">{t('nav.cta.launchDemo')}</Link>
-                </Button>
+                {isAuthed ? (
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-3 rounded-lg border border-border bg-card/50 px-3 py-2">
+                      <div className="h-9 w-9 rounded-full bg-primary/15 flex items-center justify-center">
+                        <UserRound className="h-4 w-4 text-primary" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-foreground truncate">
+                          {session.displayName}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          {t(`role.${session.role}`)}
+                        </p>
+                      </div>
+                    </div>
+                    <Button
+                      variant="outline"
+                      className="w-full"
+                      onClick={handleLogout}
+                    >
+                      <LogOut className="h-4 w-4 mr-2" />
+                      {t('nav.cta.logout')}
+                    </Button>
+                  </div>
+                ) : (
+                  <Button asChild className="w-full">
+                    <Link
+                      href="/login"
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      {t('nav.cta.login')}
+                    </Link>
+                  </Button>
+                )}
               </div>
             </div>
           </motion.div>
         )}
       </AnimatePresence>
     </header>
+  )
+}
+
+interface UserMenuProps {
+  displayName: string
+  role: UserRole
+  onLogout: () => void
+  t: (key: string, vars?: Record<string, string | number>) => string
+}
+
+function UserMenu({ displayName, role, onLogout, t }: UserMenuProps) {
+  const initials = displayName
+    .split(/\s+/)
+    .map((part) => part[0])
+    .join('')
+    .slice(0, 2)
+    .toUpperCase()
+
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <button className="flex items-center gap-2 rounded-lg border border-border bg-card/50 hover:bg-card pl-1.5 pr-3 py-1 transition-colors">
+          <span className="h-7 w-7 rounded-full bg-primary/15 flex items-center justify-center text-xs font-semibold text-primary">
+            {initials}
+          </span>
+          <span className="hidden lg:flex flex-col items-start leading-tight">
+            <span className="text-xs font-medium text-foreground max-w-[140px] truncate">
+              {displayName}
+            </span>
+            <span className="text-[10px] uppercase tracking-wider text-muted-foreground">
+              {t(`role.${role}`)}
+            </span>
+          </span>
+          <ChevronDown className="h-4 w-4 text-muted-foreground" />
+        </button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end" className="w-56">
+        <DropdownMenuLabel className="text-xs text-muted-foreground font-normal">
+          {t('nav.user.signedInAs')}
+          <br />
+          <span className="font-medium text-foreground">{displayName}</span>
+          <span className="text-muted-foreground"> · {t(`role.${role}`)}</span>
+        </DropdownMenuLabel>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem asChild>
+          <Link
+            href={dashboardPathForRole(role)}
+            className="w-full cursor-pointer"
+          >
+            <LayoutDashboard className="mr-2 h-4 w-4" />
+            {t('nav.user.myDashboard')}
+          </Link>
+        </DropdownMenuItem>
+        <DropdownMenuItem
+          onSelect={(e) => {
+            e.preventDefault()
+            onLogout()
+          }}
+        >
+          <LogOut className="mr-2 h-4 w-4" />
+          {t('nav.cta.logout')}
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
   )
 }

@@ -5,6 +5,7 @@ import { Navigation } from '@/components/navigation'
 import { Footer } from '@/components/footer'
 import { LocaleProvider } from '@/lib/i18n/locale-provider'
 import { DEFAULT_LOCALE } from '@/lib/i18n/dictionary'
+import { AuthProvider } from '@/lib/auth/auth-provider'
 import './globals.css'
 
 const geistSans = Geist({ subsets: ['latin'], variable: '--font-geist-sans' })
@@ -46,10 +47,12 @@ export default function RootLayout({
     >
       <body className="font-sans antialiased min-h-screen flex flex-col">
         <LocaleProvider>
-          <Navigation />
-          <main className="flex-1 pt-16">{children}</main>
-          <Footer />
-          {process.env.NODE_ENV === 'production' && <Analytics />}
+          <AuthProvider>
+            <Navigation />
+            <main className="flex-1 pt-16">{children}</main>
+            <Footer />
+            {process.env.NODE_ENV === 'production' && <Analytics />}
+          </AuthProvider>
         </LocaleProvider>
       </body>
     </html>

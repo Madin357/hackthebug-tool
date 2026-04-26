@@ -35,8 +35,19 @@ for now and will be layered on later.
 
 ## Current Technical State
 
-- Frontend‑only Next.js app. **No backend, no database, no real auth, no real
+- Frontend‑only Next.js app. **No backend, no database, no real
   registration, no real SİMA / identity verification, no real payments.**
+- **Mock auth (demo only) is now wired in.** Two hard‑coded credentials live
+  in `lib/auth/mock-users.ts`: `researcher@hackthebug.demo / researcher123`
+  (linked to researcher `id: '1'` = CyberNomad) and
+  `org@hackthebug.demo / org123` (linked to organization
+  `id: 'org-caspianbank'` = CaspianBank). Sessions are stored in
+  `localStorage` under `htb-session` and exposed via `useAuth()` from
+  `lib/auth/auth-provider.tsx`. `RoleGate` (`components/role-gate.tsx`) wraps
+  each dashboard via a tiny route‑segment `layout.tsx` and handles
+  loading / unauthenticated / wrong‑role states. **This is not a security
+  boundary** — see security notes in `DATABASE_PLAN.md` and the
+  file‑level docstrings in `lib/auth/*`.
 - All data is mocked locally in `lib/mock-data.ts`. All 10 researchers are
   AZ‑based (country: Azerbaijan, countryCode: AZ).
 - Submitting a report opens a multi‑step modal that simulates submission with a
@@ -92,6 +103,11 @@ None at the moment. The eight pre‑existing defects identified during the
   (`dictionary.ts` with flat‑key EN/AZ + `locale-provider.tsx` with
   `LocaleProvider`/`useLocale`/`useT`). Default locale `'az'`, persisted via
   `localStorage` (`htb-locale`). EN/AZ toggle in `components/locale-switcher.tsx`.
+- **Auth (demo/mock):** local, dependency‑free in `lib/auth/`
+  (`mock-users.ts` with the 2 demo accounts + `auth-provider.tsx` exposing
+  `AuthProvider`/`useAuth`/`dashboardPathForRole`). Session stored in
+  `localStorage` under `htb-session`. `RoleGate` enforces dashboard
+  separation client‑side. **Not production‑safe.**
 - **Theming:** `next-themes` installed but unused; dark mode is hard‑coded.
 - **Analytics:** `@vercel/analytics` (only mounted in production).
 - **Package manager:** both `package-lock.json` and `pnpm-lock.yaml` exist —
@@ -109,19 +125,25 @@ hackthebug-tool/
 │   ├── about/page.tsx            # About: hero + stats (from platformStats) + mission +
 │   │                             #   values + 2025‑2026 roadmap + AZCON team roles + CTA
 │   ├── leaderboard/page.tsx      # Leaderboard: hero + filters + podium + table + stats + CTA
+│   ├── login/page.tsx            # /login: branded form + demo creds card (mock auth)
 │   ├── programs/
 │   │   ├── page.tsx              # Programs directory: search/filter/sort/grid+list
 │   │   └── [slug]/page.tsx       # Program detail: tabs (overview/scope/rewards/
 │   │                             #   rules/updates/hall‑of‑fame) + report modal
 │   └── dashboard/
-│       ├── researcher/page.tsx   # Researcher view: stats, charts, recent reports,
+│       ├── researcher/
+│       │   ├── layout.tsx        # RoleGate('researcher') wrapper
+│       │   └── page.tsx          # Researcher view: stats, charts, recent reports,
 │       │                         #   achievements, SIMA banner, saved/recommended
-│       └── organization/page.tsx # Org view: stats, trend chart, severity, pipeline,
+│       └── organization/
+│           ├── layout.tsx        # RoleGate('organization') wrapper
+│           └── page.tsx          # Org view: stats, trend chart, severity, pipeline,
 │                                 #   recent reports, top assets, activity, top hackers
 ├── components/
-│   ├── navigation.tsx            # Sticky glass header + LocaleSwitcher + responsive mobile menu
+│   ├── navigation.tsx            # Sticky glass header + LocaleSwitcher + auth-aware user menu / Login button
 │   ├── footer.tsx                # 4‑column footer with brand + links + AZ‑only badge
 │   ├── locale-switcher.tsx       # EN/AZ toggle (used in nav)
+│   ├── role-gate.tsx             # Client-side gate: loading / unauthenticated / wrong-role / pass-through
 │   ├── program-card.tsx          # Reusable program card (used on home + directory)
 │   ├── section-heading.tsx       # Reusable badge + h2 + subtitle block
 │   ├── severity-badge.tsx        # Critical / High / Medium / Low / Info pill (uses useT)
@@ -132,12 +154,15 @@ hackthebug-tool/
 │   └── ui/                       # shadcn/ui primitives (full kit, minus the deleted
 │                                 #   toast/sonner/use-mobile dupes)
 ├── lib/
-│   ├── types.ts                  # Domain types: Program, Researcher, Report, etc.
+│   ├── types.ts                  # Domain types: Program, Researcher, Report, User, Session, etc.
 │   ├── mock-data.ts              # All mock data + supporting lookup arrays (researchers all AZ)
 │   ├── utils.ts                  # `cn()` helper
-│   └── i18n/
-│       ├── dictionary.ts         # Flat‑key EN + AZ dictionary, translate() helper, Locale type
-│       └── locale-provider.tsx   # LocaleProvider + useLocale + useT hooks (localStorage backed)
+│   ├── i18n/
+│   │   ├── dictionary.ts         # Flat‑key EN + AZ dictionary, translate() helper, Locale type
+│   │   └── locale-provider.tsx   # LocaleProvider + useLocale + useT hooks (localStorage backed)
+│   └── auth/
+│       ├── mock-users.ts         # 2 demo creds (researcher + organization) + Organization mock
+│       └── auth-provider.tsx     # AuthProvider + useAuth + dashboardPathForRole (localStorage backed)
 ├── hooks/
 │   └── use-mobile.ts             # md breakpoint hook (the canonical location)
 ├── components.json               # shadcn config (style: new-york, base: neutral)
@@ -147,6 +172,7 @@ hackthebug-tool/
 ├── package.json                  # name: "hackthebug"
 ├── MEMORY.md                     # this file
 ├── CLAUDE.md                     # working instructions for Claude in this repo
+├── DATABASE_PLAN.md              # planning-only schema for the future backend pass
 └── README.md                     # one‑liner
 ```
 
@@ -159,16 +185,18 @@ hackthebug-tool/
 | `/programs/[slug]`               | Program detail with tabs: Overview / Scope / Rewards / Rules / Updates / Hall of Fame; "Submit Report" opens modal; "Similar Programs" footer. | Working  |
 | `/leaderboard`                   | Hero + filters + top‑3 podium + full rankings table + summary stats + CTA. Reads from `researchers`. | Working  |
 | `/about`                         | Hero + stats (driven by `platformStats`) + mission + values + 2025‑2026 roadmap + AZCON team roles + CTA. | Working  |
-| `/dashboard/researcher`          | Researcher KPI dashboard with charts, recent reports, achievements, SIMA banner, saved + recommended programs. | Working  |
-| `/dashboard/organization`        | Org KPI dashboard with trend, severity, pipeline, recent reports, top assets, activity feed, top hackers. | Working  |
+| `/login`                         | Mock login form (email + password) + demo credentials card with one-click fill. Redirects to user's dashboard on success; if a `?next=/path` is provided it is honored. | Working  |
+| `/dashboard/researcher`          | Researcher KPI dashboard with charts, recent reports, achievements, SIMA banner, saved + recommended programs. **Wrapped in `RoleGate('researcher')`.** | Working  |
+| `/dashboard/organization`        | Org KPI dashboard with trend, severity, pipeline, recent reports, top assets, activity feed, top hackers. **Wrapped in `RoleGate('organization')`.** | Working  |
 
 ## Existing Components
 
 | Component                        | Purpose                                                                                  |
 | -------------------------------- | ---------------------------------------------------------------------------------------- |
-| `Navigation`                     | Sticky glass top bar, brand mark, primary nav (Home/Programs/Leaderboard/About), Dashboard dropdown, "AZ citizens only · Verification soon" pill, EN/AZ `LocaleSwitcher`, "Launch Demo" CTA, animated mobile drawer. |
+| `Navigation`                     | Sticky glass top bar, brand mark, primary nav (Home/Programs/Leaderboard/About), auth-aware Dashboard surface (anonymous: dropdown of both views; signed-in: single "My dashboard" link to the user's role), "AZ citizens only · Verification soon" pill, EN/AZ `LocaleSwitcher`, **Login button when anonymous / user pill with My dashboard + Logout when authenticated**, animated mobile drawer mirroring the same. |
 | `Footer`                         | 4‑column footer: brand + AZ‑citizens‑only badge + social, Platform links, Resources links, Legal links, "Hackathon Demo" tag. |
 | `LocaleSwitcher`                 | EN/AZ toggle group; toggles `useLocale().setLocale`, persists to `localStorage` (`htb-locale`). Used in Navigation desktop bar + mobile drawer. |
+| `RoleGate`                       | Client wrapper for protected pages. Shows a loader while `useAuth()` resolves, redirects unauthenticated users to `/login?next=…`, shows an inline "Access denied" card with link to the user's own dashboard + logout when the role doesn't match. |
 | `ProgramCard`                    | Animated card showing org icon, name, status, type/industry/tags, rewards range, asset count, last updated, "View Program" CTA, featured ribbon. Used on home and `/programs`. |
 | `SectionHeading`                 | Optional badge + h2 + subtitle, optionally centered, with fade‑in‑on‑view animation.     |
 | `SeverityBadge`                  | Pill with colored dot for critical/high/medium/low/informational.                        |
@@ -264,10 +292,18 @@ These are hard rules for this hackathon iteration:
   names, weakness types) stay as data and are not translated.
 - **Do not add a real backend.** No API routes, no server actions that hit
   real services. Anything "submit"/"save" stays mocked.
-- **Do not add real auth.** No NextAuth, Clerk, Supabase Auth, etc. UI flows
-  may show "Sign in" but they should remain decorative.
+- **Do not add real auth libraries.** No NextAuth, Clerk, Supabase Auth, etc.
+  The current `lib/auth/*` is a deliberate **mock** for demoing role
+  separation only — it stores the session in `localStorage`, has no
+  cryptographic signing, and is bypassed by any browser dev tools user. Do
+  not bolt feature work on top of it that would require it to be secure.
+- **Researcher and organization dashboards must remain separate.** Add new
+  protected pages by composing `RoleGate` (or, for a whole subtree, a
+  route‑segment `layout.tsx` that wraps its children in `RoleGate`). Never
+  show one role's data inside the other role's surface.
 - **Do not add a real database.** No Postgres/SQLite/Mongo wiring. State lives
-  in `lib/mock-data.ts` (or `useState` for in‑page state).
+  in `lib/mock-data.ts` (or `useState` for in‑page state). Schema planning
+  for the future backend pass lives in `DATABASE_PLAN.md`.
 - **Do not add real payments.** Reward amounts and bounty paid figures are all
   illustrative.
 - **Do not add real SİMA / identity verification integration.** The "SIMA
@@ -313,6 +349,60 @@ To be implemented after the hackathon, in roughly this order:
   and the `LOCALES` array.
 
 ## Last Actions
+
+### 2026‑04‑26 — Demo login + role-based dashboard separation + DB plan
+
+- **What:** Added the first cut of authentication and role-based access for
+  the demo. (1) New types: `User`, `UserRole`, `Organization`, `Session` in
+  `lib/types.ts`. (2) Two demo accounts in `lib/auth/mock-users.ts`:
+  `researcher@hackthebug.demo / researcher123` (linked to researcher #1
+  CyberNomad) and `org@hackthebug.demo / org123` (linked to organization
+  `org-caspianbank` CaspianBank). (3) `AuthProvider` / `useAuth` /
+  `dashboardPathForRole` in `lib/auth/auth-provider.tsx` — session in
+  `localStorage` under `htb-session`, with `status: 'loading' |
+  'authenticated' | 'unauthenticated'` so consumers know when storage has
+  been read. (4) Provider mounted in `app/layout.tsx` inside
+  `LocaleProvider`. (5) New `/login` page with branded form, EN/AZ
+  validation messages, error states, demo creds card with one-click fill,
+  honors `?next=…` redirect, gracefully handles already-signed-in users.
+  Wrapped in `Suspense` so SSG works alongside `useSearchParams`. (6)
+  `RoleGate` component in `components/role-gate.tsx`; loading spinner
+  while session resolves, redirect to `/login?next=…` for anonymous,
+  inline "Access denied" card for wrong-role with link to user's own
+  dashboard + logout. (7) `app/dashboard/researcher/layout.tsx` and
+  `app/dashboard/organization/layout.tsx` wrap their respective dashboards
+  in the gate without touching the page bodies. (8) `Navigation`
+  rewritten as auth-aware: anonymous → Login button + dashboard dropdown
+  shows both views (each leading to /login on click); authenticated →
+  user pill (initials avatar + name + role) with My-dashboard / Logout
+  dropdown, primary nav shows only "My dashboard" link to the user's
+  role. (9) Dictionary extended with login + role + access-denied keys
+  in both EN and AZ. (10) `DATABASE_PLAN.md` written: 6-table Postgres
+  schema (users, researchers, organizations, programs, reports,
+  sessions), CHECK constraints, RBAC rules, sample seed for the two
+  demo accounts, migration checklist, and explicit security notes.
+- **Why:** The user asked to start preparing for a small test database
+  setup with one researcher + one organization, and to add a login page
+  with role-based dashboard separation. The mock auth is the smallest
+  thing that demonstrates the separation end-to-end without standing up
+  a real backend; the `DATABASE_PLAN.md` documents the path from this
+  demo to a real backend so the next iteration starts informed.
+- **Files touched:** added `lib/auth/mock-users.ts`,
+  `lib/auth/auth-provider.tsx`, `app/login/page.tsx`,
+  `components/role-gate.tsx`, `app/dashboard/researcher/layout.tsx`,
+  `app/dashboard/organization/layout.tsx`, `DATABASE_PLAN.md`. Modified
+  `lib/types.ts`, `lib/i18n/dictionary.ts`, `app/layout.tsx`,
+  `components/navigation.tsx`, `MEMORY.md`, `CLAUDE.md`. No existing
+  dashboard page bodies were changed — gating happens via the new
+  route-segment layouts.
+- **Verification:** `pnpm build` succeeds, all 9 routes prerender
+  (including `/login`). `pnpm exec tsc --noEmit` runs clean (0 errors).
+  Browser verification of the actual login flow + cross-role redirect
+  behavior + logout behavior still needs a manual `pnpm dev` pass.
+- **Next step:** spot-check the auth flow end-to-end in a browser (log in
+  as each demo account, verify cross-role access denied, log out, verify
+  redirect to /login). When real backend work begins, follow the
+  migration checklist in `DATABASE_PLAN.md > section 5`.
 
 ### 2026‑04‑26 — i18n (EN/AZ) + Azerbaijani‑citizens‑only positioning
 
@@ -411,19 +501,21 @@ To be implemented after the hackathon, in roughly this order:
 
 In priority order. Each item is intentionally small and reversible.
 
-1. **Tighten the empty/loading states.** Programs directory has a clear empty
-   state already; add similar treatment to dashboards if any list ends up
-   empty after future filtering. Add skeleton placeholders for charts on
-   first paint.
-2. **Add a global "Demo data" disclaimer banner (optional).** A thin
-   dismissible top strip that's transparent about the demo status, so judges
-   see it once and we can drop the inline "Demo Data" pills inside content.
-3. **Tighten the report submission modal copy.** Several labels are still
-   placeholder‑grade. Could use a quick copy pass.
-4. **Build out the Hall of Fame section per program.** Currently shows top‑3
-   only; the program detail page could surface more researchers and link out
-   to per‑researcher profile pages (which don't exist yet — would need a new
-   route).
-5. **Add a small `/api/health` placeholder route** so future backend wiring
-   has an obvious entry point. (Frontend‑only constraint still applies — the
-   route returns a static JSON.)
+1. **Manually spot-check the auth flow.** Visit `/login`, sign in as each
+   demo account, verify the right dashboard renders, try to access the
+   other dashboard URL directly and confirm the access-denied card shows,
+   log out and confirm redirect to `/login`.
+2. **Hook the report submission modal to the current researcher.** The
+   modal currently writes to nothing; once we want a real persisted demo,
+   the natural seam is `useAuth().session.researcherId` → keep state in a
+   client `localStorage` table to mirror the researcher's "own" reports.
+3. **Optional small polish:** the researcher dashboard greeting still
+   reads `currentResearcher = researchers[0]` directly — switch it to
+   look up by `useAuth().session.researcherId` so the greeting follows
+   the session.
+4. **Tighten empty/loading states across dashboards** (already on the
+   list pre-auth-pass). Add skeletons for first paint, especially while
+   `RoleGate` is in `'loading'`.
+5. **When backend work starts:** follow the migration checklist in
+   `DATABASE_PLAN.md > section 5`. The session shape exposed by
+   `useAuth()` is the public seam — keep it stable so pages don't churn.

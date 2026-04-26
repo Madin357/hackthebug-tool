@@ -44,9 +44,15 @@ const en: Dict = {
   'nav.dashboard.researcher': 'Researcher View',
   'nav.dashboard.organization': 'Organization View',
   'nav.cta.launchDemo': 'Launch Demo',
+  'nav.cta.login': 'Log in',
+  'nav.cta.logout': 'Log out',
+  'nav.user.myDashboard': 'My dashboard',
+  'nav.user.signedInAs': 'Signed in as',
   'nav.verificationPill': 'AZ citizens only · Verification soon',
   'nav.lang.label': 'Language',
   'nav.lang.short': 'Lang',
+  'role.researcher': 'Researcher',
+  'role.organization': 'Organization',
 
   // ─── Footer
   'footer.platform': 'Platform',
@@ -555,6 +561,46 @@ const en: Dict = {
   'report.success.body':
     'Thank you for your submission. This is a demo, so no actual report was created. In production, you would receive a confirmation email and tracking ID.',
   'report.success.idLabel': 'Demo Report ID',
+
+  // ─── Login page
+  'login.badge.demo': 'Demo authentication',
+  'login.title': 'Log in to HackTheBug',
+  'login.subtitle':
+    'Use one of the demo accounts below to explore the researcher or organization side of the platform. Real SİMA-backed sign-in arrives at launch.',
+  'login.email.label': 'Email',
+  'login.email.placeholder': 'you@hackthebug.demo',
+  'login.password.label': 'Password',
+  'login.password.placeholder': '••••••••',
+  'login.submit': 'Log in',
+  'login.submitting': 'Signing in...',
+  'login.error.missingFields':
+    'Please enter both email and password.',
+  'login.error.invalidEmail': 'Please enter a valid email address.',
+  'login.error.invalidCredentials':
+    'Wrong email or password. Try one of the demo accounts on the right.',
+  'login.demo.title': 'Demo accounts',
+  'login.demo.subtitle':
+    'Click a card to fill the form, then submit.',
+  'login.demo.researcher.role': 'Researcher',
+  'login.demo.researcher.body':
+    'Browses programs, submits reports, sees their own stats and rewards.',
+  'login.demo.organization.role': 'Organization',
+  'login.demo.organization.body':
+    'Triages incoming reports, monitors program performance, manages scope.',
+  'login.demo.useThis': 'Use this account',
+  'login.demoNote':
+    'Demo / mock authentication only — credentials are stored locally in your browser. Real backend auth, password hashing, and SİMA verification land later.',
+  'login.alreadySignedIn': 'You are already signed in as {role}.',
+  'login.goToDashboard': 'Go to my dashboard',
+
+  // ─── Access denied / role gate
+  'roleGate.checking': 'Checking your session...',
+  'roleGate.denied.title': 'Access denied',
+  'roleGate.denied.body':
+    'This dashboard is for {requiredRole} accounts only. You are signed in as {currentRole}.',
+  'roleGate.denied.goToMine': 'Go to my dashboard',
+  'roleGate.denied.logout': 'Log out',
+  'roleGate.redirecting': 'Redirecting to log in...',
 }
 
 // ─── Azerbaijani translation ───────────────────────────────────────────────
@@ -595,10 +641,16 @@ const az: Dict = {
   'nav.dashboard.researcher': 'Tədqiqatçı görünüşü',
   'nav.dashboard.organization': 'Təşkilat görünüşü',
   'nav.cta.launchDemo': 'Demonu başlat',
+  'nav.cta.login': 'Daxil ol',
+  'nav.cta.logout': 'Çıxış et',
+  'nav.user.myDashboard': 'Mənim panelim',
+  'nav.user.signedInAs': 'Daxil olub:',
   'nav.verificationPill':
     'Yalnız AZ vətəndaşları · Doğrulama tezliklə',
   'nav.lang.label': 'Dil',
   'nav.lang.short': 'Dil',
+  'role.researcher': 'Tədqiqatçı',
+  'role.organization': 'Təşkilat',
 
   'footer.platform': 'Platforma',
   'footer.resources': 'Resurslar',
@@ -1122,6 +1174,46 @@ const az: Dict = {
   'report.success.body':
     'Göndərmənə görə təşəkkür edirik. Bu, demodur, ona görə real hesabat yaradılmadı. Real istifadədə təsdiq e-poçtu və izləmə nömrəsi alacaqsan.',
   'report.success.idLabel': 'Demo hesabat ID',
+
+  // ─── Login page
+  'login.badge.demo': 'Demo doğrulama',
+  'login.title': 'HackTheBug-a daxil ol',
+  'login.subtitle':
+    'Tədqiqatçı və ya təşkilat tərəfini araşdırmaq üçün aşağıdakı demo hesablarından birini istifadə et. Real SİMA ilə daxil olma buraxılışda gələcək.',
+  'login.email.label': 'E-poçt',
+  'login.email.placeholder': 'sen@hackthebug.demo',
+  'login.password.label': 'Şifrə',
+  'login.password.placeholder': '••••••••',
+  'login.submit': 'Daxil ol',
+  'login.submitting': 'Daxil olunur...',
+  'login.error.missingFields':
+    'Zəhmət olmasa həm e-poçt, həm də şifrəni daxil et.',
+  'login.error.invalidEmail': 'Düzgün e-poçt ünvanı daxil et.',
+  'login.error.invalidCredentials':
+    'E-poçt və ya şifrə yanlışdır. Sağdakı demo hesablarından birini sına.',
+  'login.demo.title': 'Demo hesablar',
+  'login.demo.subtitle':
+    'Formanı doldurmaq üçün karta klikə, sonra göndər.',
+  'login.demo.researcher.role': 'Tədqiqatçı',
+  'login.demo.researcher.body':
+    'Proqramlara baxır, hesabat göndərir, öz statistika və mükafatlarını görür.',
+  'login.demo.organization.role': 'Təşkilat',
+  'login.demo.organization.body':
+    'Gələn hesabatları yoxlayır, proqramın gedişatını izləyir, sahəni idarə edir.',
+  'login.demo.useThis': 'Bu hesabı istifadə et',
+  'login.demoNote':
+    'Yalnız demo / mock doğrulama — məlumatlar brauzerində lokal saxlanılır. Real backend doğrulaması, şifrə hashı və SİMA doğrulaması sonra gələcək.',
+  'login.alreadySignedIn': '{role} kimi artıq daxil olmusan.',
+  'login.goToDashboard': 'Panelimə keç',
+
+  // ─── Access denied / role gate
+  'roleGate.checking': 'Sessiyan yoxlanılır...',
+  'roleGate.denied.title': 'Giriş qadağandır',
+  'roleGate.denied.body':
+    'Bu panel yalnız {requiredRole} hesabları üçündür. Sən {currentRole} kimi daxil olmusan.',
+  'roleGate.denied.goToMine': 'Öz panelimə keç',
+  'roleGate.denied.logout': 'Çıxış et',
+  'roleGate.redirecting': 'Daxil olma səhifəsinə yönləndirilirsən...',
 }
 
 const dictionaries: Record<Locale, Dict> = { en, az }

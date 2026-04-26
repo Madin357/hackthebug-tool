@@ -12,12 +12,16 @@ This repo is **Hack The Bug**, a frontend‑only Next.js demo of a bug bounty /
 responsible disclosure platform built **exclusively for citizens of the
 Republic of Azerbaijan**. The goal of the current iteration is a polished,
 premium hackathon demo — not a production app. There is no backend, no
-database, no real auth, no real payments, **no real SİMA / identity
-verification (it is planned, not active)**. Everything is mocked locally in
+database, no real payments, **no real SİMA / identity verification (it is
+planned, not active)**. The only "auth" is a deliberate mock in `lib/auth/`
+with two demo accounts (researcher + organization) that drives role-based
+dashboard separation via `RoleGate`; the session lives in `localStorage` and
+is **not a security boundary**. Everything else is mocked locally in
 `lib/mock-data.ts`. The UI is bilingual (English + Azerbaijani) via a small
 local dictionary in `lib/i18n/`; the user toggles language from the navigation
 bar and the choice is stored in `localStorage`. See `MEMORY.md` for the full
-picture, the known issues list, and the recommended improvement order.
+picture and `DATABASE_PLAN.md` for the planned schema once a real backend
+lands.
 
 ## 2. Coding rules
 
@@ -91,6 +95,31 @@ decision and every line of copy should be defensible against that bar.
   AzCloud One, SilkRoute Pay, Karabug Telecom; CyberNomad, BugSlayer_AZ,
   etc.) are the canonical set.
 
+### Auth and role separation rules (non-negotiable)
+
+- **Mock auth is temporary.** `lib/auth/*` exists only to demo role
+  separation. Don't write any feature that *depends* on it being secure.
+  Don't pretend it's real — labels like "Demo authentication", "Demo /
+  mock authentication only", and the demo-credentials card on `/login`
+  must remain.
+- **Researcher and organization dashboards must remain separate.** A
+  researcher must never see organization data; an organization must never
+  see researcher-only data. When adding a new protected page:
+  - Decide which role(s) it belongs to.
+  - Place it under `app/dashboard/<role>/…` so the existing
+    route-segment `layout.tsx` (which wraps it in `RoleGate(role)`)
+    automatically protects it. Or, if it lives elsewhere, wrap its top
+    element in `<RoleGate role="…">` directly.
+  - Keep the navigation honest — the `Navigation` component already hides
+    the wrong dashboard's link when authenticated; if you add a new
+    protected route, mirror that pattern.
+- **Never claim auth or verification is real.** Don't add copy that says
+  "verified user", "you are signed in securely", "your account is
+  protected", etc. The current model is a demo, and SİMA verification is
+  still planned (see Verification rule above).
+- **Don't add real auth libraries** (NextAuth, Clerk, Supabase Auth) in
+  this iteration. The migration path lives in `DATABASE_PLAN.md > section 5`.
+
 - **Dark theme only** — `app/globals.css` is the source of truth. The light
   block in that file exists only because Tailwind expects `:root` defaults; the
   dark block is what actually renders (the layout forces `class="dark"`). Don't
@@ -125,9 +154,14 @@ them, don't sketch them in code, don't add stub files for them.
 - ❌ Real backend (no API routes that call external services, no server
   actions that mutate persisted state).
 - ❌ Real database (no Prisma/Drizzle/Supabase/Postgres wiring).
-- ❌ Real authentication (no NextAuth/Clerk/Auth.js/Supabase Auth).
-- ❌ Real registration flow (the "Sign up" / "Launch Demo" CTAs stay
-  decorative).
+- ❌ Real authentication libraries (no NextAuth/Clerk/Auth.js/Supabase
+  Auth). The current `lib/auth/*` mock with a `localStorage` session is
+  the entire auth surface for this iteration. Real auth, password hashing,
+  session cookies, and SİMA verification land in the backend phase
+  (see `DATABASE_PLAN.md`).
+- ❌ Real registration flow (the demo accounts in
+  `lib/auth/mock-users.ts` are the only logins; "Sign up" CTAs, if added,
+  stay decorative).
 - ❌ Real payments (Stripe/PayPal/etc.).
 - ❌ Real SİMA / e‑imza / digital identity integration.
 - ❌ Real email/SMS notifications.
@@ -249,6 +283,12 @@ Before you call a task done:
 - [ ] **Does any new copy avoid global/multi‑country framing? Does any
       mention of verification clearly say it's planned/coming‑soon/demo
       and never live?**
+- [ ] **If you added a protected page, is it under `app/dashboard/<role>/`
+      OR explicitly wrapped in `<RoleGate role="…">`? Did you check that
+      the navigation doesn't surface it to the wrong role?**
+- [ ] **Did you avoid leaning on the mock auth's "security" — i.e., no
+      copy that says the user is verified/secure, no logic that assumes
+      `localStorage` can't be tampered with?**
 - [ ] Did you verify in the browser (or explicitly note that you couldn't)?
       In particular, does AZ text not break layout at `≤640px` width on the
       affected route?

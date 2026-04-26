@@ -3,6 +3,35 @@ export type ProgramType = 'bug-bounty' | 'vdp' | 'private-preview'
 export type Severity = 'critical' | 'high' | 'medium' | 'low' | 'informational'
 export type ReportStatus = 'draft' | 'pending' | 'triaged' | 'resolved' | 'rewarded' | 'duplicate' | 'invalid'
 
+export type UserRole = 'researcher' | 'organization'
+
+export interface Organization {
+  id: string
+  slug: string
+  name: string
+  industry: string
+}
+
+export interface User {
+  id: string
+  email: string
+  role: UserRole
+  displayName: string
+  // Linked records depending on role. At most one of these is set.
+  researcherId?: string
+  organizationId?: string
+}
+
+export interface Session {
+  userId: string
+  email: string
+  role: UserRole
+  displayName: string
+  researcherId?: string
+  organizationId?: string
+  issuedAt: string
+}
+
 export interface Program {
   id: string
   name: string
