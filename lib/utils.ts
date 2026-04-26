@@ -51,3 +51,18 @@ export function slugify(input: string): string {
     .replace(/^-+|-+$/g, '')
     .slice(0, 64)
 }
+
+/**
+ * Build a flag emoji from an ISO 3166-1 alpha-2 country code by mapping each
+ * letter to the corresponding Unicode regional indicator symbol. Returns an
+ * empty string for inputs that aren't exactly two ASCII letters so callers
+ * can render unconditionally without leaking placeholder glyphs.
+ */
+export function flagEmoji(countryCode: string | null | undefined): string {
+  if (!countryCode || !/^[A-Za-z]{2}$/.test(countryCode)) return ''
+  const upper = countryCode.toUpperCase()
+  return String.fromCodePoint(
+    0x1f1e6 + upper.charCodeAt(0) - 65,
+    0x1f1e6 + upper.charCodeAt(1) - 65,
+  )
+}

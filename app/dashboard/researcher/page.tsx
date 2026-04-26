@@ -62,6 +62,7 @@ import {
   useResearcherReports,
 } from '@/lib/data/hooks'
 import { useSavedProgramIds } from '@/lib/data/saved-programs'
+import { chartTooltipProps } from '@/lib/charts/tooltip'
 import { toast } from 'sonner'
 
 const badgeMeta = [
@@ -231,14 +232,7 @@ export default function ResearcherDashboardPage() {
                       className="text-xs fill-muted-foreground"
                     />
                     <YAxis className="text-xs fill-muted-foreground" />
-                    <Tooltip
-                      contentStyle={{
-                        backgroundColor: 'var(--card)',
-                        border: '1px solid var(--border)',
-                        borderRadius: '8px',
-                      }}
-                      labelStyle={{ color: 'var(--foreground)' }}
-                    />
+                    <Tooltip {...chartTooltipProps} />
                     <Bar
                       dataKey="reports"
                       fill="var(--primary)"
@@ -286,13 +280,7 @@ export default function ResearcherDashboardPage() {
                             <Cell key={entry.severity} fill={entry.fill} />
                           ))}
                       </Pie>
-                      <Tooltip
-                        contentStyle={{
-                          backgroundColor: 'var(--card)',
-                          border: '1px solid var(--border)',
-                          borderRadius: '8px',
-                        }}
-                      />
+                      <Tooltip {...chartTooltipProps} />
                     </PieChart>
                   </ResponsiveContainer>
                   <div className="flex flex-wrap justify-center gap-3 mt-4">

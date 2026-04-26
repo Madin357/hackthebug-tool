@@ -22,7 +22,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { LocaleSwitcher } from '@/components/locale-switcher'
+import { SettingsMenu } from '@/components/settings-menu'
 import { useT } from '@/lib/i18n/locale-provider'
 import { useAuth, dashboardPathForRole } from '@/lib/auth/auth-provider'
 import { cn } from '@/lib/utils'
@@ -140,7 +140,7 @@ export function Navigation() {
 
           {/* Right Side Actions */}
           <div className="hidden md:flex items-center gap-3">
-            <LocaleSwitcher />
+            <SettingsMenu />
             {isAuthed ? (
               <UserMenu
                 displayName={session.displayName}
@@ -221,7 +221,7 @@ export function Navigation() {
                 ))}
               </div>
               <div className="pt-4 space-y-3">
-                <LocaleSwitcher variant="block" />
+                <SettingsMenu variant="block" />
                 {isAuthed ? (
                   <div className="space-y-2">
                     <div className="flex items-center gap-3 rounded-lg border border-border bg-card/50 px-3 py-2">

@@ -88,6 +88,12 @@ and `DATABASE_PLAN.md` for the schema reference.
   must be scoped to the current researcher's `researcher_id`; org
   charts must be scoped to programs whose `organization_id` matches
   the current org session.
+- **Every recharts `<Tooltip />` must spread `chartTooltipProps`**
+  from `lib/charts/tooltip.ts`. Recharts colors each item line in
+  the bar/line/cell's own fill by default — that becomes invisible
+  on the dark card for low-luminance hues like critical-red. The
+  shared helper forces tooltip text to `--popover-foreground`
+  while keeping the leading dot in the series color.
 - **Toasts:** use `import { toast } from 'sonner'` from any client
   component. The `<Toaster>` is mounted once in `app/layout.tsx`.
   Use `toast.success` for successful state-changing actions
@@ -207,10 +213,21 @@ decision and every line of copy should be defensible against that bar.
 - **Don't add real auth libraries** (NextAuth, Clerk, Supabase Auth) in
   this iteration. The migration path lives in `DATABASE_PLAN.md > section 5`.
 
-- **Dark theme only** — `app/globals.css` is the source of truth. The light
-  block in that file exists only because Tailwind expects `:root` defaults; the
-  dark block is what actually renders (the layout forces `class="dark"`). Don't
-  add a "light mode" right now.
+- **Light + Dark + System are now supported** via `next-themes`
+  (mounted in `app/layout.tsx`). `:root` carries real light tokens;
+  `.dark` carries the dark tokens. Default is Dark; users pick from
+  the Settings menu. Don't hard-code `dark:` overrides on individual
+  components when a token already covers both themes — adjust the
+  token instead so both modes stay aligned.
+- **Accent color is user-selectable** through the Settings menu
+  (`lib/settings/accent-provider.tsx` writes `--primary`,
+  `--primary-foreground`, `--ring`, `--sidebar-primary*` on
+  `<html>`). New components must reference `var(--primary)` /
+  `var(--ring)` / Tailwind utilities like `bg-primary` and
+  `ring-primary` — never hard-code a cyan hex. Glow effects must
+  use `color-mix(in oklch, var(--primary) X%, transparent)` so they
+  follow the accent. The brand wordmark (`.gradient-text`) is the
+  one exception — it's locked to `--brand-cyan` / `--brand-violet`.
 - **Use design tokens, not raw colors.** `bg-card`, `text-muted-foreground`,
   `border-border`, `text-primary`, `text-warning`, `text-critical`, etc. If you
   need a new semantic color, add it to the token block.

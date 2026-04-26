@@ -19,7 +19,6 @@ import {
   Trophy,
   Medal,
   Bug,
-  DollarSign,
   TrendingUp,
   Shield,
   Zap,
@@ -27,7 +26,7 @@ import {
   Target,
 } from 'lucide-react'
 import { useT } from '@/lib/i18n/locale-provider'
-import { formatAZN } from '@/lib/utils'
+import { flagEmoji, formatAZN } from '@/lib/utils'
 import { useResearchers } from '@/lib/data/hooks'
 
 const timeframeKeys = [
@@ -164,8 +163,13 @@ export default function LeaderboardPage() {
                 <h3 className="text-xl font-bold text-foreground mb-1">
                   {topThree[1]?.name}
                 </h3>
-                <p className="text-sm text-muted-foreground mb-4">
-                  {topThree[1]?.country}
+                <p className="text-sm text-muted-foreground mb-4 flex items-center justify-center gap-1.5">
+                  <span>{topThree[1]?.country}</span>
+                  {topThree[1]?.countryCode && (
+                    <span aria-hidden className="text-base leading-none">
+                      {flagEmoji(topThree[1].countryCode)}
+                    </span>
+                  )}
                 </p>
                 <div className="grid grid-cols-2 gap-4 text-sm">
                   <div>
@@ -209,8 +213,13 @@ export default function LeaderboardPage() {
                 <h3 className="text-2xl font-bold text-foreground mb-1">
                   {topThree[0]?.name}
                 </h3>
-                <p className="text-sm text-muted-foreground mb-4">
-                  {topThree[0]?.country}
+                <p className="text-sm text-muted-foreground mb-4 flex items-center justify-center gap-1.5">
+                  <span>{topThree[0]?.country}</span>
+                  {topThree[0]?.countryCode && (
+                    <span aria-hidden className="text-base leading-none">
+                      {flagEmoji(topThree[0].countryCode)}
+                    </span>
+                  )}
                 </p>
                 <div className="grid grid-cols-2 gap-4 text-sm mb-4">
                   <div>
@@ -256,8 +265,13 @@ export default function LeaderboardPage() {
                 <h3 className="text-xl font-bold text-foreground mb-1">
                   {topThree[2]?.name}
                 </h3>
-                <p className="text-sm text-muted-foreground mb-4">
-                  {topThree[2]?.country}
+                <p className="text-sm text-muted-foreground mb-4 flex items-center justify-center gap-1.5">
+                  <span>{topThree[2]?.country}</span>
+                  {topThree[2]?.countryCode && (
+                    <span aria-hidden className="text-base leading-none">
+                      {flagEmoji(topThree[2].countryCode)}
+                    </span>
+                  )}
                 </p>
                 <div className="grid grid-cols-2 gap-4 text-sm">
                   <div>
@@ -354,7 +368,14 @@ export default function LeaderboardPage() {
                             </div>
                           </td>
                           <td className="p-4 hidden md:table-cell text-muted-foreground">
-                            {researcher.country}
+                            <span className="inline-flex items-center gap-1.5">
+                              <span>{researcher.country}</span>
+                              {researcher.countryCode && (
+                                <span aria-hidden className="text-base leading-none">
+                                  {flagEmoji(researcher.countryCode)}
+                                </span>
+                              )}
+                            </span>
                           </td>
                           <td className="p-4 text-right">
                             <div className="flex items-center justify-end gap-2">
@@ -374,7 +395,12 @@ export default function LeaderboardPage() {
                           </td>
                           <td className="p-4 text-right hidden lg:table-cell">
                             <div className="flex items-center justify-end gap-2">
-                              <DollarSign className="h-4 w-4 text-primary" />
+                              <span
+                                aria-hidden
+                                className="text-base font-semibold leading-none text-primary"
+                              >
+                                ₼
+                              </span>
                               <span className="font-medium text-foreground">
                                 {formatAZN(researcher.totalRewards)}
                               </span>
@@ -407,7 +433,12 @@ export default function LeaderboardPage() {
 
               <Card>
                 <CardContent className="p-6 text-center">
-                  <DollarSign className="h-12 w-12 text-primary mx-auto mb-4" />
+                  <span
+                    aria-hidden
+                    className="block text-5xl font-semibold leading-none text-primary mb-4"
+                  >
+                    ₼
+                  </span>
                   <p className="text-3xl font-bold text-foreground mb-2">
                     {formatAZN(
                       researchers.reduce(

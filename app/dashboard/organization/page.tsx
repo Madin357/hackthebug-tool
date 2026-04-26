@@ -64,6 +64,7 @@ import {
   useResearchers,
 } from '@/lib/data/hooks'
 import { formatAZN, formatAZNRange } from '@/lib/utils'
+import { chartTooltipProps } from '@/lib/charts/tooltip'
 import { toast } from 'sonner'
 
 const activityIcons = {
@@ -257,14 +258,7 @@ export default function OrganizationDashboardPage() {
                       className="text-xs fill-muted-foreground"
                     />
                     <YAxis className="text-xs fill-muted-foreground" />
-                    <Tooltip
-                      contentStyle={{
-                        backgroundColor: 'var(--card)',
-                        border: '1px solid var(--border)',
-                        borderRadius: '8px',
-                      }}
-                      labelStyle={{ color: 'var(--foreground)' }}
-                    />
+                    <Tooltip {...chartTooltipProps} />
                     <Area
                       type="monotone"
                       dataKey="reports"
@@ -323,13 +317,7 @@ export default function OrganizationDashboardPage() {
                             <Cell key={entry.severity} fill={entry.fill} />
                           ))}
                       </Pie>
-                      <Tooltip
-                        contentStyle={{
-                          backgroundColor: 'var(--card)',
-                          border: '1px solid var(--border)',
-                          borderRadius: '8px',
-                        }}
-                      />
+                      <Tooltip {...chartTooltipProps} />
                     </PieChart>
                   </ResponsiveContainer>
                   <div className="flex flex-wrap justify-center gap-3 mt-4">
@@ -392,13 +380,7 @@ export default function OrganizationDashboardPage() {
                       width={90}
                       className="text-xs fill-muted-foreground"
                     />
-                    <Tooltip
-                      contentStyle={{
-                        backgroundColor: 'var(--card)',
-                        border: '1px solid var(--border)',
-                        borderRadius: '8px',
-                      }}
-                    />
+                    <Tooltip {...chartTooltipProps} />
                     <Bar dataKey="count" radius={[0, 4, 4, 0]}>
                       {pipelineData.map((entry) => (
                         <Cell key={entry.stage} fill={entry.fill} />

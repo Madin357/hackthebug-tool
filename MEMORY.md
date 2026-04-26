@@ -152,7 +152,14 @@ None at the moment. The eight pre‑existing defects identified during the
   page work without edits. `RoleGate` enforces dashboard separation
   client-side. **RLS is not enabled yet** — production must turn it on
   (policy scaffolding lives at the bottom of the SQL seed).
-- **Theming:** `next-themes` installed but unused; dark mode is hard‑coded.
+- **Theming:** `next-themes` is mounted in `app/layout.tsx`
+  (`attribute="class" defaultTheme="dark" enableSystem
+  disableTransitionOnChange`). The Settings menu exposes Light /
+  Dark / System; light tokens live in `:root`, dark tokens live
+  in `.dark`. The `<html>` is no longer hard-coded to `dark`.
+  Accent color is a separate concern — `lib/settings/accent-provider.tsx`
+  overrides `--primary` / `--ring` / `--sidebar-primary*` on
+  `<html>` from `localStorage`.
 - **Analytics:** `@vercel/analytics` (only mounted in production).
 - **Package manager:** both `package-lock.json` and `pnpm-lock.yaml` exist —
   pnpm appears to be the intended choice based on the lockfile size.
@@ -184,9 +191,9 @@ hackthebug-tool/
 │           └── page.tsx          # Org view: stats, trend chart, severity, pipeline,
 │                                 #   recent reports, top assets, activity, top hackers
 ├── components/
-│   ├── navigation.tsx            # Sticky glass header + LocaleSwitcher + auth-aware user menu / Login button
+│   ├── navigation.tsx            # Sticky glass header + SettingsMenu + auth-aware user menu / Login button
 │   ├── footer.tsx                # 4‑column footer with brand + links + AZ‑only badge
-│   ├── locale-switcher.tsx       # EN/AZ toggle (used in nav)
+│   ├── settings-menu.tsx         # Gear-icon header menu: Language + Theme + Accent
 │   ├── role-gate.tsx             # Client-side gate: loading / unauthenticated / wrong-role / pass-through
 │   ├── program-card.tsx          # Reusable program card (used on home + directory)
 │   ├── section-heading.tsx       # Reusable badge + h2 + subtitle block
@@ -208,6 +215,10 @@ hackthebug-tool/
 │   ├── auth/
 │   │   ├── mock-users.ts         # `demoCredentials` constants for /login display only
 │   │   └── auth-provider.tsx     # Supabase Auth-backed; same useAuth surface as before
+│   ├── settings/
+│   │   └── accent-provider.tsx   # localStorage-backed accent color, overrides --primary / --ring on <html>
+│   ├── charts/
+│   │   └── tooltip.ts            # chartTooltipProps — shared recharts <Tooltip /> styling
 │   ├── supabase/
 │   │   ├── env.ts                # Reads NEXT_PUBLIC_SUPABASE_URL + anon key (multi-name fallback)
 │   │   ├── client.ts             # Singleton browser client (createBrowserClient)
@@ -265,7 +276,7 @@ hackthebug-tool/
 | -------------------------------- | ---------------------------------------------------------------------------------------- |
 | `Navigation`                     | Sticky glass top bar, brand mark, primary nav (Home/Programs/Leaderboard/About), auth-aware Dashboard surface (anonymous: dropdown of both views; signed-in: single "My dashboard" link to the user's role), "AZ citizens only · Verification soon" pill, EN/AZ `LocaleSwitcher`, **Login button when anonymous / user pill with My dashboard + Logout when authenticated**, animated mobile drawer mirroring the same. |
 | `Footer`                         | 4‑column footer: brand + AZ‑citizens‑only badge + social, Platform links, Resources links, Legal links, "Hackathon Demo" tag. |
-| `LocaleSwitcher`                 | EN/AZ toggle group; toggles `useLocale().setLocale`, persists to `localStorage` (`htb-locale`). Used in Navigation desktop bar + mobile drawer. |
+| `SettingsMenu`                   | Gear-icon dropdown in the header (and a full-width "block" variant in the mobile drawer). Three sections: Language (EN / AZ pill toggles), Theme (Light / Dark / System via `next-themes`), Accent color (six circular swatches: Cyan / Purple / Blue / Red / Emerald / Amber). All three persist to `localStorage` (`htb-locale`, `next-themes` default key, `htb-accent`). Replaced the standalone `LocaleSwitcher`. |
 | `RoleGate`                       | Client wrapper for protected pages. Shows a loader while `useAuth()` resolves, redirects unauthenticated users to `/login?next=…`, shows an inline "Access denied" card with link to the user's own dashboard + logout when the role doesn't match. |
 | `FormattedDate`                  | Renders `en-US` on the server + first client paint, then swaps to the user's locale after mount. Use this anywhere a locale-aware date is shown — formatting `az-AZ` directly during SSR causes a hydration mismatch because Node.js Intl falls back to `M04 20` while the browser produces `20 apr`. |
 | `ProgramCard`                    | Animated card showing org icon, name, status, type/industry/tags, rewards range, asset count, last updated, "View Program" CTA, featured ribbon. Used on home and `/programs`. |
@@ -425,6 +436,122 @@ To be implemented after the hackathon, in roughly this order:
   and the `LOCALES` array.
 
 ## Last Actions
+
+### 2026‑04‑26 — Country flag emoji on the leaderboard
+
+- **What:** Added a small country flag next to each researcher's
+  country on `/leaderboard`. The new `flagEmoji(countryCode)` helper
+  in `lib/utils.ts` maps a 2-letter ISO code to its Unicode regional
+  indicator pair (e.g. `AZ` → 🇦🇿). It returns `''` for invalid
+  inputs so callers can render unconditionally. Wired into the three
+  podium cards and the rankings table row in `app/leaderboard/page.tsx`
+  — the country line now reads `Azerbaijan 🇦🇿` (with a `flex
+  items-center justify-center gap-1.5` wrapper so podium spacing
+  stays even).
+- **Why:** Pure polish — Azerbaijan-only branding feels more
+  national-platform with the flag inline. The helper is generic so
+  if a future iteration ever shows multi-country data (e.g. the
+  organization-side researcher list, which already renders
+  `researcher.countryCode` as a Badge), it can reuse the same util.
+- **Files touched:**
+  - `lib/utils.ts` (added `flagEmoji()`)
+  - `app/leaderboard/page.tsx` (4 country render spots updated)
+- **Next step:** None required. If the user likes it on the
+  leaderboard, mirror the same helper into the org dashboard's
+  researcher chips for consistency.
+
+### 2026‑04‑26 — Contrast pass + Settings menu (theme & accent)
+
+- **What:** (1) Fixed low-contrast text across the UI:
+  - **Recharts tooltips** — every chart now spreads
+    `chartTooltipProps` from the new `lib/charts/tooltip.ts`.
+    The helper forces `itemStyle.color` and `labelStyle.color` to
+    `var(--popover-foreground)` so the per-item text (e.g.
+    "Critical: 1") is no longer painted in the bar's own dark
+    fill on top of a dark card. Tooltip background switched to
+    `--popover` + boxShadow for proper layering.
+  - **Button `outline` and `ghost` variants** in
+    `components/ui/button.tsx` now explicitly carry
+    `text-foreground` so the text colour can't fall through to
+    a parent's `text-muted-foreground`. Fixes the "Proqrama bax"
+    program-card CTA being barely visible on the card.
+  - **`--muted-foreground` in dark mode** bumped from
+    `oklch(0.65 …)` to `oklch(0.72 …)` for clearer secondary
+    copy. Dark `--chart-3/4/5` lightened slightly so chart
+    cells read better at small sizes.
+- **Settings menu (replaces the standalone language switcher):**
+  new `components/settings-menu.tsx` — a gear-icon button that
+  opens a DropdownMenu with three sections:
+  - **Language** — EN / Azərbaycan as labelled pill toggles.
+  - **Theme** — Light / Dark / System; wired through
+    `next-themes` (`<ThemeProvider attribute="class"
+    defaultTheme="dark" enableSystem disableTransitionOnChange>`
+    is now mounted in `app/layout.tsx`). The forced `dark` on
+    `<html>` was removed; `:root` got real light tokens so
+    Light mode actually renders light. `disableTransitionOnChange`
+    avoids the CSS-variable flash during swap.
+  - **Accent color** — circular swatches (Cyan / Purple / Blue /
+    Red / Emerald / Amber). Selecting one writes
+    `--primary` / `--primary-foreground` / `--ring` /
+    `--sidebar-primary*` on `<html>`, persisted to
+    `localStorage` under `htb-accent`. Accent affects: every
+    primary CTA, focus rings, the `.glow-cyan` shadow (now
+    `color-mix(in oklch, var(--primary) 30%, transparent)`),
+    bookmarked-state border, and selected pills.
+  - The `.gradient-text` brand wordmark stays cyan→violet
+    (locked via `--brand-cyan` / `--brand-violet`) regardless
+    of the accent.
+- **AccentProvider:** `lib/settings/accent-provider.tsx` —
+  hydration-safe (writes CSS variables only inside a `useEffect`,
+  no SSR markup difference). Exposes `useAccent()` returning
+  `{ accent, setAccent, accents }`.
+- **Removed:** `components/locale-switcher.tsx` (replaced by
+  Settings menu in both desktop nav and mobile drawer).
+- **Why:** The user reported (a) several spots where text
+  vanished on dark backgrounds — most visibly the program-card
+  outline button and recharts tooltip items — and (b) wanted
+  language selection moved into a proper Settings menu with
+  theme + accent options. Both fixes are scoped to
+  primitives + globals so the change ripples to every page
+  without per-page edits.
+- **Files touched:** added `lib/charts/tooltip.ts`,
+  `lib/settings/accent-provider.tsx`,
+  `components/settings-menu.tsx`. Modified
+  `components/ui/button.tsx`, `components/navigation.tsx`,
+  `app/layout.tsx`, `app/globals.css`,
+  `app/dashboard/researcher/page.tsx`,
+  `app/dashboard/organization/page.tsx`,
+  `lib/i18n/dictionary.ts`, `MEMORY.md`, `CLAUDE.md`.
+  Removed `components/locale-switcher.tsx`.
+- **Verification:** `npm run build` succeeds, all 11 routes
+  prerender. Recommended browser pass:
+  1. Open the gear icon in the header → switch to Light mode →
+     pages should render with light tokens (cards become white,
+     text dark). Switch back to Dark.
+  2. Pick a different accent (e.g. Purple) — every primary
+     button, "Find Programs" CTA, focus ring, and hero glow
+     should shift hue. The brand wordmark stays cyan→violet.
+  3. Hover any chart → tooltip background is a slightly
+     elevated dark card; "Critical: 1" / "Reports: N" text is
+     light and readable; the colored dot still indicates the
+     series.
+  4. Visit `/programs` and look at the program cards — the
+     "View Program" / "Proqrama bax" CTA reads clearly in the
+     base state and inverts cleanly on hover.
+  5. Resize to mobile, open the burger drawer — the Settings
+     menu trigger appears as a full-width "Settings" button
+     instead of the icon-only header form.
+- **Limitations / next steps:**
+  - Light mode is functional but not polished — `.glass` and a
+    handful of hardcoded `bg-card/50` backgrounds were chosen
+    for the dark palette; a future polish pass could tune them
+    for light. Adequate for the demo.
+  - Accent doesn't override `--accent` (the violet) — that's
+    intentional so the gradient text + accent-tinted cards
+    keep the brand pairing. If desired, expose a "secondary
+    accent" picker later.
+  - The picker doesn't yet announce the change via toast; the
+    visual update is immediate so it's not strictly needed.
 
 ### 2026‑04‑26 — Live charts everywhere, role‑aware buttons, toasts
 
