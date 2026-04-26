@@ -667,6 +667,7 @@ export default function ProgramDetailPage({
       <ReportSubmissionModal
         open={isReportModalOpen}
         onOpenChange={setIsReportModalOpen}
+        programId={program.id}
         programName={program.name}
         programAssets={program.inScope.map((s) => s.target)}
       />

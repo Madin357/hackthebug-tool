@@ -550,13 +550,26 @@ const en: Dict = {
   'report.agree.body':
     'I have tested responsibly, followed the scope guidelines, and have not accessed unauthorized data.',
   'report.demo.notice':
-    'This is a demo submission. No actual report will be created. Real submission requires SİMA-verified Azerbaijani identity at launch.',
+    'This is a demo platform — at launch, real submissions will require SİMA-verified Azerbaijani identity. Your report will be saved to the demo database for the receiving organization to review.',
   'report.actions.submit': 'Submit Report',
   'report.actions.submitting': 'Submitting...',
   'report.success.title': 'Report Submitted!',
   'report.success.body':
-    'Thank you for your submission. This is a demo, so no actual report was created. In production, you would receive a confirmation email and tracking ID.',
-  'report.success.idLabel': 'Demo Report ID',
+    'Your report has been saved to the demo database. The receiving organization can now review it from their dashboard.',
+  'report.success.idLabel': 'Report ID',
+  'report.signin.required.title': 'Sign in to submit a report',
+  'report.signin.required.body':
+    'You need to be signed in as a researcher to file a vulnerability report against this program.',
+  'report.signin.required.cta': 'Sign in',
+  'report.signin.wrongRole.title': 'Researcher account required',
+  'report.signin.wrongRole.body':
+    'Only researcher accounts can submit reports. Sign in with a researcher account to continue.',
+  'report.signin.wrongRole.cta': 'Switch account',
+  'report.error.title': 'Could not submit your report',
+  'report.error.body':
+    'Something went wrong while saving your report. Please try again.',
+  'report.error.notResearcher':
+    'Only researcher accounts can submit reports.',
 
   // ─── Login page
   'login.badge.demo': 'Demo authentication',
@@ -1269,13 +1282,26 @@ const az: Dict = {
   'report.agree.body':
     'Məsuliyyətlə test apardım, sahə qaydalarına əməl etdim və icazəsiz məlumatlara çıxış əldə etmədim.',
   'report.demo.notice':
-    'Bu demo göndərmədir. Real hesabat yaradılmır. Real göndərmə buraxılışda SİMA ilə doğrulanmış Azərbaycan vətəndaşlığı tələb edəcək.',
+    'Bu demo platformdur — buraxılışda real göndərmə SİMA ilə doğrulanmış Azərbaycan vətəndaşlığı tələb edəcək. Hesabatınız demo verilənlər bazasına saxlanılacaq və qəbul edən təşkilat onu öz panelindən nəzərdən keçirə biləcək.',
   'report.actions.submit': 'Hesabat göndər',
   'report.actions.submitting': 'Göndərilir...',
   'report.success.title': 'Hesabat göndərildi!',
   'report.success.body':
-    'Göndərmənə görə təşəkkür edirik. Bu, demodur, ona görə real hesabat yaradılmadı. Real istifadədə təsdiq e-poçtu və izləmə nömrəsi alacaqsan.',
-  'report.success.idLabel': 'Demo hesabat ID',
+    'Hesabatınız demo verilənlər bazasına saxlanıldı. Qəbul edən təşkilat indi onu öz panelindən nəzərdən keçirə bilər.',
+  'report.success.idLabel': 'Hesabat ID',
+  'report.signin.required.title': 'Hesabat göndərmək üçün daxil ol',
+  'report.signin.required.body':
+    'Bu proqrama qarşı zəiflik hesabatı vermək üçün tədqiqatçı kimi daxil olmalısan.',
+  'report.signin.required.cta': 'Daxil ol',
+  'report.signin.wrongRole.title': 'Tədqiqatçı hesabı tələb olunur',
+  'report.signin.wrongRole.body':
+    'Yalnız tədqiqatçı hesabları hesabat göndərə bilər. Davam etmək üçün tədqiqatçı hesabı ilə daxil ol.',
+  'report.signin.wrongRole.cta': 'Hesabı dəyiş',
+  'report.error.title': 'Hesabat göndərilə bilmədi',
+  'report.error.body':
+    'Hesabat saxlanılarkən nəsə səhv oldu. Yenidən cəhd et.',
+  'report.error.notResearcher':
+    'Yalnız tədqiqatçı hesabları hesabat göndərə bilər.',
 
   // ─── Login page
   'login.badge.demo': 'Demo doğrulama',

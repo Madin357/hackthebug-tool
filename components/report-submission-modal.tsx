@@ -1,8 +1,19 @@
 'use client'
 
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
+import Link from 'next/link'
+import { usePathname } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
-import { CheckCircle, Upload, Info, FileText, X } from 'lucide-react'
+import {
+  CheckCircle,
+  Upload,
+  Info,
+  FileText,
+  X,
+  AlertCircle,
+  LogIn,
+  Loader2,
+} from 'lucide-react'
 import {
   Dialog,
   DialogContent,
@@ -25,11 +36,16 @@ import {
 } from '@/components/ui/select'
 import { weaknessCategories } from '@/lib/mock-data'
 import { useT } from '@/lib/i18n/locale-provider'
+import { useAuth } from '@/lib/auth/auth-provider'
+import { getSupabaseClient } from '@/lib/supabase/client'
+import { createReport } from '@/lib/supabase/queries/reports'
+import type { Severity } from '@/lib/types'
 import { cn } from '@/lib/utils'
 
 interface ReportSubmissionModalProps {
   open: boolean
   onOpenChange: (open: boolean) => void
+  programId: string
   programName: string
   programAssets: string[]
 }
@@ -40,13 +56,21 @@ const stepIds = [1, 2, 3] as const
 export function ReportSubmissionModal({
   open,
   onOpenChange,
+  programId,
   programName,
   programAssets,
 }: ReportSubmissionModalProps) {
   const t = useT()
+  const pathname = usePathname()
+  const { status: authStatus, session } = useAuth()
+  const supabase = useMemo(() => getSupabaseClient(), [])
   const [currentStep, setCurrentStep] = useState(1)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isSubmitted, setIsSubmitted] = useState(false)
+  const [submittedReportId, setSubmittedReportId] = useState<string | null>(
+    null,
+  )
+  const [submitError, setSubmitError] = useState<string | null>(null)
 
   const [formData, setFormData] = useState({
     title: '',
@@ -64,20 +88,57 @@ export function ReportSubmissionModal({
 
   const [attachments, setAttachments] = useState<string[]>([])
 
+  const isResearcher = session?.role === 'researcher'
+  const signInHref = `/login?next=${encodeURIComponent(pathname || '/')}`
+
   const updateFormData = (field: string, value: string | boolean) => {
     setFormData((prev) => ({ ...prev, [field]: value }))
   }
 
   const handleSubmit = async () => {
+    if (!session || session.role !== 'researcher') {
+      setSubmitError(t('report.error.notResearcher'))
+      return
+    }
     setIsSubmitting(true)
-    await new Promise((resolve) => setTimeout(resolve, 2000))
-    setIsSubmitting(false)
-    setIsSubmitted(true)
+    setSubmitError(null)
+    try {
+      const cvssRaw = formData.cvssScore.trim()
+      const cvssParsed = cvssRaw ? Number(cvssRaw) : null
+      const cvssScore =
+        cvssParsed !== null && Number.isFinite(cvssParsed) ? cvssParsed : null
+
+      const report = await createReport(supabase, {
+        programId,
+        researcherId: session.userId,
+        title: formData.title.trim(),
+        severity: formData.severity as Severity,
+        weaknessType: formData.weaknessType || null,
+        asset: formData.asset || null,
+        summary: formData.summary || null,
+        stepsToReproduce: formData.stepsToReproduce || null,
+        proofOfConcept: formData.proofOfConcept || null,
+        impact: formData.impact || null,
+        remediation: formData.remediation || null,
+        cvssScore,
+      })
+      setSubmittedReportId(report.id)
+      setIsSubmitted(true)
+    } catch (err) {
+      // eslint-disable-next-line no-console
+      console.error('[report-submission-modal] createReport failed', err)
+      const message = err instanceof Error ? err.message : String(err)
+      setSubmitError(message || t('report.error.body'))
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   const handleClose = () => {
     setCurrentStep(1)
     setIsSubmitted(false)
+    setSubmittedReportId(null)
+    setSubmitError(null)
     setFormData({
       title: '',
       asset: '',
@@ -133,9 +194,8 @@ export function ReportSubmissionModal({
               <p className="text-sm text-muted-foreground">
                 {t('report.success.idLabel')}
               </p>
-              <p className="font-mono text-foreground">
-                HTB-2026-
-                {Math.random().toString(36).substring(2, 8).toUpperCase()}
+              <p className="font-mono text-foreground break-all">
+                HTB-{(submittedReportId ?? '').slice(0, 8).toUpperCase()}
               </p>
             </div>
             <Badge variant="outline" className="mb-6">
@@ -145,6 +205,35 @@ export function ReportSubmissionModal({
               <Button onClick={handleClose}>{t('common.close')}</Button>
             </div>
           </motion.div>
+        ) : authStatus === 'loading' ? (
+          <div className="p-8 sm:p-12 text-center">
+            <Loader2 className="h-8 w-8 text-primary animate-spin mx-auto mb-3" />
+            <p className="text-sm text-muted-foreground">
+              {t('roleGate.checking')}
+            </p>
+          </div>
+        ) : !session ? (
+          <SignInPrompt
+            t={t}
+            href={signInHref}
+            onClose={handleClose}
+            iconClass="bg-primary/15 text-primary"
+            icon={<LogIn className="h-7 w-7" />}
+            title={t('report.signin.required.title')}
+            body={t('report.signin.required.body')}
+            cta={t('report.signin.required.cta')}
+          />
+        ) : !isResearcher ? (
+          <SignInPrompt
+            t={t}
+            href={signInHref}
+            onClose={handleClose}
+            iconClass="bg-warning/20 text-warning"
+            icon={<AlertCircle className="h-7 w-7" />}
+            title={t('report.signin.wrongRole.title')}
+            body={t('report.signin.wrongRole.body')}
+            cta={t('report.signin.wrongRole.cta')}
+          />
         ) : (
           <>
             {/* Header */}
@@ -526,6 +615,20 @@ export function ReportSubmissionModal({
                         {t('report.demo.notice')}
                       </p>
                     </div>
+
+                    {submitError && (
+                      <div className="flex items-start gap-2 p-3 rounded-lg bg-destructive/10 border border-destructive/30">
+                        <AlertCircle className="h-4 w-4 text-destructive shrink-0 mt-0.5" />
+                        <div className="space-y-1">
+                          <p className="text-sm font-medium text-foreground">
+                            {t('report.error.title')}
+                          </p>
+                          <p className="text-xs text-muted-foreground break-words">
+                            {submitError}
+                          </p>
+                        </div>
+                      </div>
+                    )}
                   </motion.div>
                 )}
               </AnimatePresence>
@@ -573,5 +676,54 @@ export function ReportSubmissionModal({
         )}
       </DialogContent>
     </Dialog>
+  )
+}
+
+interface SignInPromptProps {
+  t: (key: string, vars?: Record<string, string | number>) => string
+  href: string
+  onClose: () => void
+  iconClass: string
+  icon: React.ReactNode
+  title: string
+  body: string
+  cta: string
+}
+
+function SignInPrompt({
+  t,
+  href,
+  onClose,
+  iconClass,
+  icon,
+  title,
+  body,
+  cta,
+}: SignInPromptProps) {
+  return (
+    <div className="p-6 sm:p-8 text-center">
+      <div
+        className={cn(
+          'h-14 w-14 rounded-full flex items-center justify-center mx-auto mb-4',
+          iconClass,
+        )}
+      >
+        {icon}
+      </div>
+      <h2 className="text-xl sm:text-2xl font-bold text-foreground mb-2">
+        {title}
+      </h2>
+      <p className="text-muted-foreground mb-6 max-w-md mx-auto text-sm">
+        {body}
+      </p>
+      <div className="flex flex-col sm:flex-row gap-2 justify-center">
+        <Button asChild>
+          <Link href={href}>{cta}</Link>
+        </Button>
+        <Button variant="ghost" onClick={onClose}>
+          {t('common.cancel')}
+        </Button>
+      </div>
+    </div>
   )
 }

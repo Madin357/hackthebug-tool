@@ -66,8 +66,14 @@ for now and will be layered on later.
   official authorization", reward ranges (AZN) are explicitly demo /
   planned and never a real bounty commitment, and the program-detail
   page carries a "Pending official authorization" warning banner.
-- Submitting a report opens a multi‑step modal that simulates submission with a
-  `setTimeout` and shows a fake report ID. Nothing is persisted.
+- Submitting a report from `/programs/[slug]` is **now persisted to
+  Supabase**. The modal calls `createReport` in
+  `lib/supabase/queries/reports.ts`, which inserts into `reports` (status
+  `pending`) and writes a matching `submitted` event into
+  `report_timeline_events`. The success screen shows the real report
+  UUID prefixed `HTB-`. Anonymous users / org-role users see a sign-in
+  prompt panel instead of the form (linking to
+  `/login?next=/programs/<slug>`).
 - "SİMA — coming soon" / "Identity verification is planned" / "Demo
   authentication" appear on the home hero, about page, login page,
   researcher dashboard, organization dashboard, and report submission
@@ -210,7 +216,7 @@ hackthebug-tool/
 │   │       ├── programs.ts       # listPrograms, listFeaturedPrograms, getProgramBySlug
 │   │       ├── organizations.ts  # listOrganizations, getOrganizationById
 │   │       ├── profiles.ts       # getProfileById/Email, listResearchers
-│   │       └── reports.ts        # listReportsForResearcher / Organization, getReportById
+│   │       └── reports.ts        # listReportsForResearcher / Organization, getReportById, createReport
 │   └── data/
 │       └── hooks.ts              # usePrograms / useProgram / useFeaturedPrograms /
 │                                 #   useResearchers / useResearcherReports /
@@ -257,7 +263,7 @@ hackthebug-tool/
 | `SeverityBadge`                  | Pill with colored dot for critical/high/medium/low/informational.                        |
 | `StatusBadge`                    | Pill for report lifecycle: draft, pending, triaged, resolved, rewarded, duplicate, invalid. |
 | `StatCard`                       | KPI tile with title/value, optional icon + trend, gradient overlay, fade‑in animation.   |
-| `ReportSubmissionModal`          | 3‑step dialog: (1) Basic info — title/asset/severity/weakness; (2) Technical — summary/steps/PoC/attachments; (3) Impact & Review — impact/remediation/CVSS/agreement. Simulates submit. |
+| `ReportSubmissionModal`          | 3‑step dialog: (1) Basic info — title/asset/severity/weakness; (2) Technical — summary/steps/PoC/attachments; (3) Impact & Review — impact/remediation/CVSS/agreement. **Real Supabase insert** via `createReport`; gates the form behind a sign-in prompt for anonymous / org users. Requires `programId` prop in addition to `programName` / `programAssets`. |
 | `ThemeProvider`                  | `next-themes` wrapper. **Currently unused** — dark mode is forced in `layout.tsx`.       |
 | `components/ui/*`                | shadcn/ui primitives (button, badge, card, dialog, table, tabs, select, input, textarea, checkbox, dropdown‑menu, avatar, etc.). |
 
@@ -417,6 +423,77 @@ To be implemented after the hackathon, in roughly this order:
   and the `LOCALES` array.
 
 ## Last Actions
+
+### 2026‑04‑26 — Real report submission (Supabase persist)
+
+- **What:** The 3-step "Submit Vulnerability Report" modal now persists
+  to Supabase instead of `setTimeout`. (1) Added
+  `createReport(client, params)` to `lib/supabase/queries/reports.ts` —
+  inserts into `reports` (status `pending`) with the form's title /
+  severity / weakness / asset / summary / steps / PoC / impact /
+  remediation / CVSS, then best-effort writes a `submitted` event into
+  `report_timeline_events`. Returns the freshly-mapped `Report` so the
+  caller can show the real UUID. (2) `components/report-submission-modal.tsx`
+  now takes a `programId: string` prop, calls `useAuth()` +
+  `getSupabaseClient()`, replaces the setTimeout mock with a real
+  `createReport(...)` call wrapped in try/catch (errors surface as an
+  inline destructive panel below the demo notice on step 3), shows the
+  real report UUID prefixed `HTB-` on the success screen, and gates
+  the form for anonymous / org users with a sign-in panel
+  (`<SignInPrompt>` subcomponent) linking to
+  `/login?next=<current path>`. (3) `app/programs/[slug]/page.tsx`
+  passes `programId={program.id}` alongside the existing
+  `programName` / `programAssets`. (4) i18n: refreshed `report.demo.notice`
+  and `report.success.body` to honestly say the report is saved to the
+  demo DB; renamed `report.success.idLabel` from "Demo Report ID" →
+  "Report ID"; added EN + AZ keys for `report.signin.required.{title,
+  body, cta}`, `report.signin.wrongRole.{title, body, cta}`, and
+  `report.error.{title, body, notResearcher}`.
+- **Why:** The user reported that submitting a report did not hit
+  Supabase, so reports were never created in the DB. The modal had been
+  shipping with a `setTimeout(2000)` placeholder since the very first
+  commit; this swaps in a real insert against the existing
+  `reports` + `report_timeline_events` schema. Gating the form behind
+  sign-in keeps anonymous traffic from seeing a confusing "Submit"
+  button that would just fail under RLS.
+- **Files touched:** modified `lib/supabase/queries/reports.ts`,
+  `components/report-submission-modal.tsx`,
+  `app/programs/[slug]/page.tsx`, `lib/i18n/dictionary.ts`,
+  `MEMORY.md`. No files added or removed.
+- **One-time Supabase setup the user must run** so the insert isn't
+  blocked by RLS:
+  ```sql
+  -- Researchers can insert reports for themselves.
+  DROP POLICY IF EXISTS "researcher_inserts_own_reports" ON reports;
+  CREATE POLICY "researcher_inserts_own_reports"
+    ON reports FOR INSERT TO authenticated
+    WITH CHECK (researcher_id = auth.uid());
+
+  -- Researchers can write timeline events for their own reports.
+  DROP POLICY IF EXISTS "researcher_inserts_own_report_timeline_events"
+    ON report_timeline_events;
+  CREATE POLICY "researcher_inserts_own_report_timeline_events"
+    ON report_timeline_events FOR INSERT TO authenticated
+    WITH CHECK (
+      actor_id = auth.uid()
+      AND report_id IN (SELECT id FROM reports WHERE researcher_id = auth.uid())
+    );
+  ```
+  (If RLS is currently disabled on `reports` /
+  `report_timeline_events`, the insert already works — these policies
+  only matter once RLS is on, which is the production target.)
+- **Verification:** `npm run build` succeeds, all 11 routes prerender.
+  Browser: sign in as `researcher@hackthebug.az`, open any program,
+  click "Submit Report", complete the 3 steps, submit — success screen
+  should show a `HTB-XXXXXXXX` ID and the report should appear in
+  `/dashboard/researcher` after a refresh. Anonymous browser: clicking
+  "Submit Report" should show a "Sign in to submit a report" panel
+  with a link to `/login?next=/programs/<slug>`.
+- **Next step:** when desired, build a `/programs/[slug]/reports/[id]`
+  detail page so the "View Report" link in the dashboard goes
+  somewhere; or add a researcher-side `useResearcherReports`
+  `refetch()` callback so the dashboard list updates automatically
+  without a manual refresh.
 
 ### 2026‑04‑26 — Hardened session, registration, multi-program orgs
 
@@ -945,17 +1022,20 @@ In priority order. Each item is intentionally small and reversible.
    demo account, verify the right dashboard renders, try to access the
    other dashboard URL directly and confirm the access-denied card shows,
    log out and confirm redirect to `/login`.
-2. **Hook the report submission modal to the current researcher.** The
-   modal currently writes to nothing; once we want a real persisted demo,
-   the natural seam is `useAuth().session.researcherId` → keep state in a
-   client `localStorage` table to mirror the researcher's "own" reports.
-3. **Optional small polish:** the researcher dashboard greeting still
-   reads `currentResearcher = researchers[0]` directly — switch it to
-   look up by `useAuth().session.researcherId` so the greeting follows
-   the session.
-4. **Tighten empty/loading states across dashboards** (already on the
+2. **Add the two new RLS policies** (see the most recent "Last Actions"
+   entry) so report submission also works once RLS is enabled on
+   `reports` / `report_timeline_events`.
+3. **Build a report detail page** at
+   `/programs/[slug]/reports/[id]` so the dashboard "View" link goes
+   somewhere meaningful and the receiving organization can read the
+   submission body / timeline.
+4. **Auto-refresh dashboards after submission.** Add an `onSubmitted`
+   callback prop to `ReportSubmissionModal` and pipe the
+   `useResearcherReports().refetch()` into it from the program detail
+   page when the user is the researcher.
+5. **Tighten empty/loading states across dashboards** (already on the
    list pre-auth-pass). Add skeletons for first paint, especially while
    `RoleGate` is in `'loading'`.
-5. **When backend work starts:** follow the migration checklist in
+6. **When backend work starts:** follow the migration checklist in
    `DATABASE_PLAN.md > section 5`. The session shape exposed by
    `useAuth()` is the public seam — keep it stable so pages don't churn.
