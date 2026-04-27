@@ -469,10 +469,12 @@ export default function RegisterPage() {
             </TabsContent>
           </Tabs>
 
-          <div className="mt-6 flex items-start gap-2 text-xs text-muted-foreground bg-warning/5 border border-warning/30 rounded-lg p-3">
-            <Info className="h-4 w-4 text-warning shrink-0 mt-0.5" />
-            <span>{t('register.notice.demoOnly')}</span>
-          </div>
+          {tab === 'researcher' && (
+            <div className="mt-6 flex items-start gap-2 text-xs text-muted-foreground bg-warning/5 border border-warning/30 rounded-lg p-3">
+              <Info className="h-4 w-4 text-warning shrink-0 mt-0.5" />
+              <span>{t('register.notice.demoOnly')}</span>
+            </div>
+          )}
 
           <p className="mt-6 text-sm text-center text-muted-foreground">
             {t('register.haveAccount')}{' '}

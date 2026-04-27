@@ -9,9 +9,10 @@ import {
   X,
   ChevronDown,
   LogOut,
-  LayoutDashboard,
   UserRound,
+  BadgeCheck,
 } from 'lucide-react'
+import { toast } from 'sonner'
 import { BrandLogo } from '@/components/brand-logo'
 import { Button } from '@/components/ui/button'
 import {
@@ -66,6 +67,13 @@ export function Navigation() {
     router.push('/')
   }
 
+  const isResearcher = isAuthed && session.role === 'researcher'
+
+  const handleVerifyWithSima = () => {
+    toast.message(t('nav.verify.sima.toast'))
+    setMobileMenuOpen(false)
+  }
+
   return (
     <header className="fixed top-0 left-0 right-0 z-50 glass">
       <nav className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -95,8 +103,8 @@ export function Navigation() {
               </Link>
             ))}
 
-            {/* Dashboard menu — only one option when logged in */}
-            {isAuthed ? (
+            {/* Dashboard link — only visible when signed in */}
+            {isAuthed && (
               <Link
                 href={dashboardPathForRole(session.role)}
                 className={cn(
@@ -108,36 +116,25 @@ export function Navigation() {
               >
                 {t('nav.user.myDashboard')}
               </Link>
-            ) : (
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <button
-                    className={cn(
-                      'flex items-center gap-1 px-4 py-2 text-sm font-medium rounded-lg transition-colors',
-                      pathname.startsWith('/dashboard')
-                        ? 'text-primary bg-primary/10'
-                        : 'text-muted-foreground hover:text-foreground hover:bg-secondary',
-                    )}
-                  >
-                    {t('nav.dashboard')}
-                    <ChevronDown className="h-4 w-4" />
-                  </button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-56">
-                  {visibleDashboardItems.map((item) => (
-                    <DropdownMenuItem key={item.href} asChild>
-                      <Link href={item.href} className="w-full">
-                        {t(item.key)}
-                      </Link>
-                    </DropdownMenuItem>
-                  ))}
-                </DropdownMenuContent>
-              </DropdownMenu>
             )}
           </div>
 
           {/* Right Side Actions */}
           <div className="hidden md:flex items-center gap-3">
+            {isResearcher && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleVerifyWithSima}
+                aria-label={t('nav.verify.sima.button')}
+                className="border-primary/40 text-primary hover:bg-primary/10 hover:text-primary glow-cyan"
+              >
+                <BadgeCheck className="h-4 w-4 lg:mr-2" />
+                <span className="hidden lg:inline">
+                  {t('nav.verify.sima.button')}
+                </span>
+              </Button>
+            )}
             <SettingsMenu />
             {isAuthed ? (
               <UserMenu
@@ -198,26 +195,28 @@ export function Navigation() {
                   {t(item.key)}
                 </Link>
               ))}
-              <div className="border-t border-border pt-2 mt-2">
-                <p className="px-4 py-2 text-xs text-muted-foreground font-medium uppercase tracking-wider">
-                  {t('nav.dashboard')}
-                </p>
-                {visibleDashboardItems.map((item) => (
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    onClick={() => setMobileMenuOpen(false)}
-                    className={cn(
-                      'block px-4 py-3 text-sm font-medium rounded-lg transition-colors',
-                      pathname === item.href
-                        ? 'text-primary bg-primary/10'
-                        : 'text-muted-foreground hover:text-foreground hover:bg-secondary',
-                    )}
-                  >
-                    {t(item.key)}
-                  </Link>
-                ))}
-              </div>
+              {isAuthed && (
+                <div className="border-t border-border pt-2 mt-2">
+                  <p className="px-4 py-2 text-xs text-muted-foreground font-medium uppercase tracking-wider">
+                    {t('nav.dashboard')}
+                  </p>
+                  {visibleDashboardItems.map((item) => (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      onClick={() => setMobileMenuOpen(false)}
+                      className={cn(
+                        'block px-4 py-3 text-sm font-medium rounded-lg transition-colors',
+                        pathname === item.href
+                          ? 'text-primary bg-primary/10'
+                          : 'text-muted-foreground hover:text-foreground hover:bg-secondary',
+                      )}
+                    >
+                      {t(item.key)}
+                    </Link>
+                  ))}
+                </div>
+              )}
               <div className="pt-4 space-y-3">
                 <SettingsMenu variant="block" />
                 {isAuthed ? (
@@ -235,6 +234,16 @@ export function Navigation() {
                         </p>
                       </div>
                     </div>
+                    {isResearcher && (
+                      <Button
+                        variant="outline"
+                        className="w-full border-primary/40 text-primary hover:bg-primary/10 hover:text-primary glow-cyan"
+                        onClick={handleVerifyWithSima}
+                      >
+                        <BadgeCheck className="h-4 w-4 mr-2" />
+                        {t('nav.verify.sima.button')}
+                      </Button>
+                    )}
                     <Button
                       variant="outline"
                       className="w-full"
@@ -314,15 +323,6 @@ function UserMenu({ displayName, role, onLogout, t }: UserMenuProps) {
           <span className="text-muted-foreground"> · {t(`role.${role}`)}</span>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
-        <DropdownMenuItem asChild>
-          <Link
-            href={dashboardPathForRole(role)}
-            className="w-full cursor-pointer"
-          >
-            <LayoutDashboard className="mr-2 h-4 w-4" />
-            {t('nav.user.myDashboard')}
-          </Link>
-        </DropdownMenuItem>
         <DropdownMenuItem
           onSelect={(e) => {
             e.preventDefault()

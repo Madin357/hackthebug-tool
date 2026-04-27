@@ -47,6 +47,9 @@ const en: Dict = {
   'nav.cta.login': 'Log in',
   'nav.cta.register': 'Sign up',
   'nav.cta.logout': 'Log out',
+  'nav.verify.sima.button': 'Verify yourself with SİMA',
+  'nav.verify.sima.toast':
+    'SİMA verification is not active in this demo. This action is planned for the production version.',
   'nav.user.myDashboard': 'Dashboard',
   'nav.user.signedInAs': 'Signed in as',
   'nav.lang.label': 'Language',
@@ -641,7 +644,7 @@ const en: Dict = {
   // ─── Login page
   'login.title': 'Log in to HackTheBug',
   'login.subtitle':
-    'Use one of the test accounts to explore the researcher or organization side of the platform. Real SİMA-backed sign-in arrives at launch.',
+    'Sign in to explore the researcher or organization side of the platform. Real SİMA-backed sign-in arrives at launch.',
   'login.email.label': 'Email',
   'login.email.placeholder': 'you@hackthebug.az',
   'login.password.label': 'Password',
@@ -652,30 +655,16 @@ const en: Dict = {
     'Please enter both email and password.',
   'login.error.invalidEmail': 'Please enter a valid email address.',
   'login.error.invalidCredentials':
-    'Wrong email or password. Try one of the accounts shown.',
-  'login.demoNote':
-    'Mock authentication only — credentials are stored locally in your browser. Real backend auth, password hashing, and SİMA verification land later.',
+    'Wrong email or password. Please try again.',
   'login.alreadySignedIn': 'You are already signed in as {role}.',
   'login.goToDashboard': 'Go to dashboard',
-  'login.demo.title': 'Test credentials',
-  'login.demo.subtitle': 'Pick a role — we will fill the form for you.',
-  'login.demo.researcher.tagline': 'Submit reports, track reputation.',
-  'login.demo.organization.tagline': 'Manage programs, triage reports.',
-  'login.demo.emailLabel': 'Email',
-  'login.demo.passwordLabel': 'Password',
-  'login.demo.useThese': 'Use these',
 
   // ─── Access denied / role gate
   'roleGate.checking': 'Checking your session...',
   'roleGate.stillChecking':
     'Still working on it — your network or Supabase project may be slow to respond.',
   'roleGate.tryAgain': 'Reload',
-  'roleGate.denied.title': 'Access denied',
-  'roleGate.denied.body':
-    'This dashboard is for {requiredRole} accounts only. You are signed in as {currentRole}.',
-  'roleGate.denied.goToMine': 'Go to dashboard',
-  'roleGate.denied.logout': 'Log out',
-  'roleGate.redirecting': 'Redirecting to log in...',
+  'roleGate.redirecting': 'Redirecting...',
 
   // ─── Register page
   'register.title': 'Create your account',
@@ -839,6 +828,9 @@ const az: Dict = {
   'nav.cta.login': 'Daxil ol',
   'nav.cta.register': 'Qeydiyyatdan keç',
   'nav.cta.logout': 'Çıxış et',
+  'nav.verify.sima.button': 'SİMA ilə özünü təsdiqlə',
+  'nav.verify.sima.toast':
+    'SİMA təsdiqləməsi bu demoda aktiv deyil. Bu funksiya production versiya üçün planlaşdırılıb.',
   'nav.user.myDashboard': 'İdarə paneli',
   'nav.user.signedInAs': 'Daxil olub:',
   'nav.lang.label': 'Dil',
@@ -1452,7 +1444,7 @@ const az: Dict = {
   // ─── Login page
   'login.title': 'HackTheBug-a daxil ol',
   'login.subtitle':
-    'Tədqiqatçı və ya təşkilat tərəfini araşdırmaq üçün sınaq hesablarından birini istifadə et. Real SİMA ilə daxil olma buraxılışda gələcək.',
+    'Tədqiqatçı və ya təşkilat tərəfini araşdırmaq üçün daxil ol. Real SİMA ilə daxil olma buraxılışda gələcək.',
   'login.email.label': 'E-poçt',
   'login.email.placeholder': 'sen@hackthebug.az',
   'login.password.label': 'Şifrə',
@@ -1463,30 +1455,16 @@ const az: Dict = {
     'Zəhmət olmasa həm e-poçt, həm də şifrəni daxil et.',
   'login.error.invalidEmail': 'Düzgün e-poçt ünvanı daxil et.',
   'login.error.invalidCredentials':
-    'E-poçt və ya şifrə yanlışdır. Göstərilən hesablardan birini sına.',
-  'login.demoNote':
-    'Yalnız mock doğrulama — məlumatlar brauzerində lokal saxlanılır. Real backend doğrulaması, şifrə hashı və SİMA doğrulaması sonra gələcək.',
+    'E-poçt və ya şifrə yanlışdır. Yenidən cəhd et.',
   'login.alreadySignedIn': '{role} kimi artıq daxil olmusan.',
   'login.goToDashboard': 'İdarə panelinə keç',
-  'login.demo.title': 'Sınaq məlumatları',
-  'login.demo.subtitle': 'Rolu seç — formanı sənin üçün dolduracağıq.',
-  'login.demo.researcher.tagline': 'Hesabat göndər, reputasiyanı izlə.',
-  'login.demo.organization.tagline': 'Proqramları idarə et, hesabatları araşdır.',
-  'login.demo.emailLabel': 'E-poçt',
-  'login.demo.passwordLabel': 'Şifrə',
-  'login.demo.useThese': 'Bunları istifadə et',
 
   // ─── Access denied / role gate
   'roleGate.checking': 'Sessiyan yoxlanılır...',
   'roleGate.stillChecking':
     'Hələ də yoxlanır — şəbəkə və ya Supabase layihən yavaş cavab verə bilər.',
   'roleGate.tryAgain': 'Yenidən yüklə',
-  'roleGate.denied.title': 'Giriş qadağandır',
-  'roleGate.denied.body':
-    'Bu panel yalnız {requiredRole} hesabları üçündür. Sən {currentRole} kimi daxil olmusan.',
-  'roleGate.denied.goToMine': 'İdarə panelinə keç',
-  'roleGate.denied.logout': 'Çıxış et',
-  'roleGate.redirecting': 'Daxil olma səhifəsinə yönləndirilirsən...',
+  'roleGate.redirecting': 'Yönləndirilirsən...',
 
   // ─── Register page
   'register.title': 'Hesab yarat',
