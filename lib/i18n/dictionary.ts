@@ -48,8 +48,6 @@ const en: Dict = {
   'nav.cta.register': 'Sign up',
   'nav.cta.logout': 'Log out',
   'nav.verify.sima.button': 'Verify yourself with SİMA',
-  'nav.verify.sima.toast':
-    'SİMA verification is not active in this demo. This action is planned for the production version.',
   'nav.user.myDashboard': 'Dashboard',
   'nav.user.signedInAs': 'Signed in as',
   'nav.lang.label': 'Language',
@@ -829,8 +827,6 @@ const az: Dict = {
   'nav.cta.register': 'Qeydiyyatdan keç',
   'nav.cta.logout': 'Çıxış et',
   'nav.verify.sima.button': 'SİMA ilə özünü təsdiqlə',
-  'nav.verify.sima.toast':
-    'SİMA təsdiqləməsi bu demoda aktiv deyil. Bu funksiya production versiya üçün planlaşdırılıb.',
   'nav.user.myDashboard': 'İdarə paneli',
   'nav.user.signedInAs': 'Daxil olub:',
   'nav.lang.label': 'Dil',

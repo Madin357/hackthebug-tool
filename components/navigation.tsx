@@ -12,9 +12,11 @@ import {
   UserRound,
   BadgeCheck,
 } from 'lucide-react'
-import { toast } from 'sonner'
 import { BrandLogo } from '@/components/brand-logo'
 import { Button } from '@/components/ui/button'
+
+const SIMA_VERIFY_URL =
+  'https://mygovid.gov.az/auth/with-sima-login?origin=https:%2F%2Fe-gov.az'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -70,8 +72,10 @@ export function Navigation() {
   const isResearcher = isAuthed && session.role === 'researcher'
 
   const handleVerifyWithSima = () => {
-    toast.message(t('nav.verify.sima.toast'))
     setMobileMenuOpen(false)
+    if (typeof window !== 'undefined') {
+      window.open(SIMA_VERIFY_URL, '_blank', 'noopener,noreferrer')
+    }
   }
 
   return (
