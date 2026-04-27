@@ -7,7 +7,6 @@ import { motion } from 'framer-motion'
 import {
   Building2,
   Loader2,
-  Lock,
   ShieldCheck,
   ArrowRight,
   Info,
@@ -16,7 +15,6 @@ import { BrandLogo } from '@/components/brand-logo'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Badge } from '@/components/ui/badge'
 import { Card, CardContent } from '@/components/ui/card'
 import { useT } from '@/lib/i18n/locale-provider'
 import { useAuth, dashboardPathForRole } from '@/lib/auth/auth-provider'
@@ -153,14 +151,6 @@ function LoginContent() {
                 Hack<span className="text-primary">The</span>Bug
               </span>
             </Link>
-
-            <Badge
-              variant="outline"
-              className="mb-4 border-primary/30 text-primary"
-            >
-              <Lock className="mr-1 h-3 w-3" />
-              {t('login.badge.demo')}
-            </Badge>
 
             <h1 className="text-2xl sm:text-3xl font-bold text-foreground mb-2">
               {t('login.title')}

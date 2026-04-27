@@ -639,7 +639,6 @@ const en: Dict = {
     'Only researcher accounts can submit reports.',
 
   // ─── Login page
-  'login.badge.demo': 'Demo authentication',
   'login.title': 'Log in to HackTheBug',
   'login.subtitle':
     'Use one of the demo accounts below to explore the researcher or organization side of the platform. Real SİMA-backed sign-in arrives at launch.',
@@ -679,7 +678,6 @@ const en: Dict = {
   'roleGate.redirecting': 'Redirecting to log in...',
 
   // ─── Register page
-  'register.badge': 'Demo signup',
   'register.title': 'Create your account',
   'register.subtitle':
     'Pick a side. Researcher accounts can browse programs and file reports; organization accounts can publish programs and triage incoming reports.',
@@ -1452,7 +1450,6 @@ const az: Dict = {
     'Yalnız tədqiqatçı hesabları hesabat göndərə bilər.',
 
   // ─── Login page
-  'login.badge.demo': 'Demo doğrulama',
   'login.title': 'HackTheBug-a daxil ol',
   'login.subtitle':
     'Tədqiqatçı və ya təşkilat tərəfini araşdırmaq üçün aşağıdakı demo hesablarından birini istifadə et. Real SİMA ilə daxil olma buraxılışda gələcək.',
@@ -1492,7 +1489,6 @@ const az: Dict = {
   'roleGate.redirecting': 'Daxil olma səhifəsinə yönləndirilirsən...',
 
   // ─── Register page
-  'register.badge': 'Demo qeydiyyat',
   'register.title': 'Hesab yarat',
   'register.subtitle':
     'Tərəfini seç. Tədqiqatçı hesabları proqramlara baxa və hesabat göndərə bilər; təşkilat hesabları proqram dərc edib gələn hesabatları yoxlaya bilər.',

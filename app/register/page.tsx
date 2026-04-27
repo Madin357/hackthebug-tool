@@ -4,12 +4,11 @@ import { useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
-import { ArrowRight, Info, Lock, ShieldCheck } from 'lucide-react'
+import { ArrowRight, Info, ShieldCheck } from 'lucide-react'
 import { BrandLogo } from '@/components/brand-logo'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Badge } from '@/components/ui/badge'
 import { Card, CardContent } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import {
@@ -304,14 +303,6 @@ export default function RegisterPage() {
               Hack<span className="text-primary">The</span>Bug
             </span>
           </Link>
-
-          <Badge
-            variant="outline"
-            className="mb-4 border-primary/30 text-primary"
-          >
-            <Lock className="mr-1 h-3 w-3" />
-            {t('register.badge')}
-          </Badge>
 
           <h1 className="text-2xl sm:text-3xl font-bold text-foreground mb-2">
             {t('register.title')}
