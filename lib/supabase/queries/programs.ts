@@ -165,7 +165,7 @@ const COMMON_OUT_OF_SCOPE = [
 ]
 
 const COMMON_RULES = [
-  'Hackathon demo card — no live testing of real systems is authorized',
+  'No live testing of real systems is authorized',
   'Use only synthetic test data; never touch production',
   'Report findings only through the official channel once it exists',
   'Do not publicly disclose findings without coordination',
@@ -210,7 +210,7 @@ export async function createProgramWithScopesAndRewards(
 
   const tags = input.tags && input.tags.length > 0
     ? input.tags
-    : ['Demo Card']
+    : ['Sample']
 
   // 1. Program row.
   const { data: program, error: programError } = await client

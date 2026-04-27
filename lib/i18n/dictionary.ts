@@ -16,11 +16,11 @@ const en: Dict = {
   'common.close': 'Close',
   'common.optional': 'Optional',
   'common.required': 'Required',
-  'common.demoData': 'Demo Data',
-  'common.demoMode': 'Demo Mode',
-  'common.hackathonDemo': 'Hackathon Demo',
+  'common.demoData': 'Sample Data',
+  'common.demoMode': 'Preview',
+  'common.hackathonDemo': 'Hackathon',
   'common.comingSoon': 'Coming Soon',
-  'common.demoBanner': 'Demo data for illustration purposes',
+  'common.demoBanner': 'Sample data for illustration purposes',
   'common.fictionalDataNote': 'Fictional programs and sample data',
 
   // ─── Disclaimer / positioning
@@ -29,11 +29,11 @@ const en: Dict = {
     'HackTheBug is intended exclusively for citizens of the Republic of Azerbaijan. Identity verification will be required at launch.',
   'disclaimer.simaShort': 'SİMA verification — coming soon',
   'disclaimer.simaLong':
-    'Identity verification through SİMA is planned. The current build does not perform real identity checks — everything you see is a demo.',
+    'Identity verification through SİMA is planned. The current build does not perform real identity checks — everything you see is illustrative.',
   'disclaimer.notLiveYet':
     'This is a hackathon prototype. Real registration, verification, and payouts are not active yet.',
   'disclaimer.azCitizensBanner':
-    'For Azerbaijani citizens only · SİMA verification planned · This build is a demo',
+    'For Azerbaijani citizens only · SİMA verification planned',
 
   // ─── Navigation
   'nav.home': 'Home',
@@ -43,7 +43,7 @@ const en: Dict = {
   'nav.dashboard': 'Dashboard',
   'nav.dashboard.researcher': 'Researcher View',
   'nav.dashboard.organization': 'Organization View',
-  'nav.cta.launchDemo': 'Launch Demo',
+  'nav.cta.launchDemo': 'Launch Preview',
   'nav.cta.login': 'Log in',
   'nav.cta.register': 'Sign up',
   'nav.cta.logout': 'Log out',
@@ -116,7 +116,7 @@ const en: Dict = {
 
   // ─── Program card
   'programCard.featured': 'Featured',
-  'programCard.rewards': 'Demo rewards',
+  'programCard.rewards': 'Rewards',
   'programCard.assets': 'Assets',
   'programCard.updated': 'Updated',
   'programCard.viewProgram': 'View Program',
@@ -133,7 +133,7 @@ const en: Dict = {
   'home.hero.cta.leaderboard': 'View Leaderboard',
   'home.hero.simaNote': 'Identity verification via SİMA — coming soon',
   'home.preview.dashboardTitle': 'Security Dashboard',
-  'home.preview.dashboardSubtitle': 'Demo Preview',
+  'home.preview.dashboardSubtitle': 'Preview',
   'home.preview.live': 'Live',
   'home.preview.openReports': 'Open Reports',
   'home.preview.resolved': 'Resolved',
@@ -215,18 +215,18 @@ const en: Dict = {
   'home.roadmap.badge': 'Roadmap',
   'home.roadmap.title': 'Development Roadmap',
   'home.roadmap.subtitle':
-    'Our journey from hackathon demo to a launched, verification-backed platform.',
-  'home.roadmap.frontendDemo': 'Frontend Demo',
+    'Our journey from hackathon prototype to a launched, verification-backed platform.',
+  'home.roadmap.frontendDemo': 'Frontend',
   'home.roadmap.identity': 'SİMA Identity Verification',
   'home.roadmap.orgDashboard': 'Organization Dashboard',
   'home.roadmap.backend': 'Backend & API',
   'home.roadmap.launch': 'Full Launch',
   'home.roadmap.current': 'Current',
 
-  'home.cta.badge': 'Hackathon Demo',
+  'home.cta.badge': 'Hackathon',
   'home.cta.title': 'Ready to Explore?',
   'home.cta.body':
-    'This is a hackathon prototype showcasing the HackTheBug vision for Azerbaijan. Walk through the demo to see how the platform would work for both researchers and organizations.',
+    'This is a hackathon prototype showcasing the HackTheBug vision for Azerbaijan. Walk through it to see how the platform would work for both researchers and organizations.',
   'home.cta.browse': 'Browse Programs',
   'home.cta.tryDashboard': 'Try Researcher Dashboard',
   'home.cta.goToDashboard': 'Go to my dashboard',
@@ -292,7 +292,7 @@ const en: Dict = {
   'program.quickStats': 'Quick Stats',
   'program.quickStats.inScope': 'In-Scope Assets',
   'program.quickStats.researchers': 'Researchers',
-  'program.quickStats.maxReward': 'Max demo reward',
+  'program.quickStats.maxReward': 'Max planned reward',
   'program.safeHarbor.title': 'Safe Harbor',
   'program.safeHarbor.body':
     'This program provides safe harbor for Azerbaijani researchers who follow the program rules and test responsibly.',
@@ -302,10 +302,10 @@ const en: Dict = {
   'program.rewards.range': 'Reward Range (AZN)',
   'program.rewards.sla': 'Response SLA',
   'program.rewards.demoNote':
-    'Demo / planned reward range — values illustrate what an officially authorized program could pay. Not a real bounty commitment.',
+    'Planned reward range — values illustrate what an officially authorized program could pay. Not a real bounty commitment.',
   'program.authNotice.title': 'Pending official authorization',
   'program.authNotice.body':
-    'This is a hackathon demo program card representing {org}. No actual testing of any {org} system is authorized in this build. Real testing requires explicit, written authorization from the organization.',
+    'This is a hackathon program card representing {org}. No actual testing of any {org} system is authorized in this build. Real testing requires explicit, written authorization from the organization.',
   'program.rules.title': 'Program Rules',
   'program.rules.harbor.title': 'Safe Harbor Statement',
   'program.rules.harbor.body':
@@ -418,7 +418,7 @@ const en: Dict = {
     'Built the design system, mock data set, and core flows — landing, programs directory, program detail, dashboards, and report submission.',
   'about.roadmap.q2_2026.title': 'AZCON Hackathon',
   'about.roadmap.q2_2026.body':
-    'Frontend demo presented at the AZCON Hackathon. Currently here.',
+    'Frontend prototype presented at the AZCON Hackathon. Currently here.',
   'about.roadmap.q3_2026.title': 'SİMA Verification & Private Beta',
   'about.roadmap.q3_2026.body':
     'Wire up SİMA verification for researchers and organizations. Onboard a small set of partners for closed testing.',
@@ -442,13 +442,13 @@ const en: Dict = {
     'Roadmap from prototype to launch — SİMA, organizations, researchers.',
   'about.cta.title': 'Want to see how it would work?',
   'about.cta.body':
-    'The demo walks both sides of the platform — researchers browsing programs and organizations triaging reports. Real backend, real auth, and SİMA verification land in later milestones.',
+    'The preview walks both sides of the platform — researchers browsing programs and organizations triaging reports. Real backend, real auth, and SİMA verification land in later milestones.',
   'about.cta.browse': 'Browse Programs',
   'about.cta.orgDashboard': 'Organization Dashboard',
 
   // ─── Researcher dashboard
   'dashboard.researcher.viewBadge': 'Researcher Dashboard',
-  'dashboard.demoBadge': 'Demo View',
+  'dashboard.demoBadge': 'Preview',
   'dashboard.researcher.welcome': 'Welcome back, {name}',
   'dashboard.researcher.subtitle':
     'Track your reports, rewards, and reputation.',
@@ -486,7 +486,7 @@ const en: Dict = {
   'dashboard.researcher.achievements.top10': 'Top 10',
   'dashboard.researcher.verification.title': 'Identity Verification',
   'dashboard.researcher.verification.body':
-    'SİMA verification for Azerbaijani citizens — planned. The current build is a demo and does not perform real verification.',
+    'SİMA verification for Azerbaijani citizens — planned. The current build is a preview and does not perform real verification.',
   'dashboard.researcher.saved.title': 'Saved Programs',
   'dashboard.researcher.saved.empty':
     'No saved programs yet. Bookmark a program from its detail page.',
@@ -589,7 +589,7 @@ const en: Dict = {
   'report.fields.attachments': 'Attachments',
   'report.fields.attachments.dropzone': 'Drop files here or click to upload',
   'report.fields.attachments.types': 'PNG, JPG, MP4, PDF up to 10MB',
-  'report.fields.attachments.demo': '(Demo: Upload simulated)',
+  'report.fields.attachments.demo': '(Upload simulated)',
   'report.fields.impact': 'Security Impact',
   'report.fields.impact.placeholder':
     'Describe the potential security impact and affected users/data...',
@@ -617,12 +617,12 @@ const en: Dict = {
   'report.agree.body':
     'I have tested responsibly, followed the scope guidelines, and have not accessed unauthorized data.',
   'report.demo.notice':
-    'This is a demo platform — at launch, real submissions will require SİMA-verified Azerbaijani identity. Your report will be saved to the demo database for the receiving organization to review.',
+    'This is a preview — at launch, real submissions will require SİMA-verified Azerbaijani identity. Your report will be saved for the receiving organization to review.',
   'report.actions.submit': 'Submit Report',
   'report.actions.submitting': 'Submitting...',
   'report.success.title': 'Report Submitted!',
   'report.success.body':
-    'Your report has been saved to the demo database. The receiving organization can now review it from their dashboard.',
+    'Your report has been saved. The receiving organization can now review it from their dashboard.',
   'report.success.idLabel': 'Report ID',
   'report.signin.required.title': 'Sign in to submit a report',
   'report.signin.required.body':
@@ -641,9 +641,9 @@ const en: Dict = {
   // ─── Login page
   'login.title': 'Log in to HackTheBug',
   'login.subtitle':
-    'Use one of the demo accounts below to explore the researcher or organization side of the platform. Real SİMA-backed sign-in arrives at launch.',
+    'Use one of the test accounts to explore the researcher or organization side of the platform. Real SİMA-backed sign-in arrives at launch.',
   'login.email.label': 'Email',
-  'login.email.placeholder': 'you@hackthebug.demo',
+  'login.email.placeholder': 'you@hackthebug.az',
   'login.password.label': 'Password',
   'login.password.placeholder': '••••••••',
   'login.submit': 'Log in',
@@ -652,12 +652,12 @@ const en: Dict = {
     'Please enter both email and password.',
   'login.error.invalidEmail': 'Please enter a valid email address.',
   'login.error.invalidCredentials':
-    'Wrong email or password. Try one of the demo accounts on the right.',
+    'Wrong email or password. Try one of the accounts shown.',
   'login.demoNote':
-    'Demo / mock authentication only — credentials are stored locally in your browser. Real backend auth, password hashing, and SİMA verification land later.',
+    'Mock authentication only — credentials are stored locally in your browser. Real backend auth, password hashing, and SİMA verification land later.',
   'login.alreadySignedIn': 'You are already signed in as {role}.',
   'login.goToDashboard': 'Go to dashboard',
-  'login.demo.title': 'Demo credentials',
+  'login.demo.title': 'Test credentials',
   'login.demo.subtitle': 'Pick a role — we will fill the form for you.',
   'login.demo.researcher.tagline': 'Submit reports, track reputation.',
   'login.demo.organization.tagline': 'Manage programs, triage reports.',
@@ -724,7 +724,7 @@ const en: Dict = {
   'register.notice.confirmEmail':
     'We sent a confirmation link to {email}. Click it, then log in.',
   'register.notice.demoOnly':
-    'Demo signup. Real registration would require SİMA-verified Azerbaijani identity.',
+    'Test signup. Real registration would require SİMA-verified Azerbaijani identity.',
 
   // ─── Org dashboard: my programs widget
   'dashboard.org.myPrograms.title': 'My programs',
@@ -740,7 +740,7 @@ const en: Dict = {
   'createProgram.badge': 'Org tooling',
   'createProgram.title': 'Publish a new program',
   'createProgram.subtitle':
-    'Define scope, rules, and demo reward tiers. Real testing requires explicit official authorization — every program card carries that notice on the public page.',
+    'Define scope, rules, and reward tiers. Real testing requires explicit official authorization — every program card carries that notice on the public page.',
   'createProgram.section.basics': 'Basics',
   'createProgram.section.scope': 'In-scope assets',
   'createProgram.section.rewards': 'Reward tier',
@@ -771,9 +771,9 @@ const en: Dict = {
   'createProgram.scope.add': 'Add scope item',
   'createProgram.scope.empty':
     'Add at least one in-scope item before publishing.',
-  'createProgram.tier.label': 'Demo reward tier',
+  'createProgram.tier.label': 'Reward tier',
   'createProgram.tier.help':
-    'Each tier seeds a 5-row severity table (informational → critical) with realistic AZN ranges. All values are demo / planned.',
+    'Each tier seeds a 5-row severity table (informational → critical) with realistic AZN ranges. All values are planned.',
   'createProgram.tier.low.title': 'Low',
   'createProgram.tier.low.body': 'Smaller surface — up to 3,500 AZN.',
   'createProgram.tier.standard.title': 'Standard',
@@ -809,11 +809,11 @@ const az: Dict = {
   'common.close': 'Bağla',
   'common.optional': 'İstəyə bağlı',
   'common.required': 'Tələb olunur',
-  'common.demoData': 'Demo məlumatlar',
-  'common.demoMode': 'Demo rejimi',
-  'common.hackathonDemo': 'Hakaton demo',
+  'common.demoData': 'Nümunə məlumat',
+  'common.demoMode': 'Önbaxış',
+  'common.hackathonDemo': 'Hakaton',
   'common.comingSoon': 'Tezliklə',
-  'common.demoBanner': 'Nümayiş üçün demo məlumatlar',
+  'common.demoBanner': 'Nümayiş üçün nümunə məlumat',
   'common.fictionalDataNote':
     'Şərti proqramlar və nümunə məlumatlar',
 
@@ -822,11 +822,11 @@ const az: Dict = {
     'HackTheBug yalnız Azərbaycan Respublikasının vətəndaşları üçün nəzərdə tutulub. Buraxılış zamanı şəxsiyyət doğrulaması tələb olunacaq.',
   'disclaimer.simaShort': 'SİMA doğrulaması — tezliklə',
   'disclaimer.simaLong':
-    'SİMA vasitəsilə şəxsiyyət doğrulaması planlaşdırılır. Cari versiya real doğrulama aparmır — gördüyünüz hər şey demodur.',
+    'SİMA vasitəsilə şəxsiyyət doğrulaması planlaşdırılır. Cari versiya real doğrulama aparmır — gördüyünüz hər şey nümayiş məqsədlidir.',
   'disclaimer.notLiveYet':
     'Bu hakaton prototipidir. Real qeydiyyat, doğrulama və ödəmələr hələ aktiv deyil.',
   'disclaimer.azCitizensBanner':
-    'Yalnız Azərbaycan vətəndaşları üçün · SİMA doğrulaması planlaşdırılır · Bu versiya demodur',
+    'Yalnız Azərbaycan vətəndaşları üçün · SİMA doğrulaması planlaşdırılır',
 
   'nav.home': 'Ana səhifə',
   'nav.programs': 'Proqramlar',
@@ -835,7 +835,7 @@ const az: Dict = {
   'nav.dashboard': 'Panel',
   'nav.dashboard.researcher': 'Tədqiqatçı görünüşü',
   'nav.dashboard.organization': 'Təşkilat görünüşü',
-  'nav.cta.launchDemo': 'Demonu başlat',
+  'nav.cta.launchDemo': 'Önbaxışı başlat',
   'nav.cta.login': 'Daxil ol',
   'nav.cta.register': 'Qeydiyyatdan keç',
   'nav.cta.logout': 'Çıxış et',
@@ -904,7 +904,7 @@ const az: Dict = {
   'programStatus.closed': 'Bağlı',
 
   'programCard.featured': 'Seçilmiş',
-  'programCard.rewards': 'Demo mükafat',
+  'programCard.rewards': 'Mükafat',
   'programCard.assets': 'Aktivlər',
   'programCard.updated': 'Yeniləndi',
   'programCard.viewProgram': 'Proqrama bax',
@@ -922,7 +922,7 @@ const az: Dict = {
   'home.hero.simaNote':
     'SİMA vasitəsilə şəxsiyyət doğrulaması — tezliklə',
   'home.preview.dashboardTitle': 'Təhlükəsizlik paneli',
-  'home.preview.dashboardSubtitle': 'Demo önbaxış',
+  'home.preview.dashboardSubtitle': 'Önbaxış',
   'home.preview.live': 'Canlı',
   'home.preview.openReports': 'Açıq hesabatlar',
   'home.preview.resolved': 'Həll edildi',
@@ -1004,18 +1004,18 @@ const az: Dict = {
   'home.roadmap.badge': 'Yol xəritəsi',
   'home.roadmap.title': 'İnkişaf yol xəritəsi',
   'home.roadmap.subtitle':
-    'Hakaton demosundan doğrulama dəstəkli platformaya gedən yolumuz.',
-  'home.roadmap.frontendDemo': 'Frontend demo',
+    'Hakaton prototipindən doğrulama dəstəkli platformaya gedən yolumuz.',
+  'home.roadmap.frontendDemo': 'Frontend',
   'home.roadmap.identity': 'SİMA şəxsiyyət doğrulaması',
   'home.roadmap.orgDashboard': 'Təşkilat paneli',
   'home.roadmap.backend': 'Backend və API',
   'home.roadmap.launch': 'Tam buraxılış',
   'home.roadmap.current': 'Cari',
 
-  'home.cta.badge': 'Hakaton demo',
+  'home.cta.badge': 'Hakaton',
   'home.cta.title': 'Araşdırmağa hazırsan?',
   'home.cta.body':
-    'Bu, Azərbaycan üçün HackTheBug vizyonunu nümayiş etdirən hakaton prototipidir. Həm tədqiqatçılar, həm də təşkilatlar üçün platformanın necə işləyəcəyini görmək üçün demonu nəzərdən keçir.',
+    'Bu, Azərbaycan üçün HackTheBug vizyonunu nümayiş etdirən hakaton prototipidir. Həm tədqiqatçılar, həm də təşkilatlar üçün platformanın necə işləyəcəyini görmək üçün nəzərdən keçir.',
   'home.cta.browse': 'Proqramlara bax',
   'home.cta.tryDashboard': 'Tədqiqatçı panelini yoxla',
   'home.cta.goToDashboard': 'Mənim panelimə keç',
@@ -1083,7 +1083,7 @@ const az: Dict = {
   'program.quickStats': 'Qısa statistika',
   'program.quickStats.inScope': 'Əhatə daxili aktivlər',
   'program.quickStats.researchers': 'Tədqiqatçılar',
-  'program.quickStats.maxReward': 'Maks. demo mükafat',
+  'program.quickStats.maxReward': 'Maks. planlaşdırılan mükafat',
   'program.safeHarbor.title': 'Təhlükəsiz liman',
   'program.safeHarbor.body':
     'Bu proqram qaydalara əməl edən və məsuliyyətlə test aparan Azərbaycanlı tədqiqatçılar üçün təhlükəsiz liman təmin edir.',
@@ -1093,10 +1093,10 @@ const az: Dict = {
   'program.rewards.range': 'Mükafat aralığı (AZN)',
   'program.rewards.sla': 'Cavab SLA',
   'program.rewards.demoNote':
-    'Demo / planlaşdırılan mükafat aralığı — dəyərlər rəsmi icazəli proqramın ödəyə biləcəyi məbləği nümayiş etdirir. Real bounty öhdəliyi deyil.',
+    'Planlaşdırılan mükafat aralığı — dəyərlər rəsmi icazəli proqramın ödəyə biləcəyi məbləği nümayiş etdirir. Real bounty öhdəliyi deyil.',
   'program.authNotice.title': 'Rəsmi icazə gözləyir',
   'program.authNotice.body':
-    'Bu, {org} təmsil edən hakaton demo proqram kartıdır. Bu versiyada {org} heç bir sisteminin real testi icazəli deyil. Real test üçün təşkilatın yazılı rəsmi icazəsi tələb olunur.',
+    'Bu, {org} təmsil edən hakaton proqram kartıdır. Bu versiyada {org} heç bir sisteminin real testi icazəli deyil. Real test üçün təşkilatın yazılı rəsmi icazəsi tələb olunur.',
   'program.rules.title': 'Proqram qaydaları',
   'program.rules.harbor.title': 'Təhlükəsiz liman bəyanatı',
   'program.rules.harbor.body':
@@ -1208,10 +1208,10 @@ const az: Dict = {
     'Boşluq müəyyən edildi: Azərbaycan rəqəmsal məhsulları və təşkilatlarının məsuliyyətli açıqlama üçün lokal və etibarlı evi yox idi.',
   'about.roadmap.q1_2026.title': 'Dizayn və prototip',
   'about.roadmap.q1_2026.body':
-    'Dizayn sistemi, demo məlumat dəsti və əsas axınlar quruldu — ana səhifə, proqram kataloqu, proqram detalı, panellər və hesabat göndərmə.',
+    'Dizayn sistemi, nümunə məlumat dəsti və əsas axınlar quruldu — ana səhifə, proqram kataloqu, proqram detalı, panellər və hesabat göndərmə.',
   'about.roadmap.q2_2026.title': 'AZCON Hakatonu',
   'about.roadmap.q2_2026.body':
-    'Frontend demo AZCON Hakatonunda təqdim edildi. Hazırda buradayıq.',
+    'Frontend prototipi AZCON Hakatonunda təqdim edildi. Hazırda buradayıq.',
   'about.roadmap.q3_2026.title':
     'SİMA doğrulaması və qapalı beta',
   'about.roadmap.q3_2026.body':
@@ -1237,12 +1237,12 @@ const az: Dict = {
     'Prototipdən buraxılışa yol xəritəsi — SİMA, təşkilatlar, tədqiqatçılar.',
   'about.cta.title': 'Necə işləyəcəyini görmək istəyirsən?',
   'about.cta.body':
-    'Demo platformanın hər iki tərəfini gəzdirir — tədqiqatçılar proqramlara baxır, təşkilatlar hesabatları yoxlayır. Real backend, real auth və SİMA doğrulaması sonrakı mərhələlərdə işə düşür.',
+    'Önbaxış platformanın hər iki tərəfini gəzdirir — tədqiqatçılar proqramlara baxır, təşkilatlar hesabatları yoxlayır. Real backend, real auth və SİMA doğrulaması sonrakı mərhələlərdə işə düşür.',
   'about.cta.browse': 'Proqramlara bax',
   'about.cta.orgDashboard': 'Təşkilat paneli',
 
   'dashboard.researcher.viewBadge': 'Tədqiqatçı paneli',
-  'dashboard.demoBadge': 'Demo görünüş',
+  'dashboard.demoBadge': 'Önbaxış',
   'dashboard.researcher.welcome': 'Xoş gəldin, {name}',
   'dashboard.researcher.subtitle':
     'Hesabatlarını, mükafatlarını və reputasiyanı izlə.',
@@ -1282,7 +1282,7 @@ const az: Dict = {
   'dashboard.researcher.achievements.top10': 'Top 10',
   'dashboard.researcher.verification.title': 'Şəxsiyyət doğrulaması',
   'dashboard.researcher.verification.body':
-    'Azərbaycan vətəndaşları üçün SİMA doğrulaması — planlaşdırılır. Bu versiya demodur, real doğrulama aparmır.',
+    'Azərbaycan vətəndaşları üçün SİMA doğrulaması — planlaşdırılır. Bu versiya önbaxışdır, real doğrulama aparmır.',
   'dashboard.researcher.saved.title': 'Saxlanılmış proqramlar',
   'dashboard.researcher.saved.empty':
     'Hələ saxlanmış proqram yoxdur. Proqram səhifəsindən birini əlfəcinləyə bilərsən.',
@@ -1398,7 +1398,7 @@ const az: Dict = {
   'report.fields.attachments.types':
     'PNG, JPG, MP4, PDF — 10MB-ə qədər',
   'report.fields.attachments.demo':
-    '(Demo: yükləmə simulyasiyadır)',
+    '(Yükləmə simulyasiyadır)',
   'report.fields.impact': 'Təhlükəsizlik təsiri',
   'report.fields.impact.placeholder':
     'Mümkün təhlükəsizlik təsirini və təsirə məruz qalan istifadəçi/məlumatları təsvir et...',
@@ -1428,12 +1428,12 @@ const az: Dict = {
   'report.agree.body':
     'Məsuliyyətlə test apardım, sahə qaydalarına əməl etdim və icazəsiz məlumatlara çıxış əldə etmədim.',
   'report.demo.notice':
-    'Bu demo platformdur — buraxılışda real göndərmə SİMA ilə doğrulanmış Azərbaycan vətəndaşlığı tələb edəcək. Hesabatınız demo verilənlər bazasına saxlanılacaq və qəbul edən təşkilat onu öz panelindən nəzərdən keçirə biləcək.',
+    'Bu önbaxışdır — buraxılışda real göndərmə SİMA ilə doğrulanmış Azərbaycan vətəndaşlığı tələb edəcək. Hesabatınız saxlanılacaq və qəbul edən təşkilat onu öz panelindən nəzərdən keçirə biləcək.',
   'report.actions.submit': 'Hesabat göndər',
   'report.actions.submitting': 'Göndərilir...',
   'report.success.title': 'Hesabat göndərildi!',
   'report.success.body':
-    'Hesabatınız demo verilənlər bazasına saxlanıldı. Qəbul edən təşkilat indi onu öz panelindən nəzərdən keçirə bilər.',
+    'Hesabatınız saxlanıldı. Qəbul edən təşkilat indi onu öz panelindən nəzərdən keçirə bilər.',
   'report.success.idLabel': 'Hesabat ID',
   'report.signin.required.title': 'Hesabat göndərmək üçün daxil ol',
   'report.signin.required.body':
@@ -1452,9 +1452,9 @@ const az: Dict = {
   // ─── Login page
   'login.title': 'HackTheBug-a daxil ol',
   'login.subtitle':
-    'Tədqiqatçı və ya təşkilat tərəfini araşdırmaq üçün aşağıdakı demo hesablarından birini istifadə et. Real SİMA ilə daxil olma buraxılışda gələcək.',
+    'Tədqiqatçı və ya təşkilat tərəfini araşdırmaq üçün sınaq hesablarından birini istifadə et. Real SİMA ilə daxil olma buraxılışda gələcək.',
   'login.email.label': 'E-poçt',
-  'login.email.placeholder': 'sen@hackthebug.demo',
+  'login.email.placeholder': 'sen@hackthebug.az',
   'login.password.label': 'Şifrə',
   'login.password.placeholder': '••••••••',
   'login.submit': 'Daxil ol',
@@ -1463,12 +1463,12 @@ const az: Dict = {
     'Zəhmət olmasa həm e-poçt, həm də şifrəni daxil et.',
   'login.error.invalidEmail': 'Düzgün e-poçt ünvanı daxil et.',
   'login.error.invalidCredentials':
-    'E-poçt və ya şifrə yanlışdır. Sağdakı demo hesablarından birini sına.',
+    'E-poçt və ya şifrə yanlışdır. Göstərilən hesablardan birini sına.',
   'login.demoNote':
-    'Yalnız demo / mock doğrulama — məlumatlar brauzerində lokal saxlanılır. Real backend doğrulaması, şifrə hashı və SİMA doğrulaması sonra gələcək.',
+    'Yalnız mock doğrulama — məlumatlar brauzerində lokal saxlanılır. Real backend doğrulaması, şifrə hashı və SİMA doğrulaması sonra gələcək.',
   'login.alreadySignedIn': '{role} kimi artıq daxil olmusan.',
   'login.goToDashboard': 'İdarə panelinə keç',
-  'login.demo.title': 'Demo məlumatları',
+  'login.demo.title': 'Sınaq məlumatları',
   'login.demo.subtitle': 'Rolu seç — formanı sənin üçün dolduracağıq.',
   'login.demo.researcher.tagline': 'Hesabat göndər, reputasiyanı izlə.',
   'login.demo.organization.tagline': 'Proqramları idarə et, hesabatları araşdır.',
@@ -1535,7 +1535,7 @@ const az: Dict = {
   'register.notice.confirmEmail':
     '{email} ünvanına təsdiq linki göndərdik. Üzərinə klik et, sonra daxil ol.',
   'register.notice.demoOnly':
-    'Demo qeydiyyat. Real qeydiyyat SİMA ilə doğrulanmış Azərbaycan vətəndaşlığı tələb edəcək.',
+    'Sınaq qeydiyyatı. Real qeydiyyat SİMA ilə doğrulanmış Azərbaycan vətəndaşlığı tələb edəcək.',
 
   // ─── Org dashboard: my programs widget
   'dashboard.org.myPrograms.title': 'Mənim proqramlarım',
@@ -1551,7 +1551,7 @@ const az: Dict = {
   'createProgram.badge': 'Təşkilat alətləri',
   'createProgram.title': 'Yeni proqram dərc et',
   'createProgram.subtitle':
-    'Sahə, qaydalar və demo mükafat səviyyəsini təyin et. Real test rəsmi yazılı icazə tələb edir — hər proqram kartı bu xəbərdarlığı daşıyır.',
+    'Sahə, qaydalar və mükafat səviyyəsini təyin et. Real test rəsmi yazılı icazə tələb edir — hər proqram kartı bu xəbərdarlığı daşıyır.',
   'createProgram.section.basics': 'Əsas məlumatlar',
   'createProgram.section.scope': 'Əhatə daxili aktivlər',
   'createProgram.section.rewards': 'Mükafat səviyyəsi',
@@ -1583,9 +1583,9 @@ const az: Dict = {
   'createProgram.scope.add': 'Sahə əlavə et',
   'createProgram.scope.empty':
     'Dərc etmədən əvvəl ən azı bir əhatə daxili element əlavə et.',
-  'createProgram.tier.label': 'Demo mükafat səviyyəsi',
+  'createProgram.tier.label': 'Mükafat səviyyəsi',
   'createProgram.tier.help':
-    'Hər səviyyə realist AZN aralıqlı 5 sətirli ciddiyyət cədvəli yaradır (məlumat → kritik). Bütün dəyərlər demo / planlaşdırılmışdır.',
+    'Hər səviyyə realist AZN aralıqlı 5 sətirli ciddiyyət cədvəli yaradır (məlumat → kritik). Bütün dəyərlər planlaşdırılmışdır.',
   'createProgram.tier.low.title': 'Aşağı',
   'createProgram.tier.low.body':
     'Kiçik səth — 3,500 AZN-ə qədər.',
