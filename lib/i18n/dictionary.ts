@@ -658,6 +658,13 @@ const en: Dict = {
     'Demo / mock authentication only — credentials are stored locally in your browser. Real backend auth, password hashing, and SİMA verification land later.',
   'login.alreadySignedIn': 'You are already signed in as {role}.',
   'login.goToDashboard': 'Go to dashboard',
+  'login.demo.title': 'Demo credentials',
+  'login.demo.subtitle': 'Pick a role — we will fill the form for you.',
+  'login.demo.researcher.tagline': 'Submit reports, track reputation.',
+  'login.demo.organization.tagline': 'Manage programs, triage reports.',
+  'login.demo.emailLabel': 'Email',
+  'login.demo.passwordLabel': 'Password',
+  'login.demo.useThese': 'Use these',
 
   // ─── Access denied / role gate
   'roleGate.checking': 'Checking your session...',
@@ -1464,6 +1471,13 @@ const az: Dict = {
     'Yalnız demo / mock doğrulama — məlumatlar brauzerində lokal saxlanılır. Real backend doğrulaması, şifrə hashı və SİMA doğrulaması sonra gələcək.',
   'login.alreadySignedIn': '{role} kimi artıq daxil olmusan.',
   'login.goToDashboard': 'İdarə panelinə keç',
+  'login.demo.title': 'Demo məlumatları',
+  'login.demo.subtitle': 'Rolu seç — formanı sənin üçün dolduracağıq.',
+  'login.demo.researcher.tagline': 'Hesabat göndər, reputasiyanı izlə.',
+  'login.demo.organization.tagline': 'Proqramları idarə et, hesabatları araşdır.',
+  'login.demo.emailLabel': 'E-poçt',
+  'login.demo.passwordLabel': 'Şifrə',
+  'login.demo.useThese': 'Bunları istifadə et',
 
   // ─── Access denied / role gate
   'roleGate.checking': 'Sessiyan yoxlanılır...',

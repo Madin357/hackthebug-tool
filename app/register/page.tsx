@@ -4,7 +4,8 @@ import { useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
-import { ArrowRight, Bug, Info, Lock, ShieldCheck } from 'lucide-react'
+import { ArrowRight, Info, Lock, ShieldCheck } from 'lucide-react'
+import { BrandLogo } from '@/components/brand-logo'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -298,9 +299,7 @@ export default function RegisterPage() {
           className="rounded-2xl border border-border bg-card/80 backdrop-blur p-6 sm:p-8"
         >
           <Link href="/" className="inline-flex items-center gap-2 mb-6">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 border border-primary/20">
-              <Bug className="h-5 w-5 text-primary" />
-            </div>
+            <BrandLogo size={40} />
             <span className="text-lg font-semibold text-foreground">
               Hack<span className="text-primary">The</span>Bug
             </span>

@@ -1,7 +1,8 @@
 'use client'
 
 import Link from 'next/link'
-import { Bug, Github, Linkedin, Twitter } from 'lucide-react'
+import { Github, Linkedin, Twitter } from 'lucide-react'
+import { BrandLogo } from '@/components/brand-logo'
 import { useT } from '@/lib/i18n/locale-provider'
 
 const platformLinks = [
@@ -33,9 +34,7 @@ export function Footer() {
           {/* Brand */}
           <div className="md:col-span-1">
             <Link href="/" className="flex items-center gap-2">
-              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10 border border-primary/20">
-                <Bug className="h-5 w-5 text-primary" />
-              </div>
+              <BrandLogo size={36} />
               <span className="text-lg font-semibold text-foreground">
                 Hack<span className="text-primary">The</span>Bug
               </span>

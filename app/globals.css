@@ -182,10 +182,18 @@
 }
 
 /* Brand wordmark gradient — locked to the original cyan→violet so the
-   "Hack The Bug" mark stays consistent regardless of the user's accent. */
+   "Hack The Bug" mark stays consistent regardless of the user's accent.
+   Uses `background-image` (not the `background` shorthand) so the
+   `background-clip: text` is never reset; `color: transparent` is the
+   portable fallback for browsers that don't honor `-webkit-text-fill-color`. */
 .gradient-text {
-  background: linear-gradient(135deg, var(--brand-cyan, oklch(0.75 0.18 195)), var(--brand-violet, oklch(0.70 0.15 280)));
+  background-image: linear-gradient(
+    135deg,
+    var(--brand-cyan, oklch(0.75 0.18 195)),
+    var(--brand-violet, oklch(0.70 0.15 280))
+  );
   -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
   background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
 }

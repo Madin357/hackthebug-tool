@@ -5,7 +5,6 @@ import { usePathname, useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
-  Bug,
   Menu,
   X,
   ChevronDown,
@@ -13,6 +12,7 @@ import {
   LayoutDashboard,
   UserRound,
 } from 'lucide-react'
+import { BrandLogo } from '@/components/brand-logo'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -72,9 +72,7 @@ export function Navigation() {
         <div className="flex h-16 items-center justify-between">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2">
-            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10 border border-primary/20">
-              <Bug className="h-5 w-5 text-primary" />
-            </div>
+            <BrandLogo size={36} />
             <span className="text-lg font-semibold text-foreground">
               Hack<span className="text-primary">The</span>Bug
             </span>

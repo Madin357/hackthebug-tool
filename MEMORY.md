@@ -274,6 +274,7 @@ hackthebug-tool/
 
 | Component                        | Purpose                                                                                  |
 | -------------------------------- | ---------------------------------------------------------------------------------------- |
+| `BrandLogo`                      | Thin `next/image` wrapper around `/h-logo.svg` for the brand mark used in nav, footer, and auth pages. Single source of truth for the website logo so future swaps are a one-file change. The same SVG also lives at `app/icon.svg` and is auto-wired as the favicon by Next.js. |
 | `Navigation`                     | Sticky glass top bar, brand mark, primary nav (Home/Programs/Leaderboard/About), auth-aware Dashboard surface (anonymous: dropdown of both views; signed-in: single "My dashboard" link to the user's role), "AZ citizens only · Verification soon" pill, EN/AZ `LocaleSwitcher`, **Login button when anonymous / user pill with My dashboard + Logout when authenticated**, animated mobile drawer mirroring the same. |
 | `Footer`                         | 4‑column footer: brand + AZ‑citizens‑only badge + social, Platform links, Resources links, Legal links, "Hackathon Demo" tag. |
 | `SettingsMenu`                   | Gear-icon dropdown in the header (and a full-width "block" variant in the mobile drawer). Three sections: Language (EN / AZ pill toggles), Theme (Light / Dark / System via `next-themes`), Accent color (six circular swatches: Cyan / Purple / Blue / Red / Emerald / Amber). All three persist to `localStorage` (`htb-locale`, `next-themes` default key, `htb-accent`). Replaced the standalone `LocaleSwitcher`. |
@@ -436,6 +437,110 @@ To be implemented after the hackathon, in roughly this order:
   and the `LOCALES` array.
 
 ## Last Actions
+
+### 2026‑04‑27 — Real brand logo (SVG) for header, footer, auth pages, favicon
+
+- **What:** Replaced the lucide `Bug` placeholder brand mark with the
+  user-provided "H" SVG logo. The SVG was copied to two locations:
+  `public/h-logo.svg` (served at `/h-logo.svg` for inline use) and
+  `app/icon.svg` (Next.js metadata file convention — auto-wired as the
+  site favicon, no `<link>` tags needed). New
+  `components/brand-logo.tsx` exposes a tiny
+  `<BrandLogo size priority />` wrapper around `next/image`. The
+  four brand-mark sites that previously rendered a `Bug` icon inside a
+  `bg-primary/10 border border-primary/20` square now render
+  `<BrandLogo>` directly: `components/navigation.tsx` (`size={36}
+  priority`), `components/footer.tsx` (`size={36}`),
+  `app/login/page.tsx` (`size={40}`), `app/register/page.tsx`
+  (`size={40}`). Removed the broken `metadata.icons` block in
+  `app/layout.tsx` that referenced
+  `/icon-light-32x32.png` / `/icon-dark-32x32.png` /
+  `/apple-icon.png` — none of those files ever existed.
+- **Important — content-icon Bug uses are intentionally left:**
+  `app/page.tsx:101` (small Bug inside the home hero
+  "Azerbaijan's First Bug Bounty Platform" badge),
+  `app/about/page.tsx` (SEC team-role icon), and
+  `app/leaderboard/page.tsx` (Bug paired with `text-critical` for
+  critical-severity sections). Those are decorative content
+  icons, not the brand mark, and don't change with a re-brand.
+- **Why:** The user supplied the official "H" logo SVG and asked for
+  it to be used both as the inline website logo and the favicon.
+  Centralizing the four brand-mark sites behind a `BrandLogo`
+  component keeps any future swap a one-file change.
+- **Files touched:** added `public/h-logo.svg`, `app/icon.svg`,
+  `components/brand-logo.tsx`. Modified `components/navigation.tsx`,
+  `components/footer.tsx`, `app/login/page.tsx`,
+  `app/register/page.tsx`, `app/layout.tsx`, `MEMORY.md`. No files
+  removed.
+- **Note on file size:** the SVG is 651 KB (high-detail vector — the
+  artwork includes a 1254×1254 black background plus dense path
+  data). It's served once per visitor, then browser-cached, so it
+  shouldn't be a perceptible load issue, but a future polish pass
+  could run it through SVGO to shrink it. Both `public/h-logo.svg`
+  and `app/icon.svg` are byte-identical copies — if/when the logo
+  is updated, replace both.
+- **Verification:** `npx tsc --noEmit` reports no errors in any of
+  the changed files (only pre-existing Supabase-SDK typing noise in
+  `lib/supabase/queries/*` remains). Browser pass to confirm:
+  1. Reload `/` — the header logo on the left shows the new "H"
+     mark beside the "HackTheBug" wordmark; favicon in the
+     browser tab tab is the same SVG.
+  2. Scroll to the footer — same logo + wordmark in the brand
+     column.
+  3. Visit `/login` and `/register` — both forms now show the new
+     logo at the top-left of the card; clicking it still
+     navigates home.
+  4. Hard-refresh and confirm the favicon shows immediately
+     (Next.js generates the favicon link via the `app/icon.svg`
+     convention).
+
+### 2026‑04‑27 — Demo credentials side panel on /login
+
+- **What:** Added a small "Demo credentials" panel on the right of the
+  login form on `/login`. The panel lists both demo accounts —
+  Researcher (`researcher@hackthebug.az` / `Researcher123!`) and
+  Organization (`organization@hackthebug.az` / `Organization123!`) —
+  each as a clickable card showing role label, short tagline, email,
+  and password (`font-mono`). Clicking a card calls
+  `fillCredentials(role)` which sets the email + password inputs
+  from `demoCredentials` in `lib/auth/mock-users.ts` and clears any
+  prior error. Layout is a 2-column grid on `lg+`
+  (`lg:grid-cols-[28rem_20rem]`, both columns centered) and stacks
+  the panel below the form on mobile/tablet. New i18n keys
+  (EN + AZ): `login.demo.title`, `login.demo.subtitle`,
+  `login.demo.researcher.tagline`,
+  `login.demo.organization.tagline`, `login.demo.emailLabel`,
+  `login.demo.passwordLabel`, `login.demo.useThese`. The form
+  panel itself (logo, badge, title, fields, submit button, demo
+  warning) is unchanged.
+- **Why:** The user asked for a side panel showing the two demo
+  logins so testers can copy or one-click-fill them without
+  reading the dictionary or memory file. The existing
+  `login.error.invalidCredentials` copy already pointed users at
+  "demo accounts on the right", so the layout finally matches the
+  promise.
+- **Files touched:** modified `app/login/page.tsx`,
+  `lib/i18n/dictionary.ts`, `MEMORY.md`. No files added or removed.
+- **Verification:** `npx tsc --noEmit` reports no errors in
+  `app/login/page.tsx`. Browser pass to confirm:
+  1. Visit `/login` on a desktop viewport — form on the left, the
+     "Demo credentials" panel sits to its right showing both
+     accounts.
+  2. Click the Researcher card — the email + password fields fill
+     with `researcher@hackthebug.az` / `Researcher123!`. Submit
+     and confirm the researcher dashboard loads.
+  3. Sign out, return to `/login`, click Organization — fields
+     fill with `organization@hackthebug.az` /
+     `Organization123!`. Submit and the org dashboard loads.
+  4. Switch language to AZ — panel title becomes "Demo
+     məlumatları", taglines and the "Bunları istifadə et" CTA
+     translate, role labels read "Tədqiqatçı" / "Təşkilat".
+  5. Resize to ≤640px — the panel stacks below the form and stays
+     readable; long emails truncate with ellipsis instead of
+     overflowing.
+- **Next step:** none required. If desired, a follow-up could add
+  a copy-to-clipboard icon next to each value for testers who
+  want to type the password into a different browser or machine.
 
 ### 2026‑04‑26 — Researcher stats now derived from reports
 
