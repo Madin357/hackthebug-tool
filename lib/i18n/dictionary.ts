@@ -656,6 +656,14 @@ const en: Dict = {
     'Wrong email or password. Please try again.',
   'login.alreadySignedIn': 'You are already signed in as {role}.',
   'login.goToDashboard': 'Go to dashboard',
+  'login.demo.title': 'Demo credentials',
+  'login.demo.note':
+    'Use one of the seeded demo accounts to explore each role. Real SİMA-backed sign-in arrives at launch.',
+  'login.demo.role.researcher': 'Researcher',
+  'login.demo.role.organization': 'Organization',
+  'login.demo.email': 'Email',
+  'login.demo.password': 'Password',
+  'login.demo.use': 'Use',
 
   // ─── Access denied / role gate
   'roleGate.checking': 'Checking your session...',
@@ -1454,6 +1462,14 @@ const az: Dict = {
     'E-poçt və ya şifrə yanlışdır. Yenidən cəhd et.',
   'login.alreadySignedIn': '{role} kimi artıq daxil olmusan.',
   'login.goToDashboard': 'İdarə panelinə keç',
+  'login.demo.title': 'Demo məlumatları',
+  'login.demo.note':
+    'Hər rolu araşdırmaq üçün demo hesablardan birini seç. Real SİMA ilə daxil olma buraxılışda gələcək.',
+  'login.demo.role.researcher': 'Tədqiqatçı',
+  'login.demo.role.organization': 'Təşkilat',
+  'login.demo.email': 'E-poçt',
+  'login.demo.password': 'Şifrə',
+  'login.demo.use': 'İstifadə et',
 
   // ─── Access denied / role gate
   'roleGate.checking': 'Sessiyan yoxlanılır...',

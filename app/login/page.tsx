@@ -12,6 +12,12 @@ import { Label } from '@/components/ui/label'
 import { Card, CardContent } from '@/components/ui/card'
 import { useT } from '@/lib/i18n/locale-provider'
 import { useAuth, dashboardPathForRole } from '@/lib/auth/auth-provider'
+import { demoCredentials } from '@/lib/auth/mock-users'
+
+const DEMO_ACCOUNTS = [
+  { roleKey: 'login.demo.role.researcher', creds: demoCredentials.researcher },
+  { roleKey: 'login.demo.role.organization', creds: demoCredentials.organization },
+] as const
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
@@ -190,6 +196,59 @@ function LoginContent() {
               {!isSubmitting && <ArrowRight className="ml-2 h-4 w-4" />}
             </Button>
           </form>
+
+          <div className="mt-6 pt-6 border-t border-border">
+            <h2 className="text-sm font-semibold text-foreground">
+              {t('login.demo.title')}
+            </h2>
+            <p className="mt-1 text-xs text-muted-foreground">
+              {t('login.demo.note')}
+            </p>
+            <ul className="mt-4 space-y-3">
+              {DEMO_ACCOUNTS.map(({ roleKey, creds }) => (
+                <li
+                  key={creds.email}
+                  className="rounded-lg border border-border bg-muted/30 p-3"
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0 space-y-1.5">
+                      <p className="text-xs font-semibold text-foreground">
+                        {t(roleKey)}
+                      </p>
+                      <p className="text-[11px] text-muted-foreground">
+                        <span className="uppercase tracking-wide">
+                          {t('login.demo.email')}
+                        </span>
+                        <span className="ml-2 font-mono text-xs text-foreground break-all">
+                          {creds.email}
+                        </span>
+                      </p>
+                      <p className="text-[11px] text-muted-foreground">
+                        <span className="uppercase tracking-wide">
+                          {t('login.demo.password')}
+                        </span>
+                        <span className="ml-2 font-mono text-xs text-foreground break-all">
+                          {creds.password}
+                        </span>
+                      </p>
+                    </div>
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="outline"
+                      onClick={() => {
+                        setEmail(creds.email)
+                        setPassword(creds.password)
+                        setErrorKey(null)
+                      }}
+                    >
+                      {t('login.demo.use')}
+                    </Button>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </div>
         </motion.div>
       </div>
     </div>
